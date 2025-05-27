@@ -1,4 +1,6 @@
 -- +goose Up
+CREATE TYPE material_status AS ENUM ('draft', 'published', 'archived');
+
 CREATE TABLE IF NOT EXISTS materials
 (
     uuid            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -8,7 +10,7 @@ CREATE TABLE IF NOT EXISTS materials
     description     TEXT,
     content         TEXT,
     read_time_minutes INTEGER,
-    status          TEXT NOT NULL,
+    status          material_status NOT NULL DEFAULT 'draft',
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     edited_at       TIMESTAMP,
     published_at    TIMESTAMP,
@@ -20,3 +22,4 @@ CREATE TABLE IF NOT EXISTS materials
 
 -- +goose Down
 DROP TABLE IF EXISTS materials;
+DROP TYPE IF EXISTS material_status;
