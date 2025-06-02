@@ -1,1 +1,0 @@
-package name_of_queue
