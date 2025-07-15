@@ -11,10 +11,12 @@ type Config struct {
 	Metrics  Metrics
 	Platform Platform
 	Postgres Postgres
+	Logger   Logger
 }
 
 type Service struct {
 	Port string `env:"MATERIALS_SERVICE_PORT"`
+	Name string `env:"MATERIALS_SERVICE_NAME"`
 }
 
 type Metrics struct {
@@ -32,6 +34,11 @@ type Postgres struct {
 	Database string `env:"MATERIALS_SERVICE_POSTGRES_DB"`
 	Host     string `env:"MATERIALS_SERVICE_POSTGRES_HOST"`
 	Port     string `env:"MATERIALS_SERVICE_POSTGRES_PORT"`
+}
+
+type Logger struct {
+	Host string `env:"LOGGER_SERVICE_HOST"`
+	Port string `env:"LOGGER_SERVICE_PORT"`
 }
 
 func MustLoad() *Config {
