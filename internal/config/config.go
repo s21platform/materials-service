@@ -10,6 +10,7 @@ type Config struct {
 	Service  Service
 	Metrics  Metrics
 	Platform Platform
+	Postgres Postgres
 }
 
 type Service struct {
@@ -23,6 +24,14 @@ type Metrics struct {
 
 type Platform struct {
 	Env string `env:"ENV"`
+}
+
+type Postgres struct {
+	User     string `env:"MATERIALS_SERVICE_POSTGRES_USER"`
+	Password string `env:"MATERIALS_SERVICE_POSTGRES_PASSWORD"`
+	Database string `env:"MATERIALS_SERVICE_POSTGRES_DB"`
+	Host     string `env:"MATERIALS_SERVICE_POSTGRES_HOST"`
+	Port     string `env:"MATERIALS_SERVICE_POSTGRES_PORT"`
 }
 
 func MustLoad() *Config {
