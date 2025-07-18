@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS materials
     uuid            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_uuid      UUID NOT NULL,
     title           TEXT NOT NULL,
-    cover_image_uri TEXT,
+    cover_image_url TEXT,
     description     TEXT,
     content         TEXT,
     read_time_minutes INTEGER,
