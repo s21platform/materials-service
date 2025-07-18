@@ -2,13 +2,12 @@ package postgres
 
 import (
 	"context"
-	_ "database/sql"
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"github.com/s21platform/materials-service/internal/config"
 	"github.com/s21platform/materials-service/pkg/materials"
-	_ "github.com/s21platform/materials-service/pkg/materials"
 	"log"
 )
 
@@ -37,8 +36,8 @@ func (r *Repository) Close() {
 func (r *Repository) CreateMaterial(ctx context.Context, uuid string, in *materials.CreateMaterialIn) (*materials.CreateMaterialOut, error) {
 	query, args, err := sq.
 		Insert("materials").
-		Columns("owner_uuid", "title", "description", "content", "read_time_minutes").
-		Values(in.OwnerUuid, in.Title, in.Description, in.Content, in.ReadTimeMinutes).
+		Columns("owner_uuid", "title", "cover_image_url", "description", "content", "read_time_minutes").
+		Values(in.OwnerUuid, in.Title, in.CoverImageUrl, in.Description, in.Content, in.ReadTimeMinutes).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
@@ -51,6 +50,6 @@ func (r *Repository) CreateMaterial(ctx context.Context, uuid string, in *materi
 	}
 
 	return &materials.CreateMaterialOut{
-		MaterialUuid: uuid,
+		Uuid: uuid,
 	}, nil
 }

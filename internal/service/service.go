@@ -31,8 +31,14 @@ func New(repo DBRepo) *Service {
 
 func (s *Service) CreateMaterial(ctx context.Context, in *materials.CreateMaterialIn) (*materials.CreateMaterialOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	if logger == nil {
+		return nil, status.Error(codes.Internal, "logger not initialized in context")
+	}
 	logger.AddFuncName("CreateMaterial")
-
+	if s.repository == nil {
+		logger.Error("repository is not initialized")
+		return nil, status.Error(codes.Internal, "internal server error: repository not initialized")
+	}
 	ownerUUID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok {
 		logger.Error("owner uuid is required")

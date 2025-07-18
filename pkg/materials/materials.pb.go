@@ -107,7 +107,7 @@ func (x *CreateMaterialIn) GetReadTimeMinutes() int32 {
 
 type CreateMaterialOut struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	MaterialUuid  string                 `protobuf:"bytes,1,opt,name=material_uuid,json=materialUuid,proto3" json:"material_uuid,omitempty"` // UUID созданного материала
+	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"` // UUID созданного материала
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -142,9 +142,9 @@ func (*CreateMaterialOut) Descriptor() ([]byte, []int) {
 	return file_api_materials_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *CreateMaterialOut) GetMaterialUuid() string {
+func (x *CreateMaterialOut) GetUuid() string {
 	if x != nil {
-		return x.MaterialUuid
+		return x.Uuid
 	}
 	return ""
 }
@@ -161,9 +161,9 @@ const file_api_materials_proto_rawDesc = "" +
 	"\x0fcover_image_url\x18\x03 \x01(\tR\rcoverImageUrl\x12 \n" +
 	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x18\n" +
 	"\acontent\x18\x05 \x01(\tR\acontent\x12*\n" +
-	"\x11read_time_minutes\x18\x06 \x01(\x05R\x0freadTimeMinutes\"8\n" +
-	"\x11CreateMaterialOut\x12#\n" +
-	"\rmaterial_uuid\x18\x01 \x01(\tR\fmaterialUuid2M\n" +
+	"\x11read_time_minutes\x18\x06 \x01(\x05R\x0freadTimeMinutes\"'\n" +
+	"\x11CreateMaterialOut\x12\x12\n" +
+	"\x04uuid\x18\x01 \x01(\tR\x04uuid2M\n" +
 	"\x10MaterialsService\x129\n" +
 	"\x0eCreateMaterial\x12\x11.CreateMaterialIn\x1a\x12.CreateMaterialOut\"\x00B\x0fZ\rpkg/materialsb\x06proto3"
 

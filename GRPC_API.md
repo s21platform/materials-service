@@ -48,7 +48,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| material_uuid | [string](#string) |  | UUID созданного материала |
+| uuid | [string](#string) |  | UUID созданного материала |
 
 
 

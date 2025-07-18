@@ -16,5 +16,5 @@ message CreateMaterialIn {
 }
 
 message CreateMaterialOut {
-  string material_uuid = 1;     // UUID созданного материала
+  string uuid = 1;     // UUID созданного материала
 }
