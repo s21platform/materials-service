@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -15,7 +14,7 @@ import (
 )
 
 type DBRepo interface {
-	CreateMaterial(ctx context.Context, uuid string, in *materials.CreateMaterialIn) (*materials.CreateMaterialOut, error)
+	CreateMaterial(ctx context.Context, in *materials.CreateMaterialIn) (*materials.CreateMaterialOut, error)
 }
 
 type Service struct {
@@ -55,9 +54,9 @@ func (s *Service) CreateMaterial(ctx context.Context, in *materials.CreateMateri
 		return nil, status.Error(codes.InvalidArgument, "title is required")
 	}
 
-	materialUUID := uuid.New().String()
+	//materialUUID := uuid.New().String()
 
-	out, err := s.repository.CreateMaterial(ctx, materialUUID, in)
+	out, err := s.repository.CreateMaterial(ctx, in)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to create material: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to create material: %v", err)
