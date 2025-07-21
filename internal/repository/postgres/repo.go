@@ -3,12 +3,14 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"log"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // Импорт драйвера PostgreSQL
+
 	"github.com/s21platform/materials-service/internal/config"
 	"github.com/s21platform/materials-service/pkg/materials"
-	"log"
 )
 
 type Repository struct {
@@ -33,26 +35,25 @@ func (r *Repository) Close() {
 	_ = r.connection.Close()
 }
 
-func (r *Repository) CreateMaterial(ctx context.Context, in *materials.CreateMaterialIn) (*materials.CreateMaterialOut, error) {
+func (r *Repository) CreateMaterial(ctx context.Context, ownerUUID string, in *materials.CreateMaterialIn) (string, error) {
 	var uuid string
 
 	query, args, err := sq.
 		Insert("materials").
 		Columns("owner_uuid", "title", "cover_image_url", "description", "content", "read_time_minutes").
-		Values(in.OwnerUuid, in.Title, in.CoverImageUrl, in.Description, in.Content, in.ReadTimeMinutes).
+		Values(ownerUUID, in.Title, in.CoverImageUrl, in.Description, in.Content, in.ReadTimeMinutes).
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING uuid").
 		ToSql()
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to build query: %w", err)
+		return "", fmt.Errorf("failed to build SQL query: %w", err)
 	}
 
 	err = r.connection.GetContext(ctx, &uuid, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to insert material: %w", err)
+		return "", fmt.Errorf("failed to execute query: %w", err)
 	}
 
-	return &materials.CreateMaterialOut{
-		Uuid: uuid,
-	}, nil
+	return uuid, nil
 }

@@ -2,11 +2,13 @@ package infra
 
 import (
 	"context"
-	"github.com/s21platform/materials-service/internal/config"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+
+	"github.com/s21platform/materials-service/internal/config"
 )
 
 func AuthInterceptor(

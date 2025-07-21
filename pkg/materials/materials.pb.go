@@ -23,12 +23,11 @@ const (
 
 type CreateMaterialIn struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
-	OwnerUuid       string                 `protobuf:"bytes,1,opt,name=owner_uuid,json=ownerUuid,proto3" json:"owner_uuid,omitempty"`                      // UUID владельца материала
-	Title           string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`                                               // Заголовок материала
-	CoverImageUrl   string                 `protobuf:"bytes,3,opt,name=cover_image_url,json=coverImageUrl,proto3" json:"cover_image_url,omitempty"`        // URL обложки материала
-	Description     string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`                                   // Описание материала
-	Content         string                 `protobuf:"bytes,5,opt,name=content,proto3" json:"content,omitempty"`                                           // Содержимое материала
-	ReadTimeMinutes int32                  `protobuf:"varint,6,opt,name=read_time_minutes,json=readTimeMinutes,proto3" json:"read_time_minutes,omitempty"` // Время чтения в минутах
+	Title           string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`                                               // Заголовок материала
+	CoverImageUrl   string                 `protobuf:"bytes,2,opt,name=cover_image_url,json=coverImageUrl,proto3" json:"cover_image_url,omitempty"`        // URL обложки материала
+	Description     string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`                                   // Описание материала
+	Content         string                 `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`                                           // Содержимое материала
+	ReadTimeMinutes int32                  `protobuf:"varint,5,opt,name=read_time_minutes,json=readTimeMinutes,proto3" json:"read_time_minutes,omitempty"` // Время чтения в минутах
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -61,13 +60,6 @@ func (x *CreateMaterialIn) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CreateMaterialIn.ProtoReflect.Descriptor instead.
 func (*CreateMaterialIn) Descriptor() ([]byte, []int) {
 	return file_api_materials_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *CreateMaterialIn) GetOwnerUuid() string {
-	if x != nil {
-		return x.OwnerUuid
-	}
-	return ""
 }
 
 func (x *CreateMaterialIn) GetTitle() string {
@@ -153,15 +145,13 @@ var File_api_materials_proto protoreflect.FileDescriptor
 
 const file_api_materials_proto_rawDesc = "" +
 	"\n" +
-	"\x13api/materials.proto\"\xd7\x01\n" +
-	"\x10CreateMaterialIn\x12\x1d\n" +
-	"\n" +
-	"owner_uuid\x18\x01 \x01(\tR\townerUuid\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title\x12&\n" +
-	"\x0fcover_image_url\x18\x03 \x01(\tR\rcoverImageUrl\x12 \n" +
-	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x18\n" +
-	"\acontent\x18\x05 \x01(\tR\acontent\x12*\n" +
-	"\x11read_time_minutes\x18\x06 \x01(\x05R\x0freadTimeMinutes\"'\n" +
+	"\x13api/materials.proto\"\xb8\x01\n" +
+	"\x10CreateMaterialIn\x12\x14\n" +
+	"\x05title\x18\x01 \x01(\tR\x05title\x12&\n" +
+	"\x0fcover_image_url\x18\x02 \x01(\tR\rcoverImageUrl\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x18\n" +
+	"\acontent\x18\x04 \x01(\tR\acontent\x12*\n" +
+	"\x11read_time_minutes\x18\x05 \x01(\x05R\x0freadTimeMinutes\"'\n" +
 	"\x11CreateMaterialOut\x12\x12\n" +
 	"\x04uuid\x18\x01 \x01(\tR\x04uuid2M\n" +
 	"\x10MaterialsService\x129\n" +

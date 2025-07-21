@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net"
 
 	"google.golang.org/grpc"
@@ -24,23 +23,21 @@ func main() {
 	defer dbRepo.Close()
 
 	materialsService := service.New(dbRepo)
-	Server := grpc.NewServer(
+	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			infra.AuthInterceptor,
 			infra.Logger(logger),
 		),
 	)
 
-	materials.RegisterMaterialsServiceServer(Server, materialsService)
+	materials.RegisterMaterialsServiceServer(grpcServer, materialsService)
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Service.Port))
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to start TCP listener: %v", err))
-		log.Fatal("failed to start TCP listener: ", err)
 	}
 
-	if err = Server.Serve(listener); err != nil {
+	if err = grpcServer.Serve(listener); err != nil {
 		logger.Error(fmt.Sprintf("failed to start gRPC listener: %v", err))
-		log.Fatal("failed to start gRPC listener: ", err)
 	}
 }

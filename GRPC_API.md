@@ -28,7 +28,6 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| owner_uuid | [string](#string) |  | UUID владельца материала |
 | title | [string](#string) |  | Заголовок материала |
 | cover_image_url | [string](#string) |  | URL обложки материала |
 | description | [string](#string) |  | Описание материала |
