@@ -9,6 +9,7 @@ package materials
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -74,6 +75,13 @@ type GetMaterialOut struct {
 	Description     string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`                                   // Описание материала
 	Content         string                 `protobuf:"bytes,6,opt,name=content,proto3" json:"content,omitempty"`                                           // Содержимое материала
 	ReadTimeMinutes int32                  `protobuf:"varint,7,opt,name=read_time_minutes,json=readTimeMinutes,proto3" json:"read_time_minutes,omitempty"` // Время чтения в минутах
+	Status          string                 `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`                                             // Статус материала
+	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`                      // Время создания
+	EditedAt        *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=edited_at,json=editedAt,proto3" json:"edited_at,omitempty"`                        // Время последнего редактирования
+	PublishedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"`               // Время публикации
+	ArchivedAt      *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=archived_at,json=archivedAt,proto3" json:"archived_at,omitempty"`                  // Время архивации
+	DeletedAt       *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`                     // Время удаления
+	LikesCount      int32                  `protobuf:"varint,14,opt,name=likes_count,json=likesCount,proto3" json:"likes_count,omitempty"`                 // Количество лайков
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -157,13 +165,62 @@ func (x *GetMaterialOut) GetReadTimeMinutes() int32 {
 	return 0
 }
 
+func (x *GetMaterialOut) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *GetMaterialOut) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *GetMaterialOut) GetEditedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.EditedAt
+	}
+	return nil
+}
+
+func (x *GetMaterialOut) GetPublishedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.PublishedAt
+	}
+	return nil
+}
+
+func (x *GetMaterialOut) GetArchivedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ArchivedAt
+	}
+	return nil
+}
+
+func (x *GetMaterialOut) GetDeletedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.DeletedAt
+	}
+	return nil
+}
+
+func (x *GetMaterialOut) GetLikesCount() int32 {
+	if x != nil {
+		return x.LikesCount
+	}
+	return 0
+}
+
 var File_api_materials_proto protoreflect.FileDescriptor
 
 const file_api_materials_proto_rawDesc = "" +
 	"\n" +
-	"\x13api/materials.proto\"#\n" +
+	"\x13api/materials.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"#\n" +
 	"\rGetMaterialIn\x12\x12\n" +
-	"\x04uuid\x18\x01 \x01(\tR\x04uuid\"\xe9\x01\n" +
+	"\x04uuid\x18\x01 \x01(\tR\x04uuid\"\xcd\x04\n" +
 	"\x0eGetMaterialOut\x12\x12\n" +
 	"\x04uuid\x18\x01 \x01(\tR\x04uuid\x12\x1d\n" +
 	"\n" +
@@ -172,7 +229,19 @@ const file_api_materials_proto_rawDesc = "" +
 	"\x0fcover_image_url\x18\x04 \x01(\tR\rcoverImageUrl\x12 \n" +
 	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x18\n" +
 	"\acontent\x18\x06 \x01(\tR\acontent\x12*\n" +
-	"\x11read_time_minutes\x18\a \x01(\x05R\x0freadTimeMinutes2D\n" +
+	"\x11read_time_minutes\x18\a \x01(\x05R\x0freadTimeMinutes\x12\x16\n" +
+	"\x06status\x18\b \x01(\tR\x06status\x129\n" +
+	"\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x127\n" +
+	"\tedited_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\beditedAt\x12=\n" +
+	"\fpublished_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\x12;\n" +
+	"\varchived_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"archivedAt\x129\n" +
+	"\n" +
+	"deleted_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\x12\x1f\n" +
+	"\vlikes_count\x18\x0e \x01(\x05R\n" +
+	"likesCount2D\n" +
 	"\x10MaterialsService\x120\n" +
 	"\vGetMaterial\x12\x0e.GetMaterialIn\x1a\x0f.GetMaterialOut\"\x00B\x0fZ\rpkg/materialsb\x06proto3"
 
@@ -190,17 +259,23 @@ func file_api_materials_proto_rawDescGZIP() []byte {
 
 var file_api_materials_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_api_materials_proto_goTypes = []any{
-	(*GetMaterialIn)(nil),  // 0: GetMaterialIn
-	(*GetMaterialOut)(nil), // 1: GetMaterialOut
+	(*GetMaterialIn)(nil),         // 0: GetMaterialIn
+	(*GetMaterialOut)(nil),        // 1: GetMaterialOut
+	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
 }
 var file_api_materials_proto_depIdxs = []int32{
-	0, // 0: MaterialsService.GetMaterial:input_type -> GetMaterialIn
-	1, // 1: MaterialsService.GetMaterial:output_type -> GetMaterialOut
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	2, // 0: GetMaterialOut.created_at:type_name -> google.protobuf.Timestamp
+	2, // 1: GetMaterialOut.edited_at:type_name -> google.protobuf.Timestamp
+	2, // 2: GetMaterialOut.published_at:type_name -> google.protobuf.Timestamp
+	2, // 3: GetMaterialOut.archived_at:type_name -> google.protobuf.Timestamp
+	2, // 4: GetMaterialOut.deleted_at:type_name -> google.protobuf.Timestamp
+	0, // 5: MaterialsService.GetMaterial:input_type -> GetMaterialIn
+	1, // 6: MaterialsService.GetMaterial:output_type -> GetMaterialOut
+	6, // [6:7] is the sub-list for method output_type
+	5, // [5:6] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_api_materials_proto_init() }

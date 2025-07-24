@@ -3,15 +3,16 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // Импорт драйвера PostgreSQL
 
 	"github.com/s21platform/materials-service/internal/config"
-	"github.com/s21platform/materials-service/pkg/materials"
+	"github.com/s21platform/materials-service/internal/model"
 )
 
 type MaterialRepository struct {
@@ -36,14 +37,24 @@ func (r *MaterialRepository) Close() {
 	_ = r.connection.Close()
 }
 
-func (r *MaterialRepository) GetMaterial(ctx context.Context, Uuid string) (*materials.GetMaterialOut, error) {
-	query, args, err := sq.Select("uuid",
-		"owner_uuid AS OwnerUuid",
+func (r *MaterialRepository) GetMaterial(ctx context.Context, Uuid string) (*model.Material, error) {
+	var material model.Material
+
+	query, args, err := sq.Select(
+		"uuid",
+		"owner_uuid",
 		"title",
-		"cover_image_url AS CoverImageUrl",
+		"cover_image_url",
 		"description",
 		"content",
-		"read_time_minutes AS ReadTimeMinutes",
+		"read_time_minutes",
+		"status",
+		"created_at",
+		"edited_at",
+		"published_at",
+		"archived_at",
+		"deleted_at",
+		"likes_count",
 	).
 		From("materials").
 		Where(sq.Eq{"uuid": Uuid}).
@@ -53,14 +64,13 @@ func (r *MaterialRepository) GetMaterial(ctx context.Context, Uuid string) (*mat
 		return nil, fmt.Errorf("failed to build sql query: %v", err)
 	}
 
-	var materialResponse materials.GetMaterialOut
-	err = r.connection.GetContext(ctx, &materialResponse, query, args...)
+	err = r.connection.GetContext(ctx, &material, query, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("material not found: %v", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.New("material doesn't exist")
 		}
 		return nil, fmt.Errorf("failed to get material: %v", err)
 	}
 
-	return &materialResponse, nil
+	return &material, nil
 }

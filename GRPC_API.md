@@ -50,6 +50,13 @@
 | description | [string](#string) |  | Описание материала |
 | content | [string](#string) |  | Содержимое материала |
 | read_time_minutes | [int32](#int32) |  | Время чтения в минутах |
+| status | [string](#string) |  | Статус материала |
+| created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время создания |
+| edited_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время последнего редактирования |
+| published_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время публикации |
+| archived_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время архивации |
+| deleted_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время удаления |
+| likes_count | [int32](#int32) |  | Количество лайков |
 
 
 

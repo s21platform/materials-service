@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+
 option go_package = "pkg/materials";
 
 service MaterialsService {
@@ -12,10 +14,17 @@ message GetMaterialIn {
 
 message GetMaterialOut {
   string uuid = 1;
-  string owner_uuid = 2;        // UUID владельца материала
-  string title = 3;             // Заголовок материала
-  string cover_image_url = 4;   // URL обложки материала
-  string description = 5;       // Описание материала
-  string content = 6;           // Содержимое материала
-  int32 read_time_minutes = 7;  // Время чтения в минутах
+  string owner_uuid = 2;                       // UUID владельца материала
+  string title = 3;                            // Заголовок материала
+  string cover_image_url = 4;                  // URL обложки материала
+  string description = 5;                      // Описание материала
+  string content = 6;                          // Содержимое материала
+  int32 read_time_minutes = 7;                 // Время чтения в минутах
+  string status = 8;                           // Статус материала
+  google.protobuf.Timestamp created_at = 9;    // Время создания
+  google.protobuf.Timestamp edited_at = 10;    // Время последнего редактирования
+  google.protobuf.Timestamp published_at = 11; // Время публикации
+  google.protobuf.Timestamp archived_at = 12;  // Время архивации
+  google.protobuf.Timestamp deleted_at = 13;   // Время удаления
+  int32 likes_count = 14;                      // Количество лайков
 }
