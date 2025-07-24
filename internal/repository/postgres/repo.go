@@ -10,7 +10,7 @@ import (
 	_ "github.com/lib/pq" // Импорт драйвера PostgreSQL
 
 	"github.com/s21platform/materials-service/internal/config"
-	"github.com/s21platform/materials-service/pkg/materials"
+	"github.com/s21platform/materials-service/model"
 )
 
 type Repository struct {
@@ -23,7 +23,7 @@ func New(cfg *config.Config) *Repository {
 
 	conn, err := sqlx.Connect("postgres", conStr)
 	if err != nil {
-		log.Fatal("error connect: ", err)
+		log.Fatal("failed to connect: ", err)
 	}
 
 	return &Repository{
@@ -35,13 +35,13 @@ func (r *Repository) Close() {
 	_ = r.connection.Close()
 }
 
-func (r *Repository) CreateMaterial(ctx context.Context, ownerUUID string, in *materials.CreateMaterialIn) (string, error) {
+func (r *Repository) CreateMaterial(ctx context.Context, ownerUUID string, material *model.CreateMaterial) (string, error) {
 	var uuid string
 
 	query, args, err := sq.
 		Insert("materials").
 		Columns("owner_uuid", "title", "cover_image_url", "description", "content", "read_time_minutes").
-		Values(ownerUUID, in.Title, in.CoverImageUrl, in.Description, in.Content, in.ReadTimeMinutes).
+		Values(ownerUUID, material.Title, material.CoverImageURL, material.Description, material.Content, material.ReadTimeMinutes).
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING uuid").
 		ToSql()

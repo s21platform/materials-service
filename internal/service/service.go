@@ -11,6 +11,7 @@ import (
 	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/materials-service/internal/config"
+	"github.com/s21platform/materials-service/model"
 	"github.com/s21platform/materials-service/pkg/materials"
 )
 
@@ -34,13 +35,14 @@ func (s *Service) CreateMaterial(ctx context.Context, in *materials.CreateMateri
 		return nil, status.Error(codes.InvalidArgument, "title is required")
 	}
 
-	uuid, ok := ctx.Value(config.KeyUUID).(string)
-	if !ok || uuid == "" {
-		logger.Error("uuid is required in context")
+	ownerUUID, ok := ctx.Value(config.KeyUUID).(string)
+	if !ok || ownerUUID == "" {
+		logger.Error("uuid is required")
 		return nil, status.Error(codes.Unauthenticated, "user uuid is required")
 	}
-
-	materialUUID, err := s.repository.CreateMaterial(ctx, uuid, in)
+	newMaterialData := &model.CreateMaterial{}
+	newMaterialData.ToDTO(in)
+	materialUUID, err := s.repository.CreateMaterial(ctx, ownerUUID, newMaterialData)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to create material: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to create material: %v", err)
