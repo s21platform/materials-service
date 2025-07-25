@@ -38,7 +38,7 @@ func (s *Service) CreateMaterial(ctx context.Context, in *materials.CreateMateri
 	ownerUUID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok || ownerUUID == "" {
 		logger.Error("uuid is required")
-		return nil, status.Error(codes.Unauthenticated, "user uuid is required")
+		return nil, status.Error(codes.Unauthenticated, "uuid is required")
 	}
 	newMaterialData := &model.CreateMaterial{}
 	newMaterialData.ToDTO(in)
