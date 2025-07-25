@@ -1,6 +1,6 @@
 package model
 
-import material_api "github.com/s21platform/materials-service/pkg/materials"
+import "github.com/s21platform/materials-service/pkg/materials"
 
 type CreateMaterial struct {
 	Title           string `db:"title"`
@@ -10,10 +10,10 @@ type CreateMaterial struct {
 	ReadTimeMinutes int32  `db:"read_time_minutes"`
 }
 
-func (e *CreateMaterial) ToDTO(in *material_api.CreateMaterialIn) {
+func (e *CreateMaterial) ToDTO(in *materials.CreateMaterialIn) {
 	e.Title = in.Title
 	e.CoverImageURL = in.CoverImageUrl
 	e.Description = in.Description
 	e.Content = in.Content
-	e.ReadTimeMinutes = int32(in.ReadTimeMinutes)
+	e.ReadTimeMinutes = in.ReadTimeMinutes
 }
