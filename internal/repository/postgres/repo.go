@@ -25,7 +25,7 @@ func New(cfg *config.Config) *MaterialRepository {
 
 	conn, err := sqlx.Connect("postgres", conStr)
 	if err != nil {
-		log.Fatal("error connect: ", err)
+		log.Fatal("failed to connect: ", err)
 	}
 
 	return &MaterialRepository{
@@ -37,7 +37,7 @@ func (r *MaterialRepository) Close() {
 	_ = r.connection.Close()
 }
 
-func (r *MaterialRepository) GetMaterial(ctx context.Context, Uuid string) (*model.Material, error) {
+func (r *MaterialRepository) GetMaterial(ctx context.Context, uuid string) (*model.Material, error) {
 	var material model.Material
 
 	query, args, err := sq.Select(
@@ -57,7 +57,7 @@ func (r *MaterialRepository) GetMaterial(ctx context.Context, Uuid string) (*mod
 		"likes_count",
 	).
 		From("materials").
-		Where(sq.Eq{"uuid": Uuid}).
+		Where(sq.Eq{"uuid": uuid}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {

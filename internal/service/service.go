@@ -11,7 +11,6 @@ import (
 
 	"github.com/s21platform/materials-service/internal/config"
 	"github.com/s21platform/materials-service/internal/model"
-	_ "github.com/s21platform/materials-service/internal/repository/postgres"
 	"github.com/s21platform/materials-service/pkg/materials"
 )
 

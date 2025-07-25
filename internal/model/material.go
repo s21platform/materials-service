@@ -45,9 +45,6 @@ func FromDTO(material *Material) *materials.GetMaterialOut {
 	if material.ReadTimeMinutes != nil {
 		protoMaterial.ReadTimeMinutes = *material.ReadTimeMinutes
 	}
-	if !material.CreatedAt.IsZero() {
-		protoMaterial.CreatedAt = timestamppb.New(material.CreatedAt)
-	}
 	if material.EditedAt != nil && !material.EditedAt.IsZero() {
 		protoMaterial.EditedAt = timestamppb.New(*material.EditedAt)
 	}
