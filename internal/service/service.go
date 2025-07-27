@@ -52,3 +52,16 @@ func (s *Service) CreateMaterial(ctx context.Context, in *materials.CreateMateri
 		Uuid: materialUUID,
 	}, nil
 }
+
+func (s *Service) GetMaterial(ctx context.Context, in *materials.GetMaterialIn) (*materials.GetMaterialOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("GetMaterial")
+
+	material, err := s.repository.GetMaterial(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get material: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get material: %v", err)
+	}
+
+	return model.FromDTO(material), nil
+}
