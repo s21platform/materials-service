@@ -11,7 +11,7 @@ import (
 	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/materials-service/internal/config"
-	"github.com/s21platform/materials-service/model"
+	"github.com/s21platform/materials-service/internal/model"
 	"github.com/s21platform/materials-service/pkg/materials"
 )
 

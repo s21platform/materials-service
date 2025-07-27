@@ -10,7 +10,7 @@ import (
 	_ "github.com/lib/pq" // Импорт драйвера PostgreSQL
 
 	"github.com/s21platform/materials-service/internal/config"
-	"github.com/s21platform/materials-service/model"
+	"github.com/s21platform/materials-service/internal/model"
 )
 
 type Repository struct {
