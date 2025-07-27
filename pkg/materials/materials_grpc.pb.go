@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	MaterialsService_CreateMaterial_FullMethodName = "/MaterialsService/CreateMaterial"
+	MaterialsService_GetMaterial_FullMethodName    = "/MaterialsService/GetMaterial"
 )
 
 // MaterialsServiceClient is the client API for MaterialsService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MaterialsServiceClient interface {
 	CreateMaterial(ctx context.Context, in *CreateMaterialIn, opts ...grpc.CallOption) (*CreateMaterialOut, error)
+	GetMaterial(ctx context.Context, in *GetMaterialIn, opts ...grpc.CallOption) (*GetMaterialOut, error)
 }
 
 type materialsServiceClient struct {
@@ -47,11 +49,22 @@ func (c *materialsServiceClient) CreateMaterial(ctx context.Context, in *CreateM
 	return out, nil
 }
 
+func (c *materialsServiceClient) GetMaterial(ctx context.Context, in *GetMaterialIn, opts ...grpc.CallOption) (*GetMaterialOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMaterialOut)
+	err := c.cc.Invoke(ctx, MaterialsService_GetMaterial_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MaterialsServiceServer is the server API for MaterialsService service.
 // All implementations must embed UnimplementedMaterialsServiceServer
 // for forward compatibility.
 type MaterialsServiceServer interface {
 	CreateMaterial(context.Context, *CreateMaterialIn) (*CreateMaterialOut, error)
+	GetMaterial(context.Context, *GetMaterialIn) (*GetMaterialOut, error)
 	mustEmbedUnimplementedMaterialsServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedMaterialsServiceServer struct{}
 
 func (UnimplementedMaterialsServiceServer) CreateMaterial(context.Context, *CreateMaterialIn) (*CreateMaterialOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateMaterial not implemented")
+}
+func (UnimplementedMaterialsServiceServer) GetMaterial(context.Context, *GetMaterialIn) (*GetMaterialOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMaterial not implemented")
 }
 func (UnimplementedMaterialsServiceServer) mustEmbedUnimplementedMaterialsServiceServer() {}
 func (UnimplementedMaterialsServiceServer) testEmbeddedByValue()                          {}
@@ -104,6 +120,24 @@ func _MaterialsService_CreateMaterial_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MaterialsService_GetMaterial_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMaterialIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MaterialsServiceServer).GetMaterial(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MaterialsService_GetMaterial_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MaterialsServiceServer).GetMaterial(ctx, req.(*GetMaterialIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MaterialsService_ServiceDesc is the grpc.ServiceDesc for MaterialsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var MaterialsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateMaterial",
 			Handler:    _MaterialsService_CreateMaterial_Handler,
+		},
+		{
+			MethodName: "GetMaterial",
+			Handler:    _MaterialsService_GetMaterial_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
