@@ -22,6 +22,126 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type CreateMaterialIn struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Title           string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`                                               // Заголовок материала
+	CoverImageUrl   string                 `protobuf:"bytes,2,opt,name=cover_image_url,json=coverImageUrl,proto3" json:"cover_image_url,omitempty"`        // URL обложки материала
+	Description     string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`                                   // Описание материала
+	Content         string                 `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`                                           // Содержимое материала
+	ReadTimeMinutes int32                  `protobuf:"varint,5,opt,name=read_time_minutes,json=readTimeMinutes,proto3" json:"read_time_minutes,omitempty"` // Время чтения в минутах
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *CreateMaterialIn) Reset() {
+	*x = CreateMaterialIn{}
+	mi := &file_api_materials_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateMaterialIn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateMaterialIn) ProtoMessage() {}
+
+func (x *CreateMaterialIn) ProtoReflect() protoreflect.Message {
+	mi := &file_api_materials_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateMaterialIn.ProtoReflect.Descriptor instead.
+func (*CreateMaterialIn) Descriptor() ([]byte, []int) {
+	return file_api_materials_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *CreateMaterialIn) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *CreateMaterialIn) GetCoverImageUrl() string {
+	if x != nil {
+		return x.CoverImageUrl
+	}
+	return ""
+}
+
+func (x *CreateMaterialIn) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *CreateMaterialIn) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *CreateMaterialIn) GetReadTimeMinutes() int32 {
+	if x != nil {
+		return x.ReadTimeMinutes
+	}
+	return 0
+}
+
+type CreateMaterialOut struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"` // UUID созданного материала
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateMaterialOut) Reset() {
+	*x = CreateMaterialOut{}
+	mi := &file_api_materials_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateMaterialOut) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateMaterialOut) ProtoMessage() {}
+
+func (x *CreateMaterialOut) ProtoReflect() protoreflect.Message {
+	mi := &file_api_materials_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateMaterialOut.ProtoReflect.Descriptor instead.
+func (*CreateMaterialOut) Descriptor() ([]byte, []int) {
+	return file_api_materials_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *CreateMaterialOut) GetUuid() string {
+	if x != nil {
+		return x.Uuid
+	}
+	return ""
+}
+
 type GetMaterialIn struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"` // UUID материала
@@ -31,7 +151,7 @@ type GetMaterialIn struct {
 
 func (x *GetMaterialIn) Reset() {
 	*x = GetMaterialIn{}
-	mi := &file_api_materials_proto_msgTypes[0]
+	mi := &file_api_materials_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -43,7 +163,7 @@ func (x *GetMaterialIn) String() string {
 func (*GetMaterialIn) ProtoMessage() {}
 
 func (x *GetMaterialIn) ProtoReflect() protoreflect.Message {
-	mi := &file_api_materials_proto_msgTypes[0]
+	mi := &file_api_materials_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56,7 +176,7 @@ func (x *GetMaterialIn) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMaterialIn.ProtoReflect.Descriptor instead.
 func (*GetMaterialIn) Descriptor() ([]byte, []int) {
-	return file_api_materials_proto_rawDescGZIP(), []int{0}
+	return file_api_materials_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *GetMaterialIn) GetUuid() string {
@@ -88,7 +208,7 @@ type GetMaterialOut struct {
 
 func (x *GetMaterialOut) Reset() {
 	*x = GetMaterialOut{}
-	mi := &file_api_materials_proto_msgTypes[1]
+	mi := &file_api_materials_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -100,7 +220,7 @@ func (x *GetMaterialOut) String() string {
 func (*GetMaterialOut) ProtoMessage() {}
 
 func (x *GetMaterialOut) ProtoReflect() protoreflect.Message {
-	mi := &file_api_materials_proto_msgTypes[1]
+	mi := &file_api_materials_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -113,7 +233,7 @@ func (x *GetMaterialOut) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMaterialOut.ProtoReflect.Descriptor instead.
 func (*GetMaterialOut) Descriptor() ([]byte, []int) {
-	return file_api_materials_proto_rawDescGZIP(), []int{1}
+	return file_api_materials_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetMaterialOut) GetUuid() string {
@@ -218,7 +338,15 @@ var File_api_materials_proto protoreflect.FileDescriptor
 
 const file_api_materials_proto_rawDesc = "" +
 	"\n" +
-	"\x13api/materials.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"#\n" +
+	"\x13api/materials.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb8\x01\n" +
+	"\x10CreateMaterialIn\x12\x14\n" +
+	"\x05title\x18\x01 \x01(\tR\x05title\x12&\n" +
+	"\x0fcover_image_url\x18\x02 \x01(\tR\rcoverImageUrl\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x18\n" +
+	"\acontent\x18\x04 \x01(\tR\acontent\x12*\n" +
+	"\x11read_time_minutes\x18\x05 \x01(\x05R\x0freadTimeMinutes\"'\n" +
+	"\x11CreateMaterialOut\x12\x12\n" +
+	"\x04uuid\x18\x01 \x01(\tR\x04uuid\"#\n" +
 	"\rGetMaterialIn\x12\x12\n" +
 	"\x04uuid\x18\x01 \x01(\tR\x04uuid\"\xcd\x04\n" +
 	"\x0eGetMaterialOut\x12\x12\n" +
@@ -241,8 +369,9 @@ const file_api_materials_proto_rawDesc = "" +
 	"\n" +
 	"deleted_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\x12\x1f\n" +
 	"\vlikes_count\x18\x0e \x01(\x05R\n" +
-	"likesCount2D\n" +
-	"\x10MaterialsService\x120\n" +
+	"likesCount2\x7f\n" +
+	"\x10MaterialsService\x129\n" +
+	"\x0eCreateMaterial\x12\x11.CreateMaterialIn\x1a\x12.CreateMaterialOut\"\x00\x120\n" +
 	"\vGetMaterial\x12\x0e.GetMaterialIn\x1a\x0f.GetMaterialOut\"\x00B\x0fZ\rpkg/materialsb\x06proto3"
 
 var (
@@ -257,22 +386,26 @@ func file_api_materials_proto_rawDescGZIP() []byte {
 	return file_api_materials_proto_rawDescData
 }
 
-var file_api_materials_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_api_materials_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_api_materials_proto_goTypes = []any{
-	(*GetMaterialIn)(nil),         // 0: GetMaterialIn
-	(*GetMaterialOut)(nil),        // 1: GetMaterialOut
-	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
+	(*CreateMaterialIn)(nil),      // 0: CreateMaterialIn
+	(*CreateMaterialOut)(nil),     // 1: CreateMaterialOut
+	(*GetMaterialIn)(nil),         // 2: GetMaterialIn
+	(*GetMaterialOut)(nil),        // 3: GetMaterialOut
+	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
 }
 var file_api_materials_proto_depIdxs = []int32{
-	2, // 0: GetMaterialOut.created_at:type_name -> google.protobuf.Timestamp
-	2, // 1: GetMaterialOut.edited_at:type_name -> google.protobuf.Timestamp
-	2, // 2: GetMaterialOut.published_at:type_name -> google.protobuf.Timestamp
-	2, // 3: GetMaterialOut.archived_at:type_name -> google.protobuf.Timestamp
-	2, // 4: GetMaterialOut.deleted_at:type_name -> google.protobuf.Timestamp
-	0, // 5: MaterialsService.GetMaterial:input_type -> GetMaterialIn
-	1, // 6: MaterialsService.GetMaterial:output_type -> GetMaterialOut
-	6, // [6:7] is the sub-list for method output_type
-	5, // [5:6] is the sub-list for method input_type
+	4, // 0: GetMaterialOut.created_at:type_name -> google.protobuf.Timestamp
+	4, // 1: GetMaterialOut.edited_at:type_name -> google.protobuf.Timestamp
+	4, // 2: GetMaterialOut.published_at:type_name -> google.protobuf.Timestamp
+	4, // 3: GetMaterialOut.archived_at:type_name -> google.protobuf.Timestamp
+	4, // 4: GetMaterialOut.deleted_at:type_name -> google.protobuf.Timestamp
+	0, // 5: MaterialsService.CreateMaterial:input_type -> CreateMaterialIn
+	2, // 6: MaterialsService.GetMaterial:input_type -> GetMaterialIn
+	1, // 7: MaterialsService.CreateMaterial:output_type -> CreateMaterialOut
+	3, // 8: MaterialsService.GetMaterial:output_type -> GetMaterialOut
+	7, // [7:9] is the sub-list for method output_type
+	5, // [5:7] is the sub-list for method input_type
 	5, // [5:5] is the sub-list for extension type_name
 	5, // [5:5] is the sub-list for extension extendee
 	0, // [0:5] is the sub-list for field type_name
@@ -289,7 +422,7 @@ func file_api_materials_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_materials_proto_rawDesc), len(file_api_materials_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

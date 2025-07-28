@@ -5,7 +5,20 @@ import "google/protobuf/timestamp.proto";
 option go_package = "pkg/materials";
 
 service MaterialsService {
+  rpc CreateMaterial(CreateMaterialIn) returns (CreateMaterialOut){};
   rpc GetMaterial(GetMaterialIn) returns (GetMaterialOut) {};
+}
+
+message CreateMaterialIn {
+  string title = 1;             // Заголовок материала
+  string cover_image_url = 2;   // URL обложки материала
+  string description = 3;       // Описание материала
+  string content = 4;           // Содержимое материала
+  int32 read_time_minutes = 5;  // Время чтения в минутах
+}
+
+message CreateMaterialOut {
+  string uuid = 1;     // UUID созданного материала
 }
 
 message GetMaterialIn {

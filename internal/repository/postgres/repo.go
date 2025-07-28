@@ -15,11 +15,11 @@ import (
 	"github.com/s21platform/materials-service/internal/model"
 )
 
-type MaterialRepository struct {
+type Repository struct {
 	connection *sqlx.DB
 }
 
-func New(cfg *config.Config) *MaterialRepository {
+func New(cfg *config.Config) *Repository {
 	conStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
 		cfg.Postgres.User, cfg.Postgres.Password, cfg.Postgres.Database, cfg.Postgres.Host, cfg.Postgres.Port)
 
@@ -28,16 +28,39 @@ func New(cfg *config.Config) *MaterialRepository {
 		log.Fatal("failed to connect: ", err)
 	}
 
-	return &MaterialRepository{
+	return &Repository{
 		connection: conn,
 	}
 }
 
-func (r *MaterialRepository) Close() {
+func (r *Repository) Close() {
 	_ = r.connection.Close()
 }
 
-func (r *MaterialRepository) GetMaterial(ctx context.Context, uuid string) (*model.Material, error) {
+func (r *Repository) CreateMaterial(ctx context.Context, ownerUUID string, material *model.CreateMaterial) (string, error) {
+	var uuid string
+
+	query, args, err := sq.
+		Insert("materials").
+		Columns("owner_uuid", "title", "cover_image_url", "description", "content", "read_time_minutes").
+		Values(ownerUUID, material.Title, material.CoverImageURL, material.Description, material.Content, material.ReadTimeMinutes).
+		PlaceholderFormat(sq.Dollar).
+		Suffix("RETURNING uuid").
+		ToSql()
+
+	if err != nil {
+		return "", fmt.Errorf("failed to build SQL query: %w", err)
+	}
+
+	err = r.connection.GetContext(ctx, &uuid, query, args...)
+	if err != nil {
+		return "", fmt.Errorf("failed to execute query: %w", err)
+	}
+
+	return uuid, nil
+}
+
+func (r *Repository) GetMaterial(ctx context.Context, uuid string) (*model.Material, error) {
 	var material model.Material
 
 	query, args, err := sq.Select(

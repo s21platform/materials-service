@@ -4,6 +4,8 @@
 ## Table of Contents
 
 - [api/materials.proto](#api_materials-proto)
+    - [CreateMaterialIn](#-CreateMaterialIn)
+    - [CreateMaterialOut](#-CreateMaterialOut)
     - [GetMaterialIn](#-GetMaterialIn)
     - [GetMaterialOut](#-GetMaterialOut)
   
@@ -17,6 +19,40 @@
 <p align="right"><a href="#top">Top</a></p>
 
 ## api/materials.proto
+
+
+
+<a name="-CreateMaterialIn"></a>
+
+### CreateMaterialIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| title | [string](#string) |  | Заголовок материала |
+| cover_image_url | [string](#string) |  | URL обложки материала |
+| description | [string](#string) |  | Описание материала |
+| content | [string](#string) |  | Содержимое материала |
+| read_time_minutes | [int32](#int32) |  | Время чтения в минутах |
+
+
+
+
+
+
+<a name="-CreateMaterialOut"></a>
+
+### CreateMaterialOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  | UUID созданного материала |
+
+
+
 
 
 
@@ -76,6 +112,7 @@
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
+| CreateMaterial | [.CreateMaterialIn](#CreateMaterialIn) | [.CreateMaterialOut](#CreateMaterialOut) |  |
 | GetMaterial | [.GetMaterialIn](#GetMaterialIn) | [.GetMaterialOut](#GetMaterialOut) |  |
 
  
