@@ -97,3 +97,51 @@ func (r *Repository) GetMaterial(ctx context.Context, uuid string) (*model.Mater
 
 	return &material, nil
 }
+
+func (r *Repository) EditMaterial(ctx context.Context, material *model.EditMaterial) error {
+	query, args, err := sq.
+		Update("materials").
+		Set("title", material.Title).
+		Set("cover_image_url", material.CoverImageURL).
+		Set("description", material.Description).
+		Set("content", material.Content).
+		Set("read_time_minutes", material.ReadTimeMinutes).
+		Set("edited_at", material.EditedAt).
+		Where(sq.Eq{"uuid": material.UUID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build update query: %v", err)
+	}
+
+	_, err = r.connection.ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to update material: %v", err)
+	}
+
+	return nil
+}
+
+func (r *Repository) GetOwnerUUID(ctx context.Context, uuid string) (string, error) {
+	var ownerUUID string
+
+	query, args, err := sq.
+		Select("owner_uuid").
+		From("materials").
+		Where(sq.Eq{"uuid": uuid}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return "", fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	err = r.connection.GetContext(ctx, &ownerUUID, query, args...)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", errors.New("material doesn't exist")
+		}
+		return "", fmt.Errorf("failed to get owner uuid: %v", err)
+	}
+
+	return ownerUUID, nil
+}
