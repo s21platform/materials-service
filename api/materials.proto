@@ -1,12 +1,14 @@
 syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 option go_package = "pkg/materials";
 
 service MaterialsService {
   rpc CreateMaterial(CreateMaterialIn) returns (CreateMaterialOut){};
   rpc GetMaterial(GetMaterialIn) returns (GetMaterialOut) {};
+  rpc GetAllMaterials(google.protobuf.Empty) returns (GetAllMaterialsOut){};
 }
 
 message CreateMaterialIn {
@@ -40,4 +42,25 @@ message GetMaterialOut {
   google.protobuf.Timestamp archived_at = 12;  // Время архивации
   google.protobuf.Timestamp deleted_at = 13;   // Время удаления
   int32 likes_count = 14;                      // Количество лайков
+}
+
+message Material {
+  string uuid = 1;
+  string owner_uuid = 2;
+  string title = 3;
+  string cover_image_url = 4;
+  string description = 5;
+  string content = 6;
+  int32 read_time_minutes = 7;
+  string status = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp edited_at = 10;
+  google.protobuf.Timestamp published_at = 11;
+  google.protobuf.Timestamp archived_at = 12;
+  google.protobuf.Timestamp deleted_at = 13;
+  int32 likes_count = 14;
+}
+
+message GetAllMaterialsOut {
+  repeated Material material_list = 1;
 }
