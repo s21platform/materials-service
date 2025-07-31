@@ -98,8 +98,8 @@ func (r *Repository) GetMaterial(ctx context.Context, uuid string) (*model.Mater
 	return &material, nil
 }
 
-func (r *Repository) GetAllMaterials(ctx context.Context, uuid string) (*model.MaterialMetadataList, error) {
-	var materials []model.MaterialMetadata
+func (r *Repository) GetAllMaterials(ctx context.Context) (*model.MaterialMetadataList, error) {
+	var materials model.MaterialMetadataList
 
 	query, args, err := sq.
 		Select(
@@ -119,7 +119,6 @@ func (r *Repository) GetAllMaterials(ctx context.Context, uuid string) (*model.M
 			"likes_count",
 		).
 		From("materials").
-		Where(sq.Eq{"owner_uuid": uuid}).
 		OrderBy("created_at DESC").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -132,6 +131,6 @@ func (r *Repository) GetAllMaterials(ctx context.Context, uuid string) (*model.M
 		return nil, fmt.Errorf("failed to fetch materials: %w", err)
 	}
 
-	result := model.MaterialMetadataList(materials)
+	result := materials
 	return &result, nil
 }
