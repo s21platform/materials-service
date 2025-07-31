@@ -16,7 +16,7 @@ type Material struct {
 	Title           string     `db:"title"`
 	CoverImageURL   string     `db:"cover_image_url"`
 	Description     string     `db:"description"`
-	Content         string     `db:"content"`
+	Content         *string    `db:"content"`
 	ReadTimeMinutes int32      `db:"read_time_minutes"`
 	Status          string     `db:"status"`
 	CreatedAt       *time.Time `db:"created_at"`
@@ -34,12 +34,14 @@ func FromDTO(material *Material) *materials.GetMaterialOut {
 		Title:           material.Title,
 		CoverImageUrl:   material.CoverImageURL,
 		Description:     material.Description,
-		Content:         material.Content,
 		ReadTimeMinutes: material.ReadTimeMinutes,
 		Status:          material.Status,
 		LikesCount:      material.LikesCount,
 	}
 
+	if material.Content != nil {
+		protoMaterial.Content = *material.Content
+	}
 	if material.CreatedAt != nil && !material.CreatedAt.IsZero() {
 		protoMaterial.CreatedAt = timestamppb.New(*material.CreatedAt)
 	}
@@ -69,12 +71,14 @@ func (a *MaterialMetadataList) ListFromDTO() []*materials.Material {
 			Title:           material.Title,
 			CoverImageUrl:   material.CoverImageURL,
 			Description:     material.Description,
-			Content:         material.Content,
 			ReadTimeMinutes: material.ReadTimeMinutes,
 			Status:          material.Status,
 			LikesCount:      material.LikesCount,
 		}
 
+		if material.Content != nil {
+			m.Content = *material.Content
+		}
 		if material.CreatedAt != nil {
 			m.CreatedAt = timestamppb.New(*material.CreatedAt)
 		}

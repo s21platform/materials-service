@@ -131,6 +131,5 @@ func (r *Repository) GetAllMaterials(ctx context.Context) (*model.MaterialMetada
 		return nil, fmt.Errorf("failed to fetch materials: %w", err)
 	}
 
-	result := materials
-	return &result, nil
+	return &materials, nil
 }
