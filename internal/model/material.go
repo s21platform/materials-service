@@ -12,10 +12,10 @@ type Material struct {
 	UUID            string     `db:"uuid"`
 	OwnerUUID       string     `db:"owner_uuid"`
 	Title           string     `db:"title"`
-	CoverImageURL   *string    `db:"cover_image_url"`
-	Description     *string    `db:"description"`
+	CoverImageURL   string     `db:"cover_image_url"`
+	Description     string     `db:"description"`
 	Content         *string    `db:"content"`
-	ReadTimeMinutes *int32     `db:"read_time_minutes"`
+	ReadTimeMinutes int32      `db:"read_time_minutes"`
 	Status          string     `db:"status"`
 	CreatedAt       time.Time  `db:"created_at"`
 	EditedAt        *time.Time `db:"edited_at"`
@@ -25,25 +25,16 @@ type Material struct {
 	LikesCount      int32      `db:"likes_count"`
 }
 
-func FromDTO(material *Material) *materials.GetMaterialOut {
-	protoMaterial := &materials.GetMaterialOut{
+func FromDTO(material *Material) *materials.Material {
+	protoMaterial := &materials.Material{
 		Uuid:       material.UUID,
 		OwnerUuid:  material.OwnerUUID,
 		Title:      material.Title,
 		LikesCount: material.LikesCount,
 	}
 
-	if material.CoverImageURL != nil {
-		protoMaterial.CoverImageUrl = *material.CoverImageURL
-	}
-	if material.Description != nil {
-		protoMaterial.Description = *material.Description
-	}
 	if material.Content != nil {
 		protoMaterial.Content = *material.Content
-	}
-	if material.ReadTimeMinutes != nil {
-		protoMaterial.ReadTimeMinutes = *material.ReadTimeMinutes
 	}
 	if material.EditedAt != nil && !material.EditedAt.IsZero() {
 		protoMaterial.EditedAt = timestamppb.New(*material.EditedAt)

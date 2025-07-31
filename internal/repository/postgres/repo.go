@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
@@ -98,7 +99,9 @@ func (r *Repository) GetMaterial(ctx context.Context, uuid string) (*model.Mater
 	return &material, nil
 }
 
-func (r *Repository) EditMaterial(ctx context.Context, material *model.EditMaterial) error {
+func (r *Repository) EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error) {
+	var updatedMaterial model.Material
+	now := time.Now()
 	query, args, err := sq.
 		Update("materials").
 		Set("title", material.Title).
@@ -106,20 +109,21 @@ func (r *Repository) EditMaterial(ctx context.Context, material *model.EditMater
 		Set("description", material.Description).
 		Set("content", material.Content).
 		Set("read_time_minutes", material.ReadTimeMinutes).
-		Set("edited_at", material.EditedAt).
+		Set("edited_at", &now).
 		Where(sq.Eq{"uuid": material.UUID}).
 		PlaceholderFormat(sq.Dollar).
+		Suffix("RETURNING uuid, owner_uuid, title, cover_image_url, description, content, read_time_minutes, status, created_at, edited_at, published_at, archived_at, deleted_at, likes_count").
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("failed to build update query: %v", err)
+		return nil, fmt.Errorf("failed to build update query: %v", err)
 	}
 
-	_, err = r.connection.ExecContext(ctx, query, args...)
+	err = r.connection.GetContext(ctx, &updatedMaterial, query, args...)
 	if err != nil {
-		return fmt.Errorf("failed to update material: %v", err)
+		return nil, fmt.Errorf("failed to update material: %v", err)
 	}
 
-	return nil
+	return &updatedMaterial, nil
 }
 
 func (r *Repository) GetOwnerUUID(ctx context.Context, uuid string) (string, error) {

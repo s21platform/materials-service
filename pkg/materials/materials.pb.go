@@ -187,23 +187,10 @@ func (x *GetMaterialIn) GetUuid() string {
 }
 
 type GetMaterialOut struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Uuid            string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
-	OwnerUuid       string                 `protobuf:"bytes,2,opt,name=owner_uuid,json=ownerUuid,proto3" json:"owner_uuid,omitempty"`                      // UUID владельца материала
-	Title           string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`                                               // Заголовок материала
-	CoverImageUrl   string                 `protobuf:"bytes,4,opt,name=cover_image_url,json=coverImageUrl,proto3" json:"cover_image_url,omitempty"`        // URL обложки материала
-	Description     string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`                                   // Описание материала
-	Content         string                 `protobuf:"bytes,6,opt,name=content,proto3" json:"content,omitempty"`                                           // Содержимое материала
-	ReadTimeMinutes int32                  `protobuf:"varint,7,opt,name=read_time_minutes,json=readTimeMinutes,proto3" json:"read_time_minutes,omitempty"` // Время чтения в минутах
-	Status          string                 `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`                                             // Статус материала
-	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`                      // Время создания
-	EditedAt        *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=edited_at,json=editedAt,proto3" json:"edited_at,omitempty"`                        // Время последнего редактирования
-	PublishedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"`               // Время публикации
-	ArchivedAt      *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=archived_at,json=archivedAt,proto3" json:"archived_at,omitempty"`                  // Время архивации
-	DeletedAt       *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`                     // Время удаления
-	LikesCount      int32                  `protobuf:"varint,14,opt,name=likes_count,json=likesCount,proto3" json:"likes_count,omitempty"`                 // Количество лайков
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Material      *Material              `protobuf:"bytes,1,opt,name=material,proto3" json:"material,omitempty"` // Весь материал
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetMaterialOut) Reset() {
@@ -236,102 +223,11 @@ func (*GetMaterialOut) Descriptor() ([]byte, []int) {
 	return file_api_materials_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *GetMaterialOut) GetUuid() string {
+func (x *GetMaterialOut) GetMaterial() *Material {
 	if x != nil {
-		return x.Uuid
-	}
-	return ""
-}
-
-func (x *GetMaterialOut) GetOwnerUuid() string {
-	if x != nil {
-		return x.OwnerUuid
-	}
-	return ""
-}
-
-func (x *GetMaterialOut) GetTitle() string {
-	if x != nil {
-		return x.Title
-	}
-	return ""
-}
-
-func (x *GetMaterialOut) GetCoverImageUrl() string {
-	if x != nil {
-		return x.CoverImageUrl
-	}
-	return ""
-}
-
-func (x *GetMaterialOut) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *GetMaterialOut) GetContent() string {
-	if x != nil {
-		return x.Content
-	}
-	return ""
-}
-
-func (x *GetMaterialOut) GetReadTimeMinutes() int32 {
-	if x != nil {
-		return x.ReadTimeMinutes
-	}
-	return 0
-}
-
-func (x *GetMaterialOut) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
-func (x *GetMaterialOut) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
+		return x.Material
 	}
 	return nil
-}
-
-func (x *GetMaterialOut) GetEditedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.EditedAt
-	}
-	return nil
-}
-
-func (x *GetMaterialOut) GetPublishedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.PublishedAt
-	}
-	return nil
-}
-
-func (x *GetMaterialOut) GetArchivedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.ArchivedAt
-	}
-	return nil
-}
-
-func (x *GetMaterialOut) GetDeletedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.DeletedAt
-	}
-	return nil
-}
-
-func (x *GetMaterialOut) GetLikesCount() int32 {
-	if x != nil {
-		return x.LikesCount
-	}
-	return 0
 }
 
 type Material struct {
@@ -624,28 +520,9 @@ const file_api_materials_proto_rawDesc = "" +
 	"\x11CreateMaterialOut\x12\x12\n" +
 	"\x04uuid\x18\x01 \x01(\tR\x04uuid\"#\n" +
 	"\rGetMaterialIn\x12\x12\n" +
-	"\x04uuid\x18\x01 \x01(\tR\x04uuid\"\xcd\x04\n" +
-	"\x0eGetMaterialOut\x12\x12\n" +
-	"\x04uuid\x18\x01 \x01(\tR\x04uuid\x12\x1d\n" +
-	"\n" +
-	"owner_uuid\x18\x02 \x01(\tR\townerUuid\x12\x14\n" +
-	"\x05title\x18\x03 \x01(\tR\x05title\x12&\n" +
-	"\x0fcover_image_url\x18\x04 \x01(\tR\rcoverImageUrl\x12 \n" +
-	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x18\n" +
-	"\acontent\x18\x06 \x01(\tR\acontent\x12*\n" +
-	"\x11read_time_minutes\x18\a \x01(\x05R\x0freadTimeMinutes\x12\x16\n" +
-	"\x06status\x18\b \x01(\tR\x06status\x129\n" +
-	"\n" +
-	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x127\n" +
-	"\tedited_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\beditedAt\x12=\n" +
-	"\fpublished_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\x12;\n" +
-	"\varchived_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"archivedAt\x129\n" +
-	"\n" +
-	"deleted_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\x12\x1f\n" +
-	"\vlikes_count\x18\x0e \x01(\x05R\n" +
-	"likesCount\"\xc7\x04\n" +
+	"\x04uuid\x18\x01 \x01(\tR\x04uuid\"7\n" +
+	"\x0eGetMaterialOut\x12%\n" +
+	"\bmaterial\x18\x01 \x01(\v2\t.MaterialR\bmaterial\"\xc7\x04\n" +
 	"\bMaterial\x12\x12\n" +
 	"\x04uuid\x18\x01 \x01(\tR\x04uuid\x12\x1d\n" +
 	"\n" +
@@ -705,28 +582,24 @@ var file_api_materials_proto_goTypes = []any{
 	(*timestamppb.Timestamp)(nil), // 7: google.protobuf.Timestamp
 }
 var file_api_materials_proto_depIdxs = []int32{
-	7,  // 0: GetMaterialOut.created_at:type_name -> google.protobuf.Timestamp
-	7,  // 1: GetMaterialOut.edited_at:type_name -> google.protobuf.Timestamp
-	7,  // 2: GetMaterialOut.published_at:type_name -> google.protobuf.Timestamp
-	7,  // 3: GetMaterialOut.archived_at:type_name -> google.protobuf.Timestamp
-	7,  // 4: GetMaterialOut.deleted_at:type_name -> google.protobuf.Timestamp
-	7,  // 5: Material.created_at:type_name -> google.protobuf.Timestamp
-	7,  // 6: Material.edited_at:type_name -> google.protobuf.Timestamp
-	7,  // 7: Material.published_at:type_name -> google.protobuf.Timestamp
-	7,  // 8: Material.archived_at:type_name -> google.protobuf.Timestamp
-	7,  // 9: Material.deleted_at:type_name -> google.protobuf.Timestamp
-	4,  // 10: EditMaterialOut.material:type_name -> Material
-	0,  // 11: MaterialsService.CreateMaterial:input_type -> CreateMaterialIn
-	2,  // 12: MaterialsService.GetMaterial:input_type -> GetMaterialIn
-	5,  // 13: MaterialsService.EditMaterial:input_type -> EditMaterialIn
-	1,  // 14: MaterialsService.CreateMaterial:output_type -> CreateMaterialOut
-	3,  // 15: MaterialsService.GetMaterial:output_type -> GetMaterialOut
-	6,  // 16: MaterialsService.EditMaterial:output_type -> EditMaterialOut
-	14, // [14:17] is the sub-list for method output_type
-	11, // [11:14] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	4,  // 0: GetMaterialOut.material:type_name -> Material
+	7,  // 1: Material.created_at:type_name -> google.protobuf.Timestamp
+	7,  // 2: Material.edited_at:type_name -> google.protobuf.Timestamp
+	7,  // 3: Material.published_at:type_name -> google.protobuf.Timestamp
+	7,  // 4: Material.archived_at:type_name -> google.protobuf.Timestamp
+	7,  // 5: Material.deleted_at:type_name -> google.protobuf.Timestamp
+	4,  // 6: EditMaterialOut.material:type_name -> Material
+	0,  // 7: MaterialsService.CreateMaterial:input_type -> CreateMaterialIn
+	2,  // 8: MaterialsService.GetMaterial:input_type -> GetMaterialIn
+	5,  // 9: MaterialsService.EditMaterial:input_type -> EditMaterialIn
+	1,  // 10: MaterialsService.CreateMaterial:output_type -> CreateMaterialOut
+	3,  // 11: MaterialsService.GetMaterial:output_type -> GetMaterialOut
+	6,  // 12: MaterialsService.EditMaterial:output_type -> EditMaterialOut
+	10, // [10:13] is the sub-list for method output_type
+	7,  // [7:10] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_api_materials_proto_init() }
