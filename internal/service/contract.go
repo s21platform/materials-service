@@ -9,4 +9,6 @@ import (
 type DBRepo interface {
 	CreateMaterial(ctx context.Context, ownerUUID string, material *model.CreateMaterial) (string, error)
 	GetMaterial(ctx context.Context, uuid string) (*model.Material, error)
+	EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error)
+	GetMaterialOwnerUUID(ctx context.Context, uuid string) (string, error)
 }
