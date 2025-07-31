@@ -7,6 +7,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	logger_lib "github.com/s21platform/logger-lib"
 
@@ -64,4 +65,19 @@ func (s *Service) GetMaterial(ctx context.Context, in *materials.GetMaterialIn) 
 	}
 
 	return model.FromDTO(material), nil
+}
+
+func (s *Service) GetAllMaterials(ctx context.Context, _ *emptypb.Empty) (*materials.GetAllMaterialsOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("GetAllMaterials")
+
+	material, err := s.repository.GetAllMaterials(ctx)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get all materials: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get all materials: %v", err)
+	}
+
+	return &materials.GetAllMaterialsOut{
+		MaterialList: material.ListFromDTO(),
+	}, nil
 }

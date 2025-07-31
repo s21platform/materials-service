@@ -6,8 +6,10 @@
 - [api/materials.proto](#api_materials-proto)
     - [CreateMaterialIn](#-CreateMaterialIn)
     - [CreateMaterialOut](#-CreateMaterialOut)
+    - [GetAllMaterialsOut](#-GetAllMaterialsOut)
     - [GetMaterialIn](#-GetMaterialIn)
     - [GetMaterialOut](#-GetMaterialOut)
+    - [Material](#-Material)
   
     - [MaterialsService](#-MaterialsService)
   
@@ -56,6 +58,21 @@
 
 
 
+<a name="-GetAllMaterialsOut"></a>
+
+### GetAllMaterialsOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| material_list | [Material](#Material) | repeated |  |
+
+
+
+
+
+
 <a name="-GetMaterialIn"></a>
 
 ### GetMaterialIn
@@ -98,6 +115,34 @@
 
 
 
+
+<a name="-Material"></a>
+
+### Material
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+| owner_uuid | [string](#string) |  |  |
+| title | [string](#string) |  |  |
+| cover_image_url | [string](#string) |  |  |
+| description | [string](#string) |  |  |
+| content | [string](#string) |  |  |
+| read_time_minutes | [int32](#int32) |  |  |
+| status | [string](#string) |  |  |
+| created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
+| edited_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
+| published_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
+| archived_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
+| deleted_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
+| likes_count | [int32](#int32) |  |  |
+
+
+
+
+
  
 
  
@@ -114,6 +159,7 @@
 | ----------- | ------------ | ------------- | ------------|
 | CreateMaterial | [.CreateMaterialIn](#CreateMaterialIn) | [.CreateMaterialOut](#CreateMaterialOut) |  |
 | GetMaterial | [.GetMaterialIn](#GetMaterialIn) | [.GetMaterialOut](#GetMaterialOut) |  |
+| GetAllMaterials | [.google.protobuf.Empty](#google-protobuf-Empty) | [.GetAllMaterialsOut](#GetAllMaterialsOut) |  |
 
  
 
