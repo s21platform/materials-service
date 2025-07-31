@@ -83,7 +83,7 @@ func (s *Service) EditMaterial(ctx context.Context, in *materials.EditMaterialIn
 		return nil, status.Error(codes.Unauthenticated, "uuid is required")
 	}
 
-	materialOwnerUUID, err := s.repository.GetOwnerUUID(ctx, in.Uuid)
+	materialOwnerUUID, err := s.repository.GetMaterialOwnerUUID(ctx, in.Uuid)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to get owner uuid: %v", err)

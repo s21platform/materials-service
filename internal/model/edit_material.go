@@ -1,19 +1,14 @@
 package model
 
-import (
-	"time"
-
-	"github.com/s21platform/materials-service/pkg/materials"
-)
+import "github.com/s21platform/materials-service/pkg/materials"
 
 type EditMaterial struct {
-	UUID            string     `db:"uuid"`
-	Title           string     `db:"title"`
-	CoverImageURL   string     `db:"cover_image_url"`
-	Description     string     `db:"description"`
-	Content         *string    `db:"content"`
-	ReadTimeMinutes int32      `db:"read_time_minutes"`
-	EditedAt        *time.Time `db:"edited_at"`
+	UUID            string  `db:"uuid"`
+	Title           string  `db:"title"`
+	CoverImageURL   string  `db:"cover_image_url"`
+	Description     string  `db:"description"`
+	Content         *string `db:"content"`
+	ReadTimeMinutes int32   `db:"read_time_minutes"`
 }
 
 func (e *EditMaterial) ToDTO(in *materials.EditMaterialIn) {

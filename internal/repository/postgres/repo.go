@@ -109,7 +109,7 @@ func (r *Repository) EditMaterial(ctx context.Context, material *model.EditMater
 		Set("description", material.Description).
 		Set("content", material.Content).
 		Set("read_time_minutes", material.ReadTimeMinutes).
-		Set("edited_at", &now).
+		Set("edited_at", now).
 		Where(sq.Eq{"uuid": material.UUID}).
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING uuid, owner_uuid, title, cover_image_url, description, content, read_time_minutes, status, created_at, edited_at, published_at, archived_at, deleted_at, likes_count").
@@ -126,7 +126,7 @@ func (r *Repository) EditMaterial(ctx context.Context, material *model.EditMater
 	return &updatedMaterial, nil
 }
 
-func (r *Repository) GetOwnerUUID(ctx context.Context, uuid string) (string, error) {
+func (r *Repository) GetMaterialOwnerUUID(ctx context.Context, uuid string) (string, error) {
 	var ownerUUID string
 
 	query, args, err := sq.
