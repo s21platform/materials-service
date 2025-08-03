@@ -25,28 +25,25 @@ type Material struct {
 	LikesCount      int32      `db:"likes_count"`
 }
 
-func FromDTO(material *Material) *materials.Material {
+func (m *Material) FromDTO() *materials.Material {
 	protoMaterial := &materials.Material{
-		Uuid:       material.UUID,
-		OwnerUuid:  material.OwnerUUID,
-		Title:      material.Title,
-		LikesCount: material.LikesCount,
+		Uuid:       m.UUID,
+		OwnerUuid:  m.OwnerUUID,
+		Title:      m.Title,
+		LikesCount: m.LikesCount,
 	}
 
-	if material.Content != nil {
-		protoMaterial.Content = *material.Content
+	if m.Content != nil {
+		protoMaterial.Content = *m.Content
 	}
-	if material.EditedAt != nil && !material.EditedAt.IsZero() {
-		protoMaterial.EditedAt = timestamppb.New(*material.EditedAt)
+	if m.PublishedAt != nil && !m.PublishedAt.IsZero() {
+		protoMaterial.PublishedAt = timestamppb.New(*m.PublishedAt)
 	}
-	if material.PublishedAt != nil && !material.PublishedAt.IsZero() {
-		protoMaterial.PublishedAt = timestamppb.New(*material.PublishedAt)
+	if m.ArchivedAt != nil && !m.ArchivedAt.IsZero() {
+		protoMaterial.ArchivedAt = timestamppb.New(*m.ArchivedAt)
 	}
-	if material.ArchivedAt != nil && !material.ArchivedAt.IsZero() {
-		protoMaterial.ArchivedAt = timestamppb.New(*material.ArchivedAt)
-	}
-	if material.DeletedAt != nil && !material.DeletedAt.IsZero() {
-		protoMaterial.DeletedAt = timestamppb.New(*material.DeletedAt)
+	if m.DeletedAt != nil && !m.DeletedAt.IsZero() {
+		protoMaterial.DeletedAt = timestamppb.New(*m.DeletedAt)
 	}
 
 	return protoMaterial

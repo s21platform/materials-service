@@ -64,7 +64,7 @@ func (s *Service) GetMaterial(ctx context.Context, in *materials.GetMaterialIn) 
 	}
 
 	return &materials.GetMaterialOut{
-		Material: model.FromDTO(material),
+		Material: material.FromDTO(),
 	}, nil
 }
 
@@ -104,6 +104,6 @@ func (s *Service) EditMaterial(ctx context.Context, in *materials.EditMaterialIn
 	}
 
 	return &materials.EditMaterialOut{
-		Material: model.FromDTO(editedMaterial),
+		Material: editedMaterial.FromDTO(),
 	}, nil
 }
