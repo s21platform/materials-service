@@ -3,6 +3,8 @@ package model
 import (
 	"time"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/s21platform/materials-service/pkg/materials"
 )
 
@@ -33,6 +35,15 @@ func (m *Material) FromDTO() *materials.Material {
 
 	if m.Content != nil {
 		protoMaterial.Content = *m.Content
+	}
+	if m.PublishedAt != nil {
+		protoMaterial.PublishedAt = timestamppb.New(*m.PublishedAt)
+	}
+	if m.ArchivedAt != nil {
+		protoMaterial.ArchivedAt = timestamppb.New(*m.ArchivedAt)
+	}
+	if m.DeletedAt != nil {
+		protoMaterial.DeletedAt = timestamppb.New(*m.DeletedAt)
 	}
 
 	return protoMaterial
