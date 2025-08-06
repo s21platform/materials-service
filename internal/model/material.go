@@ -36,6 +36,9 @@ func (m *Material) FromDTO() *materials.Material {
 	if m.Content != nil {
 		protoMaterial.Content = *m.Content
 	}
+	if m.EditedAt != nil {
+		protoMaterial.EditedAt = timestamppb.New(*m.EditedAt)
+	}
 	if m.PublishedAt != nil {
 		protoMaterial.PublishedAt = timestamppb.New(*m.PublishedAt)
 	}
