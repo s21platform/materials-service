@@ -99,8 +99,8 @@ func (r *Repository) GetMaterial(ctx context.Context, uuid string) (*model.Mater
 	return &material, nil
 }
 
-func (r *Repository) GetAllMaterials(ctx context.Context) (*model.MaterialMetadataList, error) {
-	var materials model.MaterialMetadataList
+func (r *Repository) GetAllMaterials(ctx context.Context) (*model.MaterialList, error) {
+	var materials model.MaterialList
 
 	query, args, err := sq.
 		Select(

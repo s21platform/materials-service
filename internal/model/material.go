@@ -8,7 +8,7 @@ import (
 	"github.com/s21platform/materials-service/pkg/materials"
 )
 
-type MaterialMetadataList []Material
+type MaterialList []Material
 
 type Material struct {
 	UUID            string     `db:"uuid"`
@@ -54,7 +54,7 @@ func (m *Material) FromDTO() *materials.Material {
 	return protoMaterial
 }
 
-func (a *MaterialMetadataList) ListFromDTO() []*materials.Material {
+func (a *MaterialList) ListFromDTO() []*materials.Material {
 	result := make([]*materials.Material, 0, len(*a))
 
 	for _, material := range *a {
