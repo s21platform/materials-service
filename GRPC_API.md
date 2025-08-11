@@ -8,6 +8,7 @@
     - [CreateMaterialOut](#-CreateMaterialOut)
     - [EditMaterialIn](#-EditMaterialIn)
     - [EditMaterialOut](#-EditMaterialOut)
+    - [GetAllMaterialsOut](#-GetAllMaterialsOut)
     - [GetMaterialIn](#-GetMaterialIn)
     - [GetMaterialOut](#-GetMaterialOut)
     - [Material](#-Material)
@@ -94,6 +95,21 @@
 
 
 
+<a name="-GetAllMaterialsOut"></a>
+
+### GetAllMaterialsOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| material_list | [Material](#Material) | repeated |  |
+
+
+
+
+
+
 <a name="-GetMaterialIn"></a>
 
 ### GetMaterialIn
@@ -167,6 +183,7 @@
 | ----------- | ------------ | ------------- | ------------|
 | CreateMaterial | [.CreateMaterialIn](#CreateMaterialIn) | [.CreateMaterialOut](#CreateMaterialOut) |  |
 | GetMaterial | [.GetMaterialIn](#GetMaterialIn) | [.GetMaterialOut](#GetMaterialOut) |  |
+| GetAllMaterials | [.google.protobuf.Empty](#google-protobuf-Empty) | [.GetAllMaterialsOut](#GetAllMaterialsOut) |  |
 | EditMaterial | [.EditMaterialIn](#EditMaterialIn) | [.EditMaterialOut](#EditMaterialOut) |  |
 
  

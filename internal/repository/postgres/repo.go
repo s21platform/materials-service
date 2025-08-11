@@ -99,6 +99,42 @@ func (r *Repository) GetMaterial(ctx context.Context, uuid string) (*model.Mater
 	return &material, nil
 }
 
+func (r *Repository) GetAllMaterials(ctx context.Context) (*model.MaterialList, error) {
+	var materials model.MaterialList
+
+	query, args, err := sq.
+		Select(
+			"uuid",
+			"owner_uuid",
+			"title",
+			"cover_image_url",
+			"description",
+			"content",
+			"read_time_minutes",
+			"status",
+			"created_at",
+			"edited_at",
+			"published_at",
+			"archived_at",
+			"deleted_at",
+			"likes_count",
+		).
+		From("materials").
+		OrderBy("created_at DESC").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build query: %w", err)
+	}
+
+	err = r.connection.SelectContext(ctx, &materials, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch materials: %w", err)
+	}
+
+	return &materials, nil
+}
+
 func (r *Repository) EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error) {
 	var updatedMaterial model.Material
 	query, args, err := sq.
