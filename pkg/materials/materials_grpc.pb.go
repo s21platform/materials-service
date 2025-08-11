@@ -23,6 +23,7 @@ const (
 	MaterialsService_CreateMaterial_FullMethodName  = "/MaterialsService/CreateMaterial"
 	MaterialsService_GetMaterial_FullMethodName     = "/MaterialsService/GetMaterial"
 	MaterialsService_GetAllMaterials_FullMethodName = "/MaterialsService/GetAllMaterials"
+	MaterialsService_EditMaterial_FullMethodName    = "/MaterialsService/EditMaterial"
 )
 
 // MaterialsServiceClient is the client API for MaterialsService service.
@@ -32,6 +33,7 @@ type MaterialsServiceClient interface {
 	CreateMaterial(ctx context.Context, in *CreateMaterialIn, opts ...grpc.CallOption) (*CreateMaterialOut, error)
 	GetMaterial(ctx context.Context, in *GetMaterialIn, opts ...grpc.CallOption) (*GetMaterialOut, error)
 	GetAllMaterials(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllMaterialsOut, error)
+	EditMaterial(ctx context.Context, in *EditMaterialIn, opts ...grpc.CallOption) (*EditMaterialOut, error)
 }
 
 type materialsServiceClient struct {
@@ -72,6 +74,16 @@ func (c *materialsServiceClient) GetAllMaterials(ctx context.Context, in *emptyp
 	return out, nil
 }
 
+func (c *materialsServiceClient) EditMaterial(ctx context.Context, in *EditMaterialIn, opts ...grpc.CallOption) (*EditMaterialOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EditMaterialOut)
+	err := c.cc.Invoke(ctx, MaterialsService_EditMaterial_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MaterialsServiceServer is the server API for MaterialsService service.
 // All implementations must embed UnimplementedMaterialsServiceServer
 // for forward compatibility.
@@ -79,6 +91,7 @@ type MaterialsServiceServer interface {
 	CreateMaterial(context.Context, *CreateMaterialIn) (*CreateMaterialOut, error)
 	GetMaterial(context.Context, *GetMaterialIn) (*GetMaterialOut, error)
 	GetAllMaterials(context.Context, *emptypb.Empty) (*GetAllMaterialsOut, error)
+	EditMaterial(context.Context, *EditMaterialIn) (*EditMaterialOut, error)
 	mustEmbedUnimplementedMaterialsServiceServer()
 }
 
@@ -97,6 +110,9 @@ func (UnimplementedMaterialsServiceServer) GetMaterial(context.Context, *GetMate
 }
 func (UnimplementedMaterialsServiceServer) GetAllMaterials(context.Context, *emptypb.Empty) (*GetAllMaterialsOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllMaterials not implemented")
+}
+func (UnimplementedMaterialsServiceServer) EditMaterial(context.Context, *EditMaterialIn) (*EditMaterialOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EditMaterial not implemented")
 }
 func (UnimplementedMaterialsServiceServer) mustEmbedUnimplementedMaterialsServiceServer() {}
 func (UnimplementedMaterialsServiceServer) testEmbeddedByValue()                          {}
@@ -173,6 +189,24 @@ func _MaterialsService_GetAllMaterials_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MaterialsService_EditMaterial_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EditMaterialIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MaterialsServiceServer).EditMaterial(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MaterialsService_EditMaterial_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MaterialsServiceServer).EditMaterial(ctx, req.(*EditMaterialIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MaterialsService_ServiceDesc is the grpc.ServiceDesc for MaterialsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -191,6 +225,10 @@ var MaterialsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAllMaterials",
 			Handler:    _MaterialsService_GetAllMaterials_Handler,
+		},
+		{
+			MethodName: "EditMaterial",
+			Handler:    _MaterialsService_EditMaterial_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

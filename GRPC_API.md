@@ -6,6 +6,8 @@
 - [api/materials.proto](#api_materials-proto)
     - [CreateMaterialIn](#-CreateMaterialIn)
     - [CreateMaterialOut](#-CreateMaterialOut)
+    - [EditMaterialIn](#-EditMaterialIn)
+    - [EditMaterialOut](#-EditMaterialOut)
     - [GetAllMaterialsOut](#-GetAllMaterialsOut)
     - [GetMaterialIn](#-GetMaterialIn)
     - [GetMaterialOut](#-GetMaterialOut)
@@ -58,6 +60,41 @@
 
 
 
+<a name="-EditMaterialIn"></a>
+
+### EditMaterialIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  | UUID материала |
+| title | [string](#string) |  | Заголовок материала |
+| cover_image_url | [string](#string) |  | URL обложки материала |
+| description | [string](#string) |  | Описание материала |
+| content | [string](#string) |  | Содержание материала |
+| read_time_minutes | [int32](#int32) |  | Время чтения в минутах |
+
+
+
+
+
+
+<a name="-EditMaterialOut"></a>
+
+### EditMaterialOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| material | [Material](#Material) |  | Весь материал |
+
+
+
+
+
+
 <a name="-GetAllMaterialsOut"></a>
 
 ### GetAllMaterialsOut
@@ -96,20 +133,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| uuid | [string](#string) |  |  |
-| owner_uuid | [string](#string) |  | UUID владельца материала |
-| title | [string](#string) |  | Заголовок материала |
-| cover_image_url | [string](#string) |  | URL обложки материала |
-| description | [string](#string) |  | Описание материала |
-| content | [string](#string) |  | Содержимое материала |
-| read_time_minutes | [int32](#int32) |  | Время чтения в минутах |
-| status | [string](#string) |  | Статус материала |
-| created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время создания |
-| edited_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время последнего редактирования |
-| published_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время публикации |
-| archived_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время архивации |
-| deleted_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время удаления |
-| likes_count | [int32](#int32) |  | Количество лайков |
+| material | [Material](#Material) |  | Весь материал |
 
 
 
@@ -125,19 +149,19 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | uuid | [string](#string) |  |  |
-| owner_uuid | [string](#string) |  |  |
-| title | [string](#string) |  |  |
-| cover_image_url | [string](#string) |  |  |
-| description | [string](#string) |  |  |
-| content | [string](#string) |  |  |
-| read_time_minutes | [int32](#int32) |  |  |
-| status | [string](#string) |  |  |
-| created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
-| edited_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
-| published_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
-| archived_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
-| deleted_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
-| likes_count | [int32](#int32) |  |  |
+| owner_uuid | [string](#string) |  | UUID владельца материала |
+| title | [string](#string) |  | Заголовок материала |
+| cover_image_url | [string](#string) |  | URL обложки материала |
+| description | [string](#string) |  | Описание материала |
+| content | [string](#string) |  | Содержимое материала |
+| read_time_minutes | [int32](#int32) |  | Время чтения в минутах |
+| status | [string](#string) |  | Статус материала |
+| created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время создания |
+| edited_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время последнего редактирования |
+| published_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время публикации |
+| archived_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время архивации |
+| deleted_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время удаления |
+| likes_count | [int32](#int32) |  | Количество лайков |
 
 
 
@@ -160,6 +184,7 @@
 | CreateMaterial | [.CreateMaterialIn](#CreateMaterialIn) | [.CreateMaterialOut](#CreateMaterialOut) |  |
 | GetMaterial | [.GetMaterialIn](#GetMaterialIn) | [.GetMaterialOut](#GetMaterialOut) |  |
 | GetAllMaterials | [.google.protobuf.Empty](#google-protobuf-Empty) | [.GetAllMaterialsOut](#GetAllMaterialsOut) |  |
+| EditMaterial | [.EditMaterialIn](#EditMaterialIn) | [.EditMaterialOut](#EditMaterialOut) |  |
 
  
 
