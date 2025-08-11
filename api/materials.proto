@@ -7,6 +7,7 @@ option go_package = "pkg/materials";
 service MaterialsService {
   rpc CreateMaterial(CreateMaterialIn) returns (CreateMaterialOut){};
   rpc GetMaterial(GetMaterialIn) returns (GetMaterialOut) {};
+  rpc EditMaterial(EditMaterialIn) returns (EditMaterialOut) {};
 }
 
 message CreateMaterialIn {
@@ -26,6 +27,10 @@ message GetMaterialIn {
 }
 
 message GetMaterialOut {
+  Material material = 1; // Весь материал
+}
+
+message Material {
   string uuid = 1;
   string owner_uuid = 2;                       // UUID владельца материала
   string title = 3;                            // Заголовок материала
@@ -40,4 +45,17 @@ message GetMaterialOut {
   google.protobuf.Timestamp archived_at = 12;  // Время архивации
   google.protobuf.Timestamp deleted_at = 13;   // Время удаления
   int32 likes_count = 14;                      // Количество лайков
+}
+
+message EditMaterialIn {
+  string uuid = 1; // UUID материала
+  string title = 2; // Заголовок материала
+  string cover_image_url = 3; // URL обложки материала
+  string description = 4; // Описание материала
+  string content = 5; // Содержание материала
+  int32 read_time_minutes = 6; // Время чтения в минутах
+}
+
+message EditMaterialOut {
+  Material material = 1; // Весь материал
 }

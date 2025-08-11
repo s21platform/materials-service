@@ -6,8 +6,11 @@
 - [api/materials.proto](#api_materials-proto)
     - [CreateMaterialIn](#-CreateMaterialIn)
     - [CreateMaterialOut](#-CreateMaterialOut)
+    - [EditMaterialIn](#-EditMaterialIn)
+    - [EditMaterialOut](#-EditMaterialOut)
     - [GetMaterialIn](#-GetMaterialIn)
     - [GetMaterialOut](#-GetMaterialOut)
+    - [Material](#-Material)
   
     - [MaterialsService](#-MaterialsService)
   
@@ -56,6 +59,41 @@
 
 
 
+<a name="-EditMaterialIn"></a>
+
+### EditMaterialIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  | UUID материала |
+| title | [string](#string) |  | Заголовок материала |
+| cover_image_url | [string](#string) |  | URL обложки материала |
+| description | [string](#string) |  | Описание материала |
+| content | [string](#string) |  | Содержание материала |
+| read_time_minutes | [int32](#int32) |  | Время чтения в минутах |
+
+
+
+
+
+
+<a name="-EditMaterialOut"></a>
+
+### EditMaterialOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| material | [Material](#Material) |  | Весь материал |
+
+
+
+
+
+
 <a name="-GetMaterialIn"></a>
 
 ### GetMaterialIn
@@ -74,6 +112,21 @@
 <a name="-GetMaterialOut"></a>
 
 ### GetMaterialOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| material | [Material](#Material) |  | Весь материал |
+
+
+
+
+
+
+<a name="-Material"></a>
+
+### Material
 
 
 
@@ -114,6 +167,7 @@
 | ----------- | ------------ | ------------- | ------------|
 | CreateMaterial | [.CreateMaterialIn](#CreateMaterialIn) | [.CreateMaterialOut](#CreateMaterialOut) |  |
 | GetMaterial | [.GetMaterialIn](#GetMaterialIn) | [.GetMaterialOut](#GetMaterialOut) |  |
+| EditMaterial | [.EditMaterialIn](#EditMaterialIn) | [.EditMaterialOut](#EditMaterialOut) |  |
 
  
 

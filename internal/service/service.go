@@ -63,5 +63,47 @@ func (s *Service) GetMaterial(ctx context.Context, in *materials.GetMaterialIn) 
 		return nil, status.Errorf(codes.Internal, "failed to get material: %v", err)
 	}
 
-	return model.FromDTO(material), nil
+	return &materials.GetMaterialOut{
+		Material: material.FromDTO(),
+	}, nil
+}
+
+func (s *Service) EditMaterial(ctx context.Context, in *materials.EditMaterialIn) (*materials.EditMaterialOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("EditMaterial")
+
+	if strings.TrimSpace(in.Title) == "" {
+		logger.Error("title is required")
+		return nil, status.Error(codes.InvalidArgument, "title is required")
+	}
+
+	userUUID, ok := ctx.Value(config.KeyUUID).(string)
+	if !ok || userUUID == "" {
+		logger.Error("uuid is required")
+		return nil, status.Error(codes.Unauthenticated, "uuid is required")
+	}
+
+	materialOwnerUUID, err := s.repository.GetMaterialOwnerUUID(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get owner uuid: %v", err)
+	}
+
+	if materialOwnerUUID != userUUID {
+		logger.Error("failed to edit: user is not owner")
+		return nil, status.Errorf(codes.PermissionDenied, "failed to edit: user is not owner")
+	}
+
+	updatedMaterial := &model.EditMaterial{}
+	updatedMaterial.ToDTO(in)
+
+	editedMaterial, err := s.repository.EditMaterial(ctx, updatedMaterial)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to edit material: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to edit material: %v", err)
+	}
+
+	return &materials.EditMaterialOut{
+		Material: editedMaterial.FromDTO(),
+	}, nil
 }

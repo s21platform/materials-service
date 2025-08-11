@@ -12,10 +12,10 @@ type Material struct {
 	UUID            string     `db:"uuid"`
 	OwnerUUID       string     `db:"owner_uuid"`
 	Title           string     `db:"title"`
-	CoverImageURL   *string    `db:"cover_image_url"`
-	Description     *string    `db:"description"`
+	CoverImageURL   string     `db:"cover_image_url"`
+	Description     string     `db:"description"`
 	Content         *string    `db:"content"`
-	ReadTimeMinutes *int32     `db:"read_time_minutes"`
+	ReadTimeMinutes int32      `db:"read_time_minutes"`
 	Status          string     `db:"status"`
 	CreatedAt       time.Time  `db:"created_at"`
 	EditedAt        *time.Time `db:"edited_at"`
@@ -25,37 +25,28 @@ type Material struct {
 	LikesCount      int32      `db:"likes_count"`
 }
 
-func FromDTO(material *Material) *materials.GetMaterialOut {
-	protoMaterial := &materials.GetMaterialOut{
-		Uuid:       material.UUID,
-		OwnerUuid:  material.OwnerUUID,
-		Title:      material.Title,
-		LikesCount: material.LikesCount,
+func (m *Material) FromDTO() *materials.Material {
+	protoMaterial := &materials.Material{
+		Uuid:       m.UUID,
+		OwnerUuid:  m.OwnerUUID,
+		Title:      m.Title,
+		LikesCount: m.LikesCount,
 	}
 
-	if material.CoverImageURL != nil {
-		protoMaterial.CoverImageUrl = *material.CoverImageURL
+	if m.Content != nil {
+		protoMaterial.Content = *m.Content
 	}
-	if material.Description != nil {
-		protoMaterial.Description = *material.Description
+	if m.EditedAt != nil {
+		protoMaterial.EditedAt = timestamppb.New(*m.EditedAt)
 	}
-	if material.Content != nil {
-		protoMaterial.Content = *material.Content
+	if m.PublishedAt != nil {
+		protoMaterial.PublishedAt = timestamppb.New(*m.PublishedAt)
 	}
-	if material.ReadTimeMinutes != nil {
-		protoMaterial.ReadTimeMinutes = *material.ReadTimeMinutes
+	if m.ArchivedAt != nil {
+		protoMaterial.ArchivedAt = timestamppb.New(*m.ArchivedAt)
 	}
-	if material.EditedAt != nil && !material.EditedAt.IsZero() {
-		protoMaterial.EditedAt = timestamppb.New(*material.EditedAt)
-	}
-	if material.PublishedAt != nil && !material.PublishedAt.IsZero() {
-		protoMaterial.PublishedAt = timestamppb.New(*material.PublishedAt)
-	}
-	if material.ArchivedAt != nil && !material.ArchivedAt.IsZero() {
-		protoMaterial.ArchivedAt = timestamppb.New(*material.ArchivedAt)
-	}
-	if material.DeletedAt != nil && !material.DeletedAt.IsZero() {
-		protoMaterial.DeletedAt = timestamppb.New(*material.DeletedAt)
+	if m.DeletedAt != nil {
+		protoMaterial.DeletedAt = timestamppb.New(*m.DeletedAt)
 	}
 
 	return protoMaterial
