@@ -113,13 +113,13 @@ func (s *Service) GetAllMaterials(ctx context.Context, _ *emptypb.Empty) (*mater
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("GetAllMaterials")
 
-	materialS, err := s.repository.GetAllMaterials(ctx)
+	materialsList, err := s.repository.GetAllMaterials(ctx)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to get all materials: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to get all materials: %v", err)
 	}
 
 	return &materials.GetAllMaterialsOut{
-		MaterialList: materialS.ListFromDTO(),
+		MaterialList: materialsList.ListFromDTO(),
 	}, nil
 }
