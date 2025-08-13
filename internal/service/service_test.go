@@ -19,6 +19,83 @@ import (
 	"github.com/s21platform/materials-service/pkg/materials"
 )
 
+func TestServer_GetMaterial(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := NewMockDBRepo(ctrl)
+	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+	userUUID := uuid.New().String()
+	materialUUID := uuid.New().String()
+	title := "Material Title"
+	editedAt := time.Now()
+	publishedAt := time.Now()
+	archivedAt := time.Now()
+	deletedAt := time.Now()
+	content := "material content"
+
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+
+	s := New(mockRepo)
+
+	t.Run("success", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("GetMaterial")
+
+		in := &materials.GetMaterialIn{
+			Uuid: materialUUID,
+		}
+
+		expectedMaterial := &model.Material{
+			UUID:            materialUUID,
+			OwnerUUID:       userUUID,
+			Title:           title,
+			CoverImageURL:   "test",
+			Description:     "cool fr",
+			Content:         &content,
+			ReadTimeMinutes: 12,
+			Status:          "approved",
+			CreatedAt:       time.Now(),
+			EditedAt:        &editedAt,
+			PublishedAt:     &publishedAt,
+			ArchivedAt:      &archivedAt,
+			DeletedAt:       &deletedAt,
+			LikesCount:      10,
+		}
+
+		mockRepo.EXPECT().GetMaterial(ctx, materialUUID).Return(expectedMaterial, nil)
+
+		expectedOutput := &materials.GetMaterialOut{
+			Material: expectedMaterial.FromDTO(),
+		}
+
+		out, err := s.GetMaterial(ctx, in)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, out)
+		assert.Equal(t, expectedOutput, out)
+	})
+
+	t.Run("get_material_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("GetMaterial")
+		dbErr := fmt.Errorf("database error")
+		mockLogger.EXPECT().Error(fmt.Sprintf("failed to get material: %v", dbErr))
+
+		mockRepo.EXPECT().GetMaterial(ctx, materialUUID).Return(nil, dbErr)
+
+		in := &materials.GetMaterialIn{Uuid: materialUUID}
+		_, err := s.GetMaterial(ctx, in)
+
+		assert.Error(t, err)
+		sts := status.Convert(err)
+		assert.Equal(t, codes.Internal, sts.Code())
+		assert.Contains(t, sts.Message(), "failed to get material: database error")
+	})
+}
+
 func TestServer_EditMaterial(t *testing.T) {
 	t.Parallel()
 
@@ -30,12 +107,12 @@ func TestServer_EditMaterial(t *testing.T) {
 
 	userUUID := uuid.New().String()
 	materialUUID := uuid.New().String()
-	newTitle := "New Material Title"
+	newTitle := "New Title"
 	editedAt := time.Now()
 	publishedAt := time.Now()
 	archivedAt := time.Now()
 	deletedAt := time.Now()
-	content := "Updated content"
+	content := "updated content"
 
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
@@ -52,9 +129,9 @@ func TestServer_EditMaterial(t *testing.T) {
 			Uuid:            materialUUID,
 			Title:           newTitle,
 			CoverImageUrl:   "test",
-			Description:     "Updated description",
-			Content:         "Updated content",
-			ReadTimeMinutes: 15,
+			Description:     "new feature",
+			Content:         "super new",
+			ReadTimeMinutes: 11,
 		}
 
 		expectedMaterial := &model.Material{
@@ -62,9 +139,9 @@ func TestServer_EditMaterial(t *testing.T) {
 			OwnerUUID:       userUUID,
 			Title:           newTitle,
 			CoverImageURL:   "test",
-			Description:     "Updated description",
+			Description:     "new feature",
 			Content:         &content,
-			ReadTimeMinutes: 15,
+			ReadTimeMinutes: 11,
 			Status:          "published",
 			CreatedAt:       time.Now(),
 			EditedAt:        &editedAt,
