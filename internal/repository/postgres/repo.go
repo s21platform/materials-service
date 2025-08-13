@@ -186,7 +186,6 @@ func (r *Repository) GetMaterialOwnerUUID(ctx context.Context, uuid string) (str
 }
 
 func (r *Repository) DeleteMaterial(ctx context.Context, uuid string) error {
-
 	query, args, err := sq.
 		Update("materials").
 		Set("deleted_at", time.Now()).
