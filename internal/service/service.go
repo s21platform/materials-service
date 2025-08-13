@@ -124,15 +124,15 @@ func (s *Service) GetAllMaterials(ctx context.Context, _ *emptypb.Empty) (*mater
 	}, nil
 }
 
-func (s *Service) DeleteMaterial(ctx context.Context, in *materials.DeleteMaterialIn) error {
+func (s *Service) DeleteMaterial(ctx context.Context, in *materials.DeleteMaterialIn) (*emptypb.Empty, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("DeleteMaterial")
 
 	err := s.repository.DeleteMaterial(ctx, in.Uuid)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to deleete material: %v", err))
-		return status.Errorf(codes.Internal, "failed to delete material: %v", err)
+		return &emptypb.Empty{}, status.Errorf(codes.Internal, "failed to delete material: %v", err)
 	}
-	
-	return nil
+
+	return &emptypb.Empty{}, nil
 }
