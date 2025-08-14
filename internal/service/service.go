@@ -128,11 +128,28 @@ func (s *Service) DeleteMaterial(ctx context.Context, in *materials.DeleteMateri
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("DeleteMaterial")
 
-	err := s.repository.DeleteMaterial(ctx, in.Uuid)
-	if err != nil {
-		logger.Error(fmt.Sprintf("failed to deleete material: %v", err))
-		return &emptypb.Empty{}, status.Errorf(codes.Internal, "failed to delete material: %v", err)
+	userUUID, ok := ctx.Value(config.KeyUUID).(string)
+	if !ok || userUUID == "" {
+		logger.Error("uuid is required")
+		return nil, status.Error(codes.Unauthenticated, "uuid is required")
 	}
 
-	return &emptypb.Empty{}, nil
+	materialOwnerUUID, err := s.repository.GetMaterialOwnerUUID(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get owner uuid: %v", err)
+	}
+
+	if materialOwnerUUID != userUUID {
+		logger.Error("failed to delete: user is not owner")
+		return nil, status.Errorf(codes.PermissionDenied, "failed to delete: user is not owner")
+	}
+
+	err = s.repository.DeleteMaterial(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to delete material: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to delete material: %v", err)
+	}
+
+	return nil, nil
 }
