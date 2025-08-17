@@ -81,7 +81,9 @@ func TestServer_GetMaterial(t *testing.T) {
 
 	t.Run("get_material_error", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("GetMaterial")
+
 		dbErr := fmt.Errorf("database error")
+
 		mockLogger.EXPECT().Error(fmt.Sprintf("failed to get material: %v", dbErr))
 
 		mockRepo.EXPECT().GetMaterial(ctx, materialUUID).Return(nil, dbErr)
@@ -151,9 +153,7 @@ func TestServer_EditMaterial(t *testing.T) {
 			LikesCount:      10,
 		}
 
-		mockRepo.EXPECT().EditMaterial(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, em *model.EditMaterial) (*model.Material, error) {
-			return expectedMaterial, nil
-		})
+		mockRepo.EXPECT().EditMaterial(ctx, gomock.Any()).Return(expectedMaterial, nil)
 
 		expectedOutput := &materials.EditMaterialOut{
 			Material: expectedMaterial.FromDTO(),
@@ -210,7 +210,9 @@ func TestServer_EditMaterial(t *testing.T) {
 
 	t.Run("get_owner_uuid_error", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("EditMaterial")
+
 		dbErr := fmt.Errorf("database error")
+
 		mockLogger.EXPECT().Error(fmt.Sprintf("failed to get owner uuid: %v", dbErr))
 
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return("", dbErr)
@@ -241,7 +243,9 @@ func TestServer_EditMaterial(t *testing.T) {
 
 	t.Run("edit_material_error", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("EditMaterial")
+
 		dbErr := fmt.Errorf("edit failed")
+
 		mockLogger.EXPECT().Error(fmt.Sprintf("failed to edit material: %v", dbErr))
 
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
