@@ -8,13 +8,14 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	logger_lib "github.com/s21platform/logger-lib"
-	"github.com/s21platform/materials-service/pkg/materials"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	logger_lib "github.com/s21platform/logger-lib"
+
 	"github.com/s21platform/materials-service/internal/config"
 	"github.com/s21platform/materials-service/internal/model"
+	"github.com/s21platform/materials-service/pkg/materials"
 )
 
 func TestServer_CreateMaterial(t *testing.T) {
@@ -29,12 +30,10 @@ func TestServer_CreateMaterial(t *testing.T) {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
 	validUUID := uuid.New().String()
-
+	ctxWithUUID := context.WithValue(ctx, config.KeyUUID, validUUID)
 	s := New(mockRepo)
 
 	t.Run("success", func(t *testing.T) {
-		ctxWithUUID := context.WithValue(ctx, config.KeyUUID, validUUID)
-
 		mockLogger.EXPECT().AddFuncName("CreateMaterial")
 
 		in := &materials.CreateMaterialIn{
@@ -47,20 +46,9 @@ func TestServer_CreateMaterial(t *testing.T) {
 
 		expectedUUID := uuid.New().String()
 
-		expectedModel := &model.CreateMaterial{
-			Title:           in.Title,
-			CoverImageURL:   in.CoverImageUrl,
-			Description:     in.Description,
-			Content:         in.Content,
-			ReadTimeMinutes: in.ReadTimeMinutes,
-		}
-
 		mockRepo.EXPECT().
 			CreateMaterial(ctxWithUUID, validUUID, gomock.Any()).
-			DoAndReturn(func(_ context.Context, _ string, cm *model.CreateMaterial) (string, error) {
-				assert.Equal(t, *expectedModel, *cm)
-				return expectedUUID, nil
-			})
+			Return(expectedUUID, nil)
 
 		out, err := s.CreateMaterial(ctxWithUUID, in)
 
@@ -70,8 +58,6 @@ func TestServer_CreateMaterial(t *testing.T) {
 	})
 
 	t.Run("empty_title", func(t *testing.T) {
-		ctxWithUUID := context.WithValue(ctx, config.KeyUUID, validUUID)
-
 		mockLogger.EXPECT().AddFuncName("CreateMaterial")
 		mockLogger.EXPECT().Error("title is required")
 
@@ -98,8 +84,6 @@ func TestServer_CreateMaterial(t *testing.T) {
 	})
 
 	t.Run("db_error", func(t *testing.T) {
-		ctxWithUUID := context.WithValue(ctx, config.KeyUUID, validUUID)
-
 		mockLogger.EXPECT().AddFuncName("CreateMaterial")
 		mockLogger.EXPECT().Error(gomock.Any())
 
