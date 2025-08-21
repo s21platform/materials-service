@@ -198,10 +198,13 @@ func (r *Repository) DeleteMaterial(ctx context.Context, uuid string) error {
 
 	res, err := r.connection.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("failed to execure query: %v", err)
+		return fmt.Errorf("failed to execute query: %v", err)
 	}
 
-	rowsAffected, _ := res.RowsAffected()
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to check rows affected: %v", err)
+	}
 	if rowsAffected == 0 {
 		return fmt.Errorf("material already deleted or not found")
 	}
