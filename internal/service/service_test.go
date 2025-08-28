@@ -20,7 +20,7 @@ import (
 	"github.com/s21platform/materials-service/pkg/materials"
 )
 
-func TestServer_CreateMaterial(t *testing.T) {
+func TestServer_SaveDraftMaterial(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
@@ -36,9 +36,9 @@ func TestServer_CreateMaterial(t *testing.T) {
 	s := New(mockRepo)
 
 	t.Run("success", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("CreateMaterial")
+		mockLogger.EXPECT().AddFuncName("SaveDraftMaterial")
 
-		in := &materials.CreateMaterialIn{
+		in := &materials.SaveDraftMaterialIn{
 			Title:           "New Material",
 			CoverImageUrl:   "http://example.com/image.jpg",
 			Description:     "Some description",
@@ -49,10 +49,10 @@ func TestServer_CreateMaterial(t *testing.T) {
 		expectedUUID := uuid.New().String()
 
 		mockRepo.EXPECT().
-			CreateMaterial(ctxWithUUID, validUUID, gomock.Any()).
+			SaveDraftMaterial(ctxWithUUID, validUUID, gomock.Any()).
 			Return(expectedUUID, nil)
 
-		out, err := s.CreateMaterial(ctxWithUUID, in)
+		out, err := s.SaveDraftMaterial(ctxWithUUID, in)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, out)
@@ -60,12 +60,12 @@ func TestServer_CreateMaterial(t *testing.T) {
 	})
 
 	t.Run("empty_title", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("CreateMaterial")
+		mockLogger.EXPECT().AddFuncName("SaveDraftMaterial")
 		mockLogger.EXPECT().Error("title is required")
 
-		in := &materials.CreateMaterialIn{Title: ""}
+		in := &materials.SaveDraftMaterialIn{Title: ""}
 
-		out, err := s.CreateMaterial(ctxWithUUID, in)
+		out, err := s.SaveDraftMaterial(ctxWithUUID, in)
 
 		assert.Nil(t, out)
 		assert.Error(t, err)
@@ -73,12 +73,12 @@ func TestServer_CreateMaterial(t *testing.T) {
 	})
 
 	t.Run("missing_owner_uuid", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("CreateMaterial")
+		mockLogger.EXPECT().AddFuncName("SaveDraftMaterial")
 		mockLogger.EXPECT().Error("uuid is required")
 
-		in := &materials.CreateMaterialIn{Title: "Valid title"}
+		in := &materials.SaveDraftMaterialIn{Title: "Valid title"}
 
-		out, err := s.CreateMaterial(ctx, in)
+		out, err := s.SaveDraftMaterial(ctx, in)
 
 		assert.Nil(t, out)
 		assert.Error(t, err)
@@ -86,22 +86,22 @@ func TestServer_CreateMaterial(t *testing.T) {
 	})
 
 	t.Run("db_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("CreateMaterial")
+		mockLogger.EXPECT().AddFuncName("SaveDraftMaterial")
 		mockLogger.EXPECT().Error(gomock.Any())
 
-		in := &materials.CreateMaterialIn{
+		in := &materials.SaveDraftMaterialIn{
 			Title: "New Material",
 		}
 
 		mockRepo.EXPECT().
-			CreateMaterial(ctxWithUUID, validUUID, gomock.Any()).
+			SaveDraftMaterial(ctxWithUUID, validUUID, gomock.Any()).
 			Return("", fmt.Errorf("db failure"))
 
-		out, err := s.CreateMaterial(ctxWithUUID, in)
+		out, err := s.SaveDraftMaterial(ctxWithUUID, in)
 
 		assert.Nil(t, out)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to create material: db failure")
+		assert.Contains(t, err.Error(), "failed to save draft material: db failure")
 	})
 }
 

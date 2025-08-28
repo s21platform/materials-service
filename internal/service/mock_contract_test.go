@@ -35,21 +35,6 @@ func (m *MockDBRepo) EXPECT() *MockDBRepoMockRecorder {
 	return m.recorder
 }
 
-// CreateMaterial mocks base method.
-func (m *MockDBRepo) CreateMaterial(ctx context.Context, ownerUUID string, material *model.CreateMaterial) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateMaterial", ctx, ownerUUID, material)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateMaterial indicates an expected call of CreateMaterial.
-func (mr *MockDBRepoMockRecorder) CreateMaterial(ctx, ownerUUID, material interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMaterial", reflect.TypeOf((*MockDBRepo)(nil).CreateMaterial), ctx, ownerUUID, material)
-}
-
 // EditMaterial mocks base method.
 func (m *MockDBRepo) EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error) {
 	m.ctrl.T.Helper()
@@ -108,4 +93,19 @@ func (m *MockDBRepo) GetMaterialOwnerUUID(ctx context.Context, uuid string) (str
 func (mr *MockDBRepoMockRecorder) GetMaterialOwnerUUID(ctx, uuid interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMaterialOwnerUUID", reflect.TypeOf((*MockDBRepo)(nil).GetMaterialOwnerUUID), ctx, uuid)
+}
+
+// SaveDraftMaterial mocks base method.
+func (m *MockDBRepo) SaveDraftMaterial(ctx context.Context, ownerUUID string, material *model.SaveDraftMaterial) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveDraftMaterial", ctx, ownerUUID, material)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SaveDraftMaterial indicates an expected call of SaveDraftMaterial.
+func (mr *MockDBRepoMockRecorder) SaveDraftMaterial(ctx, ownerUUID, material interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveDraftMaterial", reflect.TypeOf((*MockDBRepo)(nil).SaveDraftMaterial), ctx, ownerUUID, material)
 }
