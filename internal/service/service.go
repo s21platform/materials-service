@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -121,5 +123,57 @@ func (s *Service) GetAllMaterials(ctx context.Context, _ *emptypb.Empty) (*mater
 
 	return &materials.GetAllMaterialsOut{
 		MaterialList: materialsList.ListFromDTO(),
+	}, nil
+}
+
+func (s *Service) PublishMaterial(ctx context.Context, in *materials.PublishMaterialIn) (*materials.PublishMaterialOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("PublishMaterial")
+
+	if in.Uuid == "" {
+		logger.Error("material uuid is required")
+		return nil, status.Error(codes.InvalidArgument, "material uuid is required")
+	}
+
+	userUUID, ok := ctx.Value(config.KeyUUID).(string)
+	if !ok || userUUID == "" {
+		logger.Error("user uuid is required")
+		return nil, status.Error(codes.Unauthenticated, "user uuid is required")
+	}
+
+	materialOwnerUUID, err := s.repository.GetMaterialOwnerUUID(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get owner uuid: %v", err)
+	}
+
+	if materialOwnerUUID != userUUID {
+		logger.Error("failed to publish: user is not owner")
+		return nil, status.Errorf(codes.PermissionDenied, "failed to publish: user is not owner")
+	}
+
+	material, err := s.repository.GetMaterial(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get material for publication : %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get material for publication: %v", err)
+	}
+
+	if material.Status != "draft" {
+		logger.Error("material is not in draft status")
+		return nil, status.Errorf(codes.FailedPrecondition, "material is not in draft status")
+	}
+
+	material.Status = "published"
+	t := timestamppb.Now().AsTime()
+	material.PublishedAt = &t
+
+	updatedMaterial, err := s.repository.PublishMaterial(ctx, material)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to publish material: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to publish material: %v", err)
+	}
+
+	return &materials.PublishMaterialOut{
+		Material: updatedMaterial.FromDTO(),
 	}, nil
 }

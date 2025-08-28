@@ -24,6 +24,7 @@ const (
 	MaterialsService_GetMaterial_FullMethodName       = "/MaterialsService/GetMaterial"
 	MaterialsService_GetAllMaterials_FullMethodName   = "/MaterialsService/GetAllMaterials"
 	MaterialsService_EditMaterial_FullMethodName      = "/MaterialsService/EditMaterial"
+	MaterialsService_PublishMaterial_FullMethodName   = "/MaterialsService/PublishMaterial"
 )
 
 // MaterialsServiceClient is the client API for MaterialsService service.
@@ -34,6 +35,7 @@ type MaterialsServiceClient interface {
 	GetMaterial(ctx context.Context, in *GetMaterialIn, opts ...grpc.CallOption) (*GetMaterialOut, error)
 	GetAllMaterials(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllMaterialsOut, error)
 	EditMaterial(ctx context.Context, in *EditMaterialIn, opts ...grpc.CallOption) (*EditMaterialOut, error)
+	PublishMaterial(ctx context.Context, in *PublishMaterialIn, opts ...grpc.CallOption) (*PublishMaterialOut, error)
 }
 
 type materialsServiceClient struct {
@@ -84,6 +86,16 @@ func (c *materialsServiceClient) EditMaterial(ctx context.Context, in *EditMater
 	return out, nil
 }
 
+func (c *materialsServiceClient) PublishMaterial(ctx context.Context, in *PublishMaterialIn, opts ...grpc.CallOption) (*PublishMaterialOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PublishMaterialOut)
+	err := c.cc.Invoke(ctx, MaterialsService_PublishMaterial_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MaterialsServiceServer is the server API for MaterialsService service.
 // All implementations must embed UnimplementedMaterialsServiceServer
 // for forward compatibility.
@@ -92,6 +104,7 @@ type MaterialsServiceServer interface {
 	GetMaterial(context.Context, *GetMaterialIn) (*GetMaterialOut, error)
 	GetAllMaterials(context.Context, *emptypb.Empty) (*GetAllMaterialsOut, error)
 	EditMaterial(context.Context, *EditMaterialIn) (*EditMaterialOut, error)
+	PublishMaterial(context.Context, *PublishMaterialIn) (*PublishMaterialOut, error)
 	mustEmbedUnimplementedMaterialsServiceServer()
 }
 
@@ -113,6 +126,9 @@ func (UnimplementedMaterialsServiceServer) GetAllMaterials(context.Context, *emp
 }
 func (UnimplementedMaterialsServiceServer) EditMaterial(context.Context, *EditMaterialIn) (*EditMaterialOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EditMaterial not implemented")
+}
+func (UnimplementedMaterialsServiceServer) PublishMaterial(context.Context, *PublishMaterialIn) (*PublishMaterialOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PublishMaterial not implemented")
 }
 func (UnimplementedMaterialsServiceServer) mustEmbedUnimplementedMaterialsServiceServer() {}
 func (UnimplementedMaterialsServiceServer) testEmbeddedByValue()                          {}
@@ -207,6 +223,24 @@ func _MaterialsService_EditMaterial_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MaterialsService_PublishMaterial_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PublishMaterialIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MaterialsServiceServer).PublishMaterial(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MaterialsService_PublishMaterial_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MaterialsServiceServer).PublishMaterial(ctx, req.(*PublishMaterialIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MaterialsService_ServiceDesc is the grpc.ServiceDesc for MaterialsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -229,6 +263,10 @@ var MaterialsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "EditMaterial",
 			Handler:    _MaterialsService_EditMaterial_Handler,
+		},
+		{
+			MethodName: "PublishMaterial",
+			Handler:    _MaterialsService_PublishMaterial_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

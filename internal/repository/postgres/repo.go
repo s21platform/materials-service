@@ -184,3 +184,29 @@ func (r *Repository) GetMaterialOwnerUUID(ctx context.Context, uuid string) (str
 
 	return ownerUUID, nil
 }
+
+func (r *Repository) PublishMaterial(ctx context.Context, material *model.Material) (*model.Material, error) {
+	var updatedMaterial model.Material
+
+	query, args, err := sq.
+		Update("materials").
+		Set("status", material.Status).
+		Set("published_at", material.PublishedAt).
+		Where(sq.Eq{"uuid": material.UUID}).
+		PlaceholderFormat(sq.Dollar).
+		Suffix("RETURNING uuid, owner_uuid, title, cover_image_url, description, content, read_time_minutes, status, created_at, edited_at, published_at, archived_at, deleted_at, likes_count").
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build update query: %v", err)
+	}
+
+	err = r.connection.GetContext(ctx, &updatedMaterial, query, args...)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.New("material doesn't exist")
+		}
+		return nil, fmt.Errorf("failed to update material status: %v", err)
+	}
+
+	return &updatedMaterial, nil
+}
