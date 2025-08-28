@@ -10,6 +10,7 @@ service MaterialsService {
   rpc GetMaterial(GetMaterialIn) returns (GetMaterialOut) {};
   rpc GetAllMaterials(google.protobuf.Empty) returns (GetAllMaterialsOut){};
   rpc EditMaterial(EditMaterialIn) returns (EditMaterialOut) {};
+  rpc ToggleLike(ToggleLikeIn) returns (ToggleLikeOut) {};
 }
 
 message CreateMaterialIn {
@@ -54,14 +55,24 @@ message GetAllMaterialsOut {
 }
 
 message EditMaterialIn {
-  string uuid = 1; // UUID материала
-  string title = 2; // Заголовок материала
-  string cover_image_url = 3; // URL обложки материала
-  string description = 4; // Описание материала
-  string content = 5; // Содержание материала
+  string uuid = 1;             // UUID материала
+  string title = 2;            // Заголовок материала
+  string cover_image_url = 3;  // URL обложки материала
+  string description = 4;      // Описание материала
+  string content = 5;          // Содержание материала
   int32 read_time_minutes = 6; // Время чтения в минутах
 }
 
 message EditMaterialOut {
   Material material = 1; // Весь материал
+}
+
+message ToggleLikeIn {
+  string material_uuid = 1; // UUID материала
+  string user_uuid = 2;     // UUID пользователя, который ставит лайк
+}
+
+message ToggleLikeOut {
+  bool is_liked = 1;     // Состояние лайка
+  int32 likes_count = 2; // Количество лайков
 }

@@ -12,6 +12,8 @@
     - [GetMaterialIn](#-GetMaterialIn)
     - [GetMaterialOut](#-GetMaterialOut)
     - [Material](#-Material)
+    - [ToggleLikeIn](#-ToggleLikeIn)
+    - [ToggleLikeOut](#-ToggleLikeOut)
   
     - [MaterialsService](#-MaterialsService)
   
@@ -167,6 +169,38 @@
 
 
 
+
+<a name="-ToggleLikeIn"></a>
+
+### ToggleLikeIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| material_uuid | [string](#string) |  | UUID материала |
+| user_uuid | [string](#string) |  | UUID пользователя, который ставит лайк |
+
+
+
+
+
+
+<a name="-ToggleLikeOut"></a>
+
+### ToggleLikeOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| is_liked | [bool](#bool) |  | Состояние лайка |
+| likes_count | [int32](#int32) |  | Количество лайков |
+
+
+
+
+
  
 
  
@@ -185,6 +219,7 @@
 | GetMaterial | [.GetMaterialIn](#GetMaterialIn) | [.GetMaterialOut](#GetMaterialOut) |  |
 | GetAllMaterials | [.google.protobuf.Empty](#google-protobuf-Empty) | [.GetAllMaterialsOut](#GetAllMaterialsOut) |  |
 | EditMaterial | [.EditMaterialIn](#EditMaterialIn) | [.EditMaterialOut](#EditMaterialOut) |  |
+| ToggleLike | [.ToggleLikeIn](#ToggleLikeIn) | [.ToggleLikeOut](#ToggleLikeOut) |  |
 
  
 

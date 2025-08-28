@@ -184,3 +184,42 @@ func (r *Repository) GetMaterialOwnerUUID(ctx context.Context, uuid string) (str
 
 	return ownerUUID, nil
 }
+
+func (r *Repository) ToggleLike(ctx context.Context, materialUUID, userUUID string) (bool, int32, error) {
+	var exists bool
+	checkQuery := `SELECT EXISTS(SELECT 1 FROM material_likes WHERE material_uuid = $1 AND user_uuid = $2)`
+	if err := r.connection.GetContext(ctx, &exists, checkQuery, materialUUID, userUUID); err != nil {
+		return false, 0, fmt.Errorf("failed to check like: %w", err)
+	}
+
+	var isLiked bool
+	var likesCount int32
+
+	if exists {
+		deleteQuery := `DELETE FROM material_likes WHERE material_uuid = $1 AND user_uuid = $2`
+		if _, err := r.connection.ExecContext(ctx, deleteQuery, materialUUID, userUUID); err != nil {
+			return false, 0, fmt.Errorf("failed to delete like: %w", err)
+		}
+
+		updateQuery := `UPDATE materials SET likes_count = likes_count - 1 WHERE uuid = $1 RETURNING likes_count`
+		if err := r.connection.GetContext(ctx, &likesCount, updateQuery, materialUUID); err != nil {
+			return false, 0, fmt.Errorf("failed to decrement likes_count: %w", err)
+		}
+
+		isLiked = false
+	} else {
+		insertQuery := `INSERT INTO material_likes (uuid, material_uuid, user_uuid, created_at) VALUES (gen_random_uuid(), $1, $2, NOW())`
+		if _, err := r.connection.ExecContext(ctx, insertQuery, materialUUID, userUUID); err != nil {
+			return false, 0, fmt.Errorf("failed to insert like: %w", err)
+		}
+
+		updateQuery := `UPDATE materials SET likes_count = likes_count + 1 WHERE uuid = $1 RETURNING likes_count`
+		if err := r.connection.GetContext(ctx, &likesCount, updateQuery, materialUUID); err != nil {
+			return false, 0, fmt.Errorf("failed to increment likes_count: %w", err)
+		}
+
+		isLiked = true
+	}
+
+	return isLiked, likesCount, nil
+}
