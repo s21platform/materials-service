@@ -179,7 +179,6 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | material_uuid | [string](#string) |  | UUID материала |
-| user_uuid | [string](#string) |  | UUID пользователя, который ставит лайк |
 
 
 

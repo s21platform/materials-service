@@ -69,7 +69,6 @@ message EditMaterialOut {
 
 message ToggleLikeIn {
   string material_uuid = 1; // UUID материала
-  string user_uuid = 2;     // UUID пользователя, который ставит лайк
 }
 
 message ToggleLikeOut {

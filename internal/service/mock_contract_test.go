@@ -111,17 +111,31 @@ func (mr *MockDBRepoMockRecorder) GetMaterialOwnerUUID(ctx, uuid interface{}) *g
 }
 
 // ToggleLike mocks base method.
-func (m *MockDBRepo) ToggleLike(ctx context.Context, materialUUID, userUUID string) (bool, int32, error) {
+func (m *MockDBRepo) ToggleLike(ctx context.Context, materialUUID, userUUID string) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToggleLike", ctx, materialUUID, userUUID)
 	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(int32)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ToggleLike indicates an expected call of ToggleLike.
 func (mr *MockDBRepoMockRecorder) ToggleLike(ctx, materialUUID, userUUID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToggleLike", reflect.TypeOf((*MockDBRepo)(nil).ToggleLike), ctx, materialUUID, userUUID)
+}
+
+// UpdateLikesNumber mocks base method.
+func (m *MockDBRepo) UpdateLikesNumber(ctx context.Context, materialUUID string) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateLikesNumber", ctx, materialUUID)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateLikesNumber indicates an expected call of UpdateLikesNumber.
+func (mr *MockDBRepoMockRecorder) UpdateLikesNumber(ctx, materialUUID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateLikesNumber", reflect.TypeOf((*MockDBRepo)(nil).UpdateLikesNumber), ctx, materialUUID)
 }

@@ -13,5 +13,6 @@ type DBRepo interface {
 	GetAllMaterials(ctx context.Context) (*model.MaterialList, error)
 	EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error)
 	GetMaterialOwnerUUID(ctx context.Context, uuid string) (string, error)
-	ToggleLike(ctx context.Context, materialUUID, userUUID string) (bool, int32, error)
+	ToggleLike(ctx context.Context, materialUUID string, userUUID string) (bool, error)
+	UpdateLikesNumber(ctx context.Context, materialUUID string) (int32, error)
 }

@@ -473,7 +473,11 @@ func TestServer_ToggleLike(t *testing.T) {
 
 		mockRepo.EXPECT().
 			ToggleLike(ctxWithUUID, materialUUID, userUUID).
-			Return(true, int32(5), nil)
+			Return(true, nil)
+
+		mockRepo.EXPECT().
+			UpdateLikesNumber(ctxWithUUID, materialUUID).
+			Return(int32(5), nil)
 
 		out, err := s.ToggleLike(ctxWithUUID, in)
 
@@ -492,14 +496,18 @@ func TestServer_ToggleLike(t *testing.T) {
 
 		mockRepo.EXPECT().
 			ToggleLike(ctxWithUUID, materialUUID, userUUID).
-			Return(false, int32(4), nil)
+			Return(false, nil)
+
+		mockRepo.EXPECT().
+			UpdateLikesNumber(ctxWithUUID, materialUUID).
+			Return(int32(3), nil)
 
 		out, err := s.ToggleLike(ctxWithUUID, in)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, out)
 		assert.False(t, out.IsLiked)
-		assert.Equal(t, int32(4), out.LikesCount)
+		assert.Equal(t, int32(3), out.LikesCount)
 	})
 
 	t.Run("missing_user_uuid", func(t *testing.T) {
@@ -522,10 +530,10 @@ func TestServer_ToggleLike(t *testing.T) {
 		assert.Equal(t, "uuid is required", sts.Message())
 	})
 
-	t.Run("db_error", func(t *testing.T) {
+	t.Run("db_error_toggle", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("ToggleLike")
 
-		dbErr := fmt.Errorf("db failed")
+		dbErr := fmt.Errorf("db toggle failed")
 		mockLogger.EXPECT().Error(fmt.Sprintf("failed to toggle like: %v", dbErr))
 
 		in := &materials.ToggleLikeIn{
@@ -534,7 +542,7 @@ func TestServer_ToggleLike(t *testing.T) {
 
 		mockRepo.EXPECT().
 			ToggleLike(ctxWithUUID, materialUUID, userUUID).
-			Return(false, int32(0), dbErr)
+			Return(false, dbErr)
 
 		out, err := s.ToggleLike(ctxWithUUID, in)
 
@@ -542,6 +550,33 @@ func TestServer_ToggleLike(t *testing.T) {
 		assert.Error(t, err)
 		sts := status.Convert(err)
 		assert.Equal(t, codes.Internal, sts.Code())
-		assert.Contains(t, sts.Message(), "failed to toggle like: db failed")
+		assert.Contains(t, sts.Message(), "failed to toggle like: db toggle failed")
+	})
+
+	t.Run("db_error_update_count", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("ToggleLike")
+
+		dbErr := fmt.Errorf("db update failed")
+		mockLogger.EXPECT().Error(fmt.Sprintf("failed to update likes count: %v", dbErr))
+
+		in := &materials.ToggleLikeIn{
+			MaterialUuid: materialUUID,
+		}
+
+		mockRepo.EXPECT().
+			ToggleLike(ctxWithUUID, materialUUID, userUUID).
+			Return(true, nil)
+
+		mockRepo.EXPECT().
+			UpdateLikesNumber(ctxWithUUID, materialUUID).
+			Return(int32(0), dbErr)
+
+		out, err := s.ToggleLike(ctxWithUUID, in)
+
+		assert.Nil(t, out)
+		assert.Error(t, err)
+		sts := status.Convert(err)
+		assert.Equal(t, codes.Internal, sts.Code())
+		assert.Contains(t, sts.Message(), "failed to update likes count: db update failed")
 	})
 }

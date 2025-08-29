@@ -554,7 +554,6 @@ func (x *EditMaterialOut) GetMaterial() *Material {
 type ToggleLikeIn struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	MaterialUuid  string                 `protobuf:"bytes,1,opt,name=material_uuid,json=materialUuid,proto3" json:"material_uuid,omitempty"` // UUID материала
-	UserUuid      string                 `protobuf:"bytes,2,opt,name=user_uuid,json=userUuid,proto3" json:"user_uuid,omitempty"`             // UUID пользователя, который ставит лайк
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -592,13 +591,6 @@ func (*ToggleLikeIn) Descriptor() ([]byte, []int) {
 func (x *ToggleLikeIn) GetMaterialUuid() string {
 	if x != nil {
 		return x.MaterialUuid
-	}
-	return ""
-}
-
-func (x *ToggleLikeIn) GetUserUuid() string {
-	if x != nil {
-		return x.UserUuid
 	}
 	return ""
 }
@@ -703,10 +695,9 @@ const file_api_materials_proto_rawDesc = "" +
 	"\acontent\x18\x05 \x01(\tR\acontent\x12*\n" +
 	"\x11read_time_minutes\x18\x06 \x01(\x05R\x0freadTimeMinutes\"8\n" +
 	"\x0fEditMaterialOut\x12%\n" +
-	"\bmaterial\x18\x01 \x01(\v2\t.MaterialR\bmaterial\"P\n" +
+	"\bmaterial\x18\x01 \x01(\v2\t.MaterialR\bmaterial\"3\n" +
 	"\fToggleLikeIn\x12#\n" +
-	"\rmaterial_uuid\x18\x01 \x01(\tR\fmaterialUuid\x12\x1b\n" +
-	"\tuser_uuid\x18\x02 \x01(\tR\buserUuid\"K\n" +
+	"\rmaterial_uuid\x18\x01 \x01(\tR\fmaterialUuid\"K\n" +
 	"\rToggleLikeOut\x12\x19\n" +
 	"\bis_liked\x18\x01 \x01(\bR\aisLiked\x12\x1f\n" +
 	"\vlikes_count\x18\x02 \x01(\x05R\n" +
