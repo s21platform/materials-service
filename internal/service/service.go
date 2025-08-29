@@ -123,3 +123,31 @@ func (s *Service) GetAllMaterials(ctx context.Context, _ *emptypb.Empty) (*mater
 		MaterialList: materialsList.ListFromDTO(),
 	}, nil
 }
+
+func (s *Service) ToggleLike(ctx context.Context, in *materials.ToggleLikeIn) (*materials.ToggleLikeOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("ToggleLike")
+
+	userUUID, ok := ctx.Value(config.KeyUUID).(string)
+	if !ok || userUUID == "" {
+		logger.Error("uuid is required")
+		return nil, status.Error(codes.Unauthenticated, "uuid is required")
+	}
+
+	isLiked, err := s.repository.ToggleLike(ctx, in.MaterialUuid, userUUID)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to toggle like: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to toggle like: %v", err)
+	}
+
+	likesCount, err := s.repository.UpdateLikesNumber(ctx, in.MaterialUuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to update likes count: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to update likes count: %v", err)
+	}
+
+	return &materials.ToggleLikeOut{
+		IsLiked:    isLiked,
+		LikesCount: likesCount,
+	}, nil
+}

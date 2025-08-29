@@ -184,3 +184,49 @@ func (r *Repository) GetMaterialOwnerUUID(ctx context.Context, uuid string) (str
 
 	return ownerUUID, nil
 }
+
+func (r *Repository) ToggleLike(ctx context.Context, materialUUID string, userUUID string) (bool, error) {
+	query := `
+        WITH ins AS (
+            INSERT INTO material_likes (uuid, material_uuid, user_uuid, created_at)
+            VALUES (gen_random_uuid(), $1, $2, NOW())
+            ON CONFLICT DO NOTHING
+            RETURNING 1
+        ),
+        del AS (
+            DELETE FROM material_likes
+            WHERE material_uuid = $1 AND user_uuid = $2
+            RETURNING -1
+        )
+        SELECT COALESCE((SELECT * FROM ins), (SELECT * FROM del)) AS result;
+    `
+
+	var result int
+	if err := r.connection.GetContext(ctx, &result, query, materialUUID, userUUID); err != nil {
+		return false, fmt.Errorf("failed to toggle like: %w", err)
+	}
+
+	return result == 1, nil
+}
+
+func (r *Repository) UpdateLikesNumber(ctx context.Context, materialUUID string) (int32, error) {
+	query := `
+        UPDATE materials
+        SET likes_count = sub.count
+        FROM (
+            SELECT COUNT(*)::int AS count
+            FROM material_likes
+            WHERE material_uuid = $1
+        ) AS sub
+        WHERE materials.uuid = $1
+        RETURNING likes_count
+    `
+
+	var likesCount int32
+	err := r.connection.GetContext(ctx, &likesCount, query, materialUUID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to update likes count: %w", err)
+	}
+
+	return likesCount, nil
+}
