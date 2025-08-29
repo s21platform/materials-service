@@ -185,14 +185,14 @@ func (r *Repository) GetMaterialOwnerUUID(ctx context.Context, uuid string) (str
 	return ownerUUID, nil
 }
 
-func (r *Repository) PublishMaterial(ctx context.Context, material *model.Material) (*model.Material, error) {
+func (r *Repository) PublishMaterial(ctx context.Context, uuid string) (*model.Material, error) {
 	var updatedMaterial model.Material
 
 	query, args, err := sq.
 		Update("materials").
-		Set("status", material.Status).
-		Set("published_at", material.PublishedAt).
-		Where(sq.Eq{"uuid": material.UUID}).
+		Set("status", "published").
+		Set("published_at", time.Now()).
+		Where(sq.Eq{"uuid": uuid}).
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING uuid, owner_uuid, title, cover_image_url, description, content, read_time_minutes, status, created_at, edited_at, published_at, archived_at, deleted_at, likes_count").
 		ToSql()

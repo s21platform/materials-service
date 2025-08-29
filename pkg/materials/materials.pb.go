@@ -553,7 +553,7 @@ func (x *EditMaterialOut) GetMaterial() *Material {
 
 type PublishMaterialIn struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"` // UUID созданного материала
+	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"` // UUID материала
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

@@ -8,13 +8,11 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	logger_lib "github.com/s21platform/logger-lib"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
-	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/materials-service/internal/config"
 	"github.com/s21platform/materials-service/internal/model"
@@ -461,7 +459,7 @@ func TestServer_PublishMaterial(t *testing.T) {
 	content := "material content"
 	createdAt := time.Now()
 	editedAt := time.Now()
-	tM := timestamppb.Now().AsTime()
+	publishedAt := time.Now()
 
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
@@ -487,6 +485,7 @@ func TestServer_PublishMaterial(t *testing.T) {
 			Status:          "draft",
 			CreatedAt:       createdAt,
 			EditedAt:        &editedAt,
+			DeletedAt:       nil,
 			LikesCount:      0,
 		}
 
@@ -501,13 +500,14 @@ func TestServer_PublishMaterial(t *testing.T) {
 			Status:          "published",
 			CreatedAt:       createdAt,
 			EditedAt:        &editedAt,
-			PublishedAt:     &tM,
+			PublishedAt:     &publishedAt,
+			DeletedAt:       nil,
 			LikesCount:      0,
 		}
 
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
 		mockRepo.EXPECT().GetMaterial(ctx, materialUUID).Return(draftMaterial, nil)
-		mockRepo.EXPECT().PublishMaterial(ctx, gomock.Any()).Return(publishedMaterial, nil)
+		mockRepo.EXPECT().PublishMaterial(ctx, materialUUID).Return(publishedMaterial, nil)
 
 		out, err := s.PublishMaterial(ctx, in)
 
@@ -566,11 +566,11 @@ func TestServer_PublishMaterial(t *testing.T) {
 		assert.Equal(t, "failed to publish: user is not owner", sts.Message())
 	})
 
-	t.Run("material_not_draft", func(t *testing.T) {
+	t.Run("material_deleted", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("PublishMaterial")
-		mockLogger.EXPECT().Error("material is not in draft status")
+		mockLogger.EXPECT().Error("material does not exist")
 
-		nonDraftMaterial := &model.Material{
+		deletedMaterial := &model.Material{
 			UUID:            materialUUID,
 			OwnerUUID:       userUUID,
 			Title:           "Test Material",
@@ -578,14 +578,15 @@ func TestServer_PublishMaterial(t *testing.T) {
 			Description:     "Test description",
 			Content:         &content,
 			ReadTimeMinutes: 10,
-			Status:          "published",
+			Status:          "draft",
 			CreatedAt:       createdAt,
 			EditedAt:        &editedAt,
+			DeletedAt:       &createdAt,
 			LikesCount:      0,
 		}
 
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
-		mockRepo.EXPECT().GetMaterial(ctx, materialUUID).Return(nonDraftMaterial, nil)
+		mockRepo.EXPECT().GetMaterial(ctx, materialUUID).Return(deletedMaterial, nil)
 
 		in := &materials.PublishMaterialIn{Uuid: materialUUID}
 
@@ -595,7 +596,7 @@ func TestServer_PublishMaterial(t *testing.T) {
 		assert.Error(t, err)
 		sts := status.Convert(err)
 		assert.Equal(t, codes.FailedPrecondition, sts.Code())
-		assert.Equal(t, "material is not in draft status", sts.Message())
+		assert.Equal(t, "material does not exist", sts.Message())
 	})
 
 	t.Run("get_material_owner_uuid_error", func(t *testing.T) {
@@ -619,7 +620,7 @@ func TestServer_PublishMaterial(t *testing.T) {
 	t.Run("get_material_error", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("PublishMaterial")
 		dbErr := fmt.Errorf("database error")
-		mockLogger.EXPECT().Error(fmt.Sprintf("failed to get material for publication : %v", dbErr))
+		mockLogger.EXPECT().Error(fmt.Sprintf("failed to get material for publication: %v", dbErr))
 
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
 		mockRepo.EXPECT().GetMaterial(ctx, materialUUID).Return(nil, dbErr)
@@ -651,12 +652,13 @@ func TestServer_PublishMaterial(t *testing.T) {
 			Status:          "draft",
 			CreatedAt:       createdAt,
 			EditedAt:        &editedAt,
+			DeletedAt:       nil,
 			LikesCount:      0,
 		}
 
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
 		mockRepo.EXPECT().GetMaterial(ctx, materialUUID).Return(draftMaterial, nil)
-		mockRepo.EXPECT().PublishMaterial(ctx, gomock.Any()).Return(nil, dbErr)
+		mockRepo.EXPECT().PublishMaterial(ctx, materialUUID).Return(nil, dbErr)
 
 		in := &materials.PublishMaterialIn{Uuid: materialUUID}
 

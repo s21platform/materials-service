@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -154,20 +152,16 @@ func (s *Service) PublishMaterial(ctx context.Context, in *materials.PublishMate
 
 	material, err := s.repository.GetMaterial(ctx, in.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to get material for publication : %v", err))
+		logger.Error(fmt.Sprintf("failed to get material for publication: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to get material for publication: %v", err)
 	}
 
-	if material.Status != "draft" {
-		logger.Error("material is not in draft status")
-		return nil, status.Errorf(codes.FailedPrecondition, "material is not in draft status")
+	if material.DeletedAt != nil {
+		logger.Error("material does not exist")
+		return nil, status.Errorf(codes.FailedPrecondition, "material does not exist")
 	}
 
-	material.Status = "published"
-	t := timestamppb.Now().AsTime()
-	material.PublishedAt = &t
-
-	updatedMaterial, err := s.repository.PublishMaterial(ctx, material)
+	updatedMaterial, err := s.repository.PublishMaterial(ctx, in.Uuid)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to publish material: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to publish material: %v", err)

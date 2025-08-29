@@ -68,7 +68,7 @@ message EditMaterialOut {
 }
 
 message PublishMaterialIn{
-  string uuid = 1; // UUID созданного материала
+  string uuid = 1; // UUID материала
 }
 
 message PublishMaterialOut{
