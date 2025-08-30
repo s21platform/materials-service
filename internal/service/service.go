@@ -145,11 +145,15 @@ func (s *Service) DeleteMaterial(ctx context.Context, in *materials.DeleteMateri
 		return nil, status.Errorf(codes.PermissionDenied, "failed to delete: user is not owner")
 	}
 
-	err = s.repository.DeleteMaterial(ctx, in.Uuid)
+	rowsAffected, err := s.repository.DeleteMaterial(ctx, in.Uuid)
+
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to delete material: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to delete material: %v", err)
 	}
 
+	if rowsAffected == 0 {
+		return nil, fmt.Errorf("material already deleted or not found")
+	}
 	return nil, nil
 }
