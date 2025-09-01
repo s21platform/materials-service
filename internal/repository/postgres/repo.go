@@ -211,16 +211,26 @@ func (r *Repository) PublishMaterial(ctx context.Context, uuid string) (*model.M
 func (r *Repository) MaterialExists(ctx context.Context, materialUUID string) (bool, error) {
 	var exists bool
 
+	subQuery := sq.
+		Select("1").
+		From("materials").
+		Where(sq.Eq{"uuid": materialUUID}).
+		Where("deleted_at IS NULL")
+
+	subQuerySQL, subQueryArgs, err := subQuery.ToSql()
+	if err != nil {
+		return false, fmt.Errorf("failed to build subquery sql: %v", err)
+	}
+
 	query, args, err := sq.
-		Select().
-		Column(sq.Expr("EXISTS(SELECT 1 FROM materials WHERE uuid = ? AND deleted_at IS NULL)", materialUUID)).
+		Select(fmt.Sprintf("EXISTS (%s) AS exists", subQuerySQL)).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
 		return false, fmt.Errorf("failed to build sql query: %v", err)
 	}
 
-	err = r.connection.GetContext(ctx, &exists, query, args...)
+	err = r.connection.GetContext(ctx, &exists, query, append(subQueryArgs, args...)...)
 	if err != nil {
 		return false, fmt.Errorf("failed to check material existence: %v", err)
 	}

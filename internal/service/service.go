@@ -41,9 +41,11 @@ func (s *Service) SaveDraftMaterial(ctx context.Context, in *materials.SaveDraft
 		logger.Error("uuid is required")
 		return nil, status.Error(codes.Unauthenticated, "uuid is required")
 	}
+
 	newMaterialData := &model.SaveDraftMaterial{}
 	newMaterialData.ToDTO(in)
 	materialUUID, err := s.repository.SaveDraftMaterial(ctx, ownerUUID, newMaterialData)
+
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to save draft material: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to save draft material: %v", err)
