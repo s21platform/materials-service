@@ -146,7 +146,6 @@ func (s *Service) DeleteMaterial(ctx context.Context, in *materials.DeleteMateri
 	}
 
 	rowsAffected, err := s.repository.DeleteMaterial(ctx, in.Uuid)
-
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to delete material: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to delete material: %v", err)
@@ -155,5 +154,6 @@ func (s *Service) DeleteMaterial(ctx context.Context, in *materials.DeleteMateri
 	if rowsAffected == 0 {
 		return nil, fmt.Errorf("material already deleted or not found")
 	}
+
 	return nil, nil
 }
