@@ -184,3 +184,27 @@ func (r *Repository) GetMaterialOwnerUUID(ctx context.Context, uuid string) (str
 
 	return ownerUUID, nil
 }
+
+func (r *Repository) DeleteMaterial(ctx context.Context, uuid string) (int64, error) {
+	query, args, err := sq.
+		Update("materials").
+		Set("deleted_at", time.Now()).
+		Where(sq.Eq{"uuid": uuid, "deleted_at": nil}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	res, err := r.connection.ExecContext(ctx, query, args...)
+	if err != nil {
+		return 0, fmt.Errorf("failed to execute query: %v", err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("failed to check rows affected: %v", err)
+	}
+
+	return rowsAffected, nil
+}

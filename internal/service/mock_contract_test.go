@@ -50,6 +50,21 @@ func (mr *MockDBRepoMockRecorder) CreateMaterial(ctx, ownerUUID, material interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMaterial", reflect.TypeOf((*MockDBRepo)(nil).CreateMaterial), ctx, ownerUUID, material)
 }
 
+// DeleteMaterial mocks base method.
+func (m *MockDBRepo) DeleteMaterial(ctx context.Context, uuid string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteMaterial", ctx, uuid)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteMaterial indicates an expected call of DeleteMaterial.
+func (mr *MockDBRepoMockRecorder) DeleteMaterial(ctx, uuid interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMaterial", reflect.TypeOf((*MockDBRepo)(nil).DeleteMaterial), ctx, uuid)
+}
+
 // EditMaterial mocks base method.
 func (m *MockDBRepo) EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error) {
 	m.ctrl.T.Helper()

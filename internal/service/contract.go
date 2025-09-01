@@ -13,4 +13,5 @@ type DBRepo interface {
 	GetAllMaterials(ctx context.Context) (*model.MaterialList, error)
 	EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error)
 	GetMaterialOwnerUUID(ctx context.Context, uuid string) (string, error)
+	DeleteMaterial(ctx context.Context, uuid string) (int64, error)
 }
