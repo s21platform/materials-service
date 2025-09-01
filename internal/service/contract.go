@@ -14,4 +14,5 @@ type DBRepo interface {
 	EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error)
 	GetMaterialOwnerUUID(ctx context.Context, uuid string) (string, error)
 	PublishMaterial(ctx context.Context, uuid string) (*model.Material, error)
+	MaterialExists(ctx context.Context, materialUUID string) (bool, error)
 }

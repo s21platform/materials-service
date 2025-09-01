@@ -202,11 +202,28 @@ func (r *Repository) PublishMaterial(ctx context.Context, uuid string) (*model.M
 
 	err = r.connection.GetContext(ctx, &updatedMaterial, query, args...)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.New("material doesn't exist")
-		}
-		return nil, fmt.Errorf("failed to update material status: %v", err)
+		return nil, fmt.Errorf("failed to execute update query: %v", err)
 	}
 
 	return &updatedMaterial, nil
+}
+
+func (r *Repository) MaterialExists(ctx context.Context, materialUUID string) (bool, error) {
+	var exists bool
+
+	query, args, err := sq.
+		Select().
+		Column(sq.Expr("EXISTS(SELECT 1 FROM materials WHERE uuid = ? AND deleted_at IS NULL)", materialUUID)).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return false, fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	err = r.connection.GetContext(ctx, &exists, query, args...)
+	if err != nil {
+		return false, fmt.Errorf("failed to check material existence: %v", err)
+	}
+
+	return exists, nil
 }

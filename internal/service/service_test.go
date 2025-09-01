@@ -474,21 +474,6 @@ func TestServer_PublishMaterial(t *testing.T) {
 			Uuid: materialUUID,
 		}
 
-		draftMaterial := &model.Material{
-			UUID:            materialUUID,
-			OwnerUUID:       userUUID,
-			Title:           "Test Material",
-			CoverImageURL:   "http://example.com/cover.jpg",
-			Description:     "Test description",
-			Content:         &content,
-			ReadTimeMinutes: 10,
-			Status:          "draft",
-			CreatedAt:       createdAt,
-			EditedAt:        &editedAt,
-			DeletedAt:       nil,
-			LikesCount:      0,
-		}
-
 		publishedMaterial := &model.Material{
 			UUID:            materialUUID,
 			OwnerUUID:       userUUID,
@@ -506,7 +491,7 @@ func TestServer_PublishMaterial(t *testing.T) {
 		}
 
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
-		mockRepo.EXPECT().GetMaterial(ctx, materialUUID).Return(draftMaterial, nil)
+		mockRepo.EXPECT().MaterialExists(ctx, materialUUID).Return(true, nil)
 		mockRepo.EXPECT().PublishMaterial(ctx, materialUUID).Return(publishedMaterial, nil)
 
 		out, err := s.PublishMaterial(ctx, in)
@@ -566,39 +551,6 @@ func TestServer_PublishMaterial(t *testing.T) {
 		assert.Equal(t, "failed to publish: user is not owner", sts.Message())
 	})
 
-	t.Run("material_deleted", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("PublishMaterial")
-		mockLogger.EXPECT().Error("material does not exist")
-
-		deletedMaterial := &model.Material{
-			UUID:            materialUUID,
-			OwnerUUID:       userUUID,
-			Title:           "Test Material",
-			CoverImageURL:   "http://example.com/cover.jpg",
-			Description:     "Test description",
-			Content:         &content,
-			ReadTimeMinutes: 10,
-			Status:          "draft",
-			CreatedAt:       createdAt,
-			EditedAt:        &editedAt,
-			DeletedAt:       &createdAt,
-			LikesCount:      0,
-		}
-
-		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
-		mockRepo.EXPECT().GetMaterial(ctx, materialUUID).Return(deletedMaterial, nil)
-
-		in := &materials.PublishMaterialIn{Uuid: materialUUID}
-
-		out, err := s.PublishMaterial(ctx, in)
-
-		assert.Nil(t, out)
-		assert.Error(t, err)
-		sts := status.Convert(err)
-		assert.Equal(t, codes.FailedPrecondition, sts.Code())
-		assert.Equal(t, "material does not exist", sts.Message())
-	})
-
 	t.Run("get_material_owner_uuid_error", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("PublishMaterial")
 		dbErr := fmt.Errorf("database error")
@@ -617,13 +569,12 @@ func TestServer_PublishMaterial(t *testing.T) {
 		assert.Contains(t, sts.Message(), "failed to get owner uuid: database error")
 	})
 
-	t.Run("get_material_error", func(t *testing.T) {
+	t.Run("material_does_not_exist", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("PublishMaterial")
-		dbErr := fmt.Errorf("database error")
-		mockLogger.EXPECT().Error(fmt.Sprintf("failed to get material for publication: %v", dbErr))
+		mockLogger.EXPECT().Error("material does not exist")
 
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
-		mockRepo.EXPECT().GetMaterial(ctx, materialUUID).Return(nil, dbErr)
+		mockRepo.EXPECT().MaterialExists(ctx, materialUUID).Return(false, nil)
 
 		in := &materials.PublishMaterialIn{Uuid: materialUUID}
 
@@ -632,8 +583,8 @@ func TestServer_PublishMaterial(t *testing.T) {
 		assert.Nil(t, out)
 		assert.Error(t, err)
 		sts := status.Convert(err)
-		assert.Equal(t, codes.Internal, sts.Code())
-		assert.Contains(t, sts.Message(), "failed to get material for publication: database error")
+		assert.Equal(t, codes.FailedPrecondition, sts.Code())
+		assert.Equal(t, "material does not exist", sts.Message())
 	})
 
 	t.Run("publish_material_error", func(t *testing.T) {
@@ -641,23 +592,8 @@ func TestServer_PublishMaterial(t *testing.T) {
 		dbErr := fmt.Errorf("publish failed")
 		mockLogger.EXPECT().Error(fmt.Sprintf("failed to publish material: %v", dbErr))
 
-		draftMaterial := &model.Material{
-			UUID:            materialUUID,
-			OwnerUUID:       userUUID,
-			Title:           "Test Material",
-			CoverImageURL:   "http://example.com/cover.jpg",
-			Description:     "Test description",
-			Content:         &content,
-			ReadTimeMinutes: 10,
-			Status:          "draft",
-			CreatedAt:       createdAt,
-			EditedAt:        &editedAt,
-			DeletedAt:       nil,
-			LikesCount:      0,
-		}
-
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
-		mockRepo.EXPECT().GetMaterial(ctx, materialUUID).Return(draftMaterial, nil)
+		mockRepo.EXPECT().MaterialExists(ctx, materialUUID).Return(true, nil)
 		mockRepo.EXPECT().PublishMaterial(ctx, materialUUID).Return(nil, dbErr)
 
 		in := &materials.PublishMaterialIn{Uuid: materialUUID}

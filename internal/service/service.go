@@ -150,24 +150,24 @@ func (s *Service) PublishMaterial(ctx context.Context, in *materials.PublishMate
 		return nil, status.Errorf(codes.PermissionDenied, "failed to publish: user is not owner")
 	}
 
-	material, err := s.repository.GetMaterial(ctx, in.Uuid)
+	exists, err := s.repository.MaterialExists(ctx, in.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to get material for publication: %v", err))
-		return nil, status.Errorf(codes.Internal, "failed to get material for publication: %v", err)
+		logger.Error(fmt.Sprintf("failed to check material existence: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to check material existence: %v", err)
 	}
 
-	if material.DeletedAt != nil {
+	if !exists {
 		logger.Error("material does not exist")
 		return nil, status.Errorf(codes.FailedPrecondition, "material does not exist")
 	}
 
-	updatedMaterial, err := s.repository.PublishMaterial(ctx, in.Uuid)
+	publishedMaterial, err := s.repository.PublishMaterial(ctx, in.Uuid)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to publish material: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to publish material: %v", err)
 	}
 
 	return &materials.PublishMaterialOut{
-		Material: updatedMaterial.FromDTO(),
+		Material: publishedMaterial.FromDTO(),
 	}, nil
 }

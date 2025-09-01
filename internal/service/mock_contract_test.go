@@ -95,6 +95,21 @@ func (mr *MockDBRepoMockRecorder) GetMaterialOwnerUUID(ctx, uuid interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMaterialOwnerUUID", reflect.TypeOf((*MockDBRepo)(nil).GetMaterialOwnerUUID), ctx, uuid)
 }
 
+// MaterialExists mocks base method.
+func (m *MockDBRepo) MaterialExists(ctx context.Context, materialUUID string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MaterialExists", ctx, materialUUID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MaterialExists indicates an expected call of MaterialExists.
+func (mr *MockDBRepoMockRecorder) MaterialExists(ctx, materialUUID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MaterialExists", reflect.TypeOf((*MockDBRepo)(nil).MaterialExists), ctx, materialUUID)
+}
+
 // PublishMaterial mocks base method.
 func (m *MockDBRepo) PublishMaterial(ctx context.Context, uuid string) (*model.Material, error) {
 	m.ctrl.T.Helper()
