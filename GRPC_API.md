@@ -4,6 +4,7 @@
 ## Table of Contents
 
 - [api/materials.proto](#api_materials-proto)
+    - [DeleteMaterialIn](#-DeleteMaterialIn)
     - [EditMaterialIn](#-EditMaterialIn)
     - [EditMaterialOut](#-EditMaterialOut)
     - [GetAllMaterialsOut](#-GetAllMaterialsOut)
@@ -25,6 +26,21 @@
 <p align="right"><a href="#top">Top</a></p>
 
 ## api/materials.proto
+
+
+
+<a name="-DeleteMaterialIn"></a>
+
+### DeleteMaterialIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+
+
+
 
 
 
@@ -218,6 +234,7 @@
 | GetAllMaterials | [.google.protobuf.Empty](#google-protobuf-Empty) | [.GetAllMaterialsOut](#GetAllMaterialsOut) |  |
 | EditMaterial | [.EditMaterialIn](#EditMaterialIn) | [.EditMaterialOut](#EditMaterialOut) |  |
 | PublishMaterial | [.PublishMaterialIn](#PublishMaterialIn) | [.PublishMaterialOut](#PublishMaterialOut) |  |
+| DeleteMaterial | [.DeleteMaterialIn](#DeleteMaterialIn) | [.google.protobuf.Empty](#google-protobuf-Empty) |  |
 
  
 

@@ -126,6 +126,40 @@ func (s *Service) GetAllMaterials(ctx context.Context, _ *emptypb.Empty) (*mater
 	}, nil
 }
 
+func (s *Service) DeleteMaterial(ctx context.Context, in *materials.DeleteMaterialIn) (*emptypb.Empty, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("DeleteMaterial")
+
+	userUUID, ok := ctx.Value(config.KeyUUID).(string)
+	if !ok || userUUID == "" {
+		logger.Error("uuid is required")
+		return nil, status.Error(codes.Unauthenticated, "uuid is required")
+	}
+
+	materialOwnerUUID, err := s.repository.GetMaterialOwnerUUID(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get owner uuid: %v", err)
+	}
+
+	if materialOwnerUUID != userUUID {
+		logger.Error("failed to delete: user is not owner")
+		return nil, status.Errorf(codes.PermissionDenied, "failed to delete: user is not owner")
+	}
+
+	rowsAffected, err := s.repository.DeleteMaterial(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to delete material: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to delete material: %v", err)
+	}
+
+	if rowsAffected == 0 {
+		return nil, fmt.Errorf("material already deleted or not found")
+	}
+
+	return nil, nil
+}
+
 func (s *Service) PublishMaterial(ctx context.Context, in *materials.PublishMaterialIn) (*materials.PublishMaterialOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("PublishMaterial")
