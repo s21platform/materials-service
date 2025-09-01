@@ -445,3 +445,119 @@ func TestServer_EditMaterial(t *testing.T) {
 		assert.Contains(t, sts.Message(), "failed to edit material: edit failed")
 	})
 }
+
+func TestServer_DeleteMaterial(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := NewMockDBRepo(ctrl)
+	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+	userUUID := uuid.New().String()
+	materialUUID := uuid.New().String()
+
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+	ctx = context.WithValue(ctx, config.KeyUUID, userUUID)
+
+	s := New(mockRepo)
+
+	t.Run("success", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
+		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
+		mockRepo.EXPECT().DeleteMaterial(ctx, materialUUID).Return(int64(1), nil)
+
+		in := &materials.DeleteMaterialIn{Uuid: materialUUID}
+
+		out, err := s.DeleteMaterial(ctx, in)
+
+		assert.NoError(t, err)
+		assert.Nil(t, out)
+	})
+
+	t.Run("no_user_uuid", func(t *testing.T) {
+		badCtx := context.Background()
+		badCtx = context.WithValue(badCtx, config.KeyLogger, mockLogger)
+
+		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
+		mockLogger.EXPECT().Error("uuid is required")
+
+		in := &materials.DeleteMaterialIn{Uuid: materialUUID}
+		_, err := s.DeleteMaterial(badCtx, in)
+
+		assert.Error(t, err)
+		sts := status.Convert(err)
+		assert.Equal(t, codes.Unauthenticated, sts.Code())
+		assert.Equal(t, "uuid is required", sts.Message())
+	})
+
+	t.Run("get_owner_uuid_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
+
+		dbErr := fmt.Errorf("database error")
+
+		mockLogger.EXPECT().Error(fmt.Sprintf("failed to get owner uuid: %v", dbErr))
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return("", dbErr)
+
+		in := &materials.DeleteMaterialIn{Uuid: materialUUID}
+		_, err := s.DeleteMaterial(ctx, in)
+
+		assert.Error(t, err)
+		sts := status.Convert(err)
+		assert.Equal(t, codes.Internal, sts.Code())
+		assert.Contains(t, sts.Message(), "failed to get owner uuid: database error")
+	})
+
+	t.Run("user_not_owner", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
+		mockLogger.EXPECT().Error("failed to delete: user is not owner")
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return("other-uuid", nil)
+
+		in := &materials.DeleteMaterialIn{Uuid: materialUUID}
+		_, err := s.DeleteMaterial(ctx, in)
+
+		assert.Error(t, err)
+		sts := status.Convert(err)
+		assert.Equal(t, codes.PermissionDenied, sts.Code())
+		assert.Equal(t, "failed to delete: user is not owner", sts.Message())
+	})
+
+	//3
+	t.Run("delete_material_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
+
+		dbErr := fmt.Errorf("delete failed")
+
+		mockLogger.EXPECT().Error(fmt.Sprintf("failed to delete material: %v", dbErr))
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
+
+		mockRepo.EXPECT().DeleteMaterial(ctx, gomock.Any()).Return(int64(0), dbErr)
+
+		in := &materials.DeleteMaterialIn{Uuid: materialUUID}
+		_, err := s.DeleteMaterial(ctx, in)
+
+		assert.Error(t, err)
+		sts := status.Convert(err)
+		assert.Equal(t, codes.Internal, sts.Code())
+		assert.Contains(t, sts.Message(), "failed to delete material: delete failed")
+	})
+
+	t.Run("material_not_found", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
+		mockLogger.EXPECT().Error("failed to delete: material already deleted or not found")
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
+		mockRepo.EXPECT().DeleteMaterial(ctx, materialUUID).Return(int64(0), nil)
+
+		in := &materials.DeleteMaterialIn{Uuid: materialUUID}
+		_, err := s.DeleteMaterial(ctx, in)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "material already deleted or not found")
+	})
+}
