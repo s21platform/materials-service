@@ -525,7 +525,7 @@ func TestServer_DeleteMaterial(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, sts.Code())
 		assert.Equal(t, "failed to delete: user is not owner", sts.Message())
 	})
-	
+
 	t.Run("delete_material_error", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
 
@@ -557,6 +557,6 @@ func TestServer_DeleteMaterial(t *testing.T) {
 		_, err := s.DeleteMaterial(ctx, in)
 
 		assert.Error(t, err)
-		assert.EqualError(t, err, "material already deleted or not found")
+		assert.EqualError(t, err, "failed to delete: material already deleted or not found")
 	})
 }
