@@ -241,20 +241,17 @@ func (r *Repository) MaterialExists(ctx context.Context, materialUUID string) (b
 		Where(sq.Eq{"uuid": materialUUID}).
 		Where("deleted_at IS NULL")
 
-	subQuerySQL, subQueryArgs, err := subQuery.ToSql()
-	if err != nil {
-		return false, fmt.Errorf("failed to build subquery sql: %v", err)
-	}
+	query := sq.
+		Select().
+		Column(sq.Expr("EXISTS(?) AS exists", subQuery)).
+		PlaceholderFormat(sq.Dollar)
 
-	query, args, err := sq.
-		Select(fmt.Sprintf("EXISTS (%s) AS exists", subQuerySQL)).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
+	querySQL, args, err := query.ToSql()
 	if err != nil {
 		return false, fmt.Errorf("failed to build sql query: %v", err)
 	}
 
-	err = r.connection.GetContext(ctx, &exists, query, append(subQueryArgs, args...)...)
+	err = r.connection.GetContext(ctx, &exists, querySQL, args...)
 	if err != nil {
 		return false, fmt.Errorf("failed to check material existence: %v", err)
 	}
