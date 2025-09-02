@@ -12,6 +12,7 @@ service MaterialsService {
   rpc EditMaterial(EditMaterialIn) returns (EditMaterialOut) {};
   rpc PublishMaterial(PublishMaterialIn) returns (PublishMaterialOut){};
   rpc DeleteMaterial(DeleteMaterialIn) returns (google.protobuf.Empty) {};
+  rpc ArchivedMaterial(ArchivedMaterialIn) returns (google.protobuf.Empty) {};
 }
 
 message SaveDraftMaterialIn {
@@ -78,4 +79,8 @@ message PublishMaterialIn{
 
 message PublishMaterialOut{
   Material material = 1; // Весь материал
+}
+
+message ArchivedMaterialIn{
+  string uuid = 1;
 }
