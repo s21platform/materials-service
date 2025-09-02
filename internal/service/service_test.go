@@ -558,7 +558,6 @@ func TestServer_DeleteMaterial(t *testing.T) {
 	})
 }
 func TestServer_PublishMaterial(t *testing.T) {
-
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
