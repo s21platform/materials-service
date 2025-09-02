@@ -35,6 +35,21 @@ func (m *MockDBRepo) EXPECT() *MockDBRepoMockRecorder {
 	return m.recorder
 }
 
+// ArchivedMaterial mocks base method.
+func (m *MockDBRepo) ArchivedMaterial(ctx context.Context, uuid string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ArchivedMaterial", ctx, uuid)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ArchivedMaterial indicates an expected call of ArchivedMaterial.
+func (mr *MockDBRepoMockRecorder) ArchivedMaterial(ctx, uuid interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ArchivedMaterial", reflect.TypeOf((*MockDBRepo)(nil).ArchivedMaterial), ctx, uuid)
+}
+
 // CreateMaterial mocks base method.
 func (m *MockDBRepo) CreateMaterial(ctx context.Context, ownerUUID string, material *model.CreateMaterial) (string, error) {
 	m.ctrl.T.Helper()

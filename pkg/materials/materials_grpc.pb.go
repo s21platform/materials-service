@@ -20,11 +20,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MaterialsService_CreateMaterial_FullMethodName  = "/MaterialsService/CreateMaterial"
-	MaterialsService_GetMaterial_FullMethodName     = "/MaterialsService/GetMaterial"
-	MaterialsService_GetAllMaterials_FullMethodName = "/MaterialsService/GetAllMaterials"
-	MaterialsService_EditMaterial_FullMethodName    = "/MaterialsService/EditMaterial"
-	MaterialsService_DeleteMaterial_FullMethodName  = "/MaterialsService/DeleteMaterial"
+	MaterialsService_CreateMaterial_FullMethodName   = "/MaterialsService/CreateMaterial"
+	MaterialsService_GetMaterial_FullMethodName      = "/MaterialsService/GetMaterial"
+	MaterialsService_GetAllMaterials_FullMethodName  = "/MaterialsService/GetAllMaterials"
+	MaterialsService_EditMaterial_FullMethodName     = "/MaterialsService/EditMaterial"
+	MaterialsService_DeleteMaterial_FullMethodName   = "/MaterialsService/DeleteMaterial"
+	MaterialsService_ArchivedMaterial_FullMethodName = "/MaterialsService/ArchivedMaterial"
 )
 
 // MaterialsServiceClient is the client API for MaterialsService service.
@@ -36,6 +37,7 @@ type MaterialsServiceClient interface {
 	GetAllMaterials(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllMaterialsOut, error)
 	EditMaterial(ctx context.Context, in *EditMaterialIn, opts ...grpc.CallOption) (*EditMaterialOut, error)
 	DeleteMaterial(ctx context.Context, in *DeleteMaterialIn, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ArchivedMaterial(ctx context.Context, in *ArchivedMaterialIn, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type materialsServiceClient struct {
@@ -96,6 +98,16 @@ func (c *materialsServiceClient) DeleteMaterial(ctx context.Context, in *DeleteM
 	return out, nil
 }
 
+func (c *materialsServiceClient) ArchivedMaterial(ctx context.Context, in *ArchivedMaterialIn, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, MaterialsService_ArchivedMaterial_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MaterialsServiceServer is the server API for MaterialsService service.
 // All implementations must embed UnimplementedMaterialsServiceServer
 // for forward compatibility.
@@ -105,6 +117,7 @@ type MaterialsServiceServer interface {
 	GetAllMaterials(context.Context, *emptypb.Empty) (*GetAllMaterialsOut, error)
 	EditMaterial(context.Context, *EditMaterialIn) (*EditMaterialOut, error)
 	DeleteMaterial(context.Context, *DeleteMaterialIn) (*emptypb.Empty, error)
+	ArchivedMaterial(context.Context, *ArchivedMaterialIn) (*emptypb.Empty, error)
 	mustEmbedUnimplementedMaterialsServiceServer()
 }
 
@@ -129,6 +142,9 @@ func (UnimplementedMaterialsServiceServer) EditMaterial(context.Context, *EditMa
 }
 func (UnimplementedMaterialsServiceServer) DeleteMaterial(context.Context, *DeleteMaterialIn) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteMaterial not implemented")
+}
+func (UnimplementedMaterialsServiceServer) ArchivedMaterial(context.Context, *ArchivedMaterialIn) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ArchivedMaterial not implemented")
 }
 func (UnimplementedMaterialsServiceServer) mustEmbedUnimplementedMaterialsServiceServer() {}
 func (UnimplementedMaterialsServiceServer) testEmbeddedByValue()                          {}
@@ -241,6 +257,24 @@ func _MaterialsService_DeleteMaterial_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MaterialsService_ArchivedMaterial_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ArchivedMaterialIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MaterialsServiceServer).ArchivedMaterial(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MaterialsService_ArchivedMaterial_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MaterialsServiceServer).ArchivedMaterial(ctx, req.(*ArchivedMaterialIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MaterialsService_ServiceDesc is the grpc.ServiceDesc for MaterialsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -267,6 +301,10 @@ var MaterialsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteMaterial",
 			Handler:    _MaterialsService_DeleteMaterial_Handler,
+		},
+		{
+			MethodName: "ArchivedMaterial",
+			Handler:    _MaterialsService_ArchivedMaterial_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

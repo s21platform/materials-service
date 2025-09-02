@@ -4,6 +4,7 @@
 ## Table of Contents
 
 - [api/materials.proto](#api_materials-proto)
+    - [ArchivedMaterialIn](#-ArchivedMaterialIn)
     - [CreateMaterialIn](#-CreateMaterialIn)
     - [CreateMaterialOut](#-CreateMaterialOut)
     - [DeleteMaterialIn](#-DeleteMaterialIn)
@@ -24,6 +25,21 @@
 <p align="right"><a href="#top">Top</a></p>
 
 ## api/materials.proto
+
+
+
+<a name="-ArchivedMaterialIn"></a>
+
+### ArchivedMaterialIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+
+
+
 
 
 
@@ -202,6 +218,7 @@
 | GetAllMaterials | [.google.protobuf.Empty](#google-protobuf-Empty) | [.GetAllMaterialsOut](#GetAllMaterialsOut) |  |
 | EditMaterial | [.EditMaterialIn](#EditMaterialIn) | [.EditMaterialOut](#EditMaterialOut) |  |
 | DeleteMaterial | [.DeleteMaterialIn](#DeleteMaterialIn) | [.google.protobuf.Empty](#google-protobuf-Empty) |  |
+| ArchivedMaterial | [.ArchivedMaterialIn](#ArchivedMaterialIn) | [.google.protobuf.Empty](#google-protobuf-Empty) |  |
 
  
 

@@ -157,3 +157,38 @@ func (s *Service) DeleteMaterial(ctx context.Context, in *materials.DeleteMateri
 
 	return nil, nil
 }
+
+func (s *Service) ArchivedMaterial(ctx context.Context, in *materials.ArchivedMaterialIn) (*emptypb.Empty, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("ArchivedMaterial")
+
+	userUUID, ok := ctx.Value(config.KeyUUID).(string)
+	if !ok || userUUID == "" {
+		logger.Error("uuid is required")
+		return nil, status.Error(codes.Unauthenticated, "uuid is required")
+	}
+
+	materialOwnerUUID, err := s.repository.GetMaterialOwnerUUID(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get owner uuid: %v", err)
+	}
+
+	if materialOwnerUUID != userUUID {
+		logger.Error("failed to archived: user is not owner")
+		return nil, status.Errorf(codes.PermissionDenied, "failed to archived: user is not owner")
+	}
+
+	rowsAffected, err := s.repository.ArchivedMaterial(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to archived material: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to archived material: %v", err)
+	}
+
+	if rowsAffected == 0 {
+		logger.Error("failed to archived material: material already archived or not found")
+		return nil, status.Error(codes.NotFound, "failed to archived material: material already archived or not found")
+	}
+
+	return nil, nil
+}
