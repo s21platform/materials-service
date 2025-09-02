@@ -445,7 +445,7 @@ func TestServer_EditMaterial(t *testing.T) {
 	})
 }
 
-func TestServer_ArchivedMaterial(t *testing.T) {
+func TestServer_DeleteMaterial(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
@@ -464,13 +464,12 @@ func TestServer_ArchivedMaterial(t *testing.T) {
 	s := New(mockRepo)
 
 	t.Run("success", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("ArchivedMaterial")
+		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
-		mockRepo.EXPECT().ArchivedMaterial(ctx, materialUUID).Return(int64(1), nil)
+		mockRepo.EXPECT().DeleteMaterial(ctx, materialUUID).Return(int64(1), nil)
 
-		in := &materials.ArchivedMaterialIn{Uuid: materialUUID}
-
-		out, err := s.ArchivedMaterial(ctx, in)
+		in := &materials.DeleteMaterialIn{Uuid: materialUUID}
+		out, err := s.DeleteMaterial(ctx, in)
 
 		assert.NoError(t, err)
 		assert.Nil(t, out)
@@ -479,12 +478,11 @@ func TestServer_ArchivedMaterial(t *testing.T) {
 	t.Run("no_user_uuid", func(t *testing.T) {
 		badCtx := context.Background()
 		badCtx = context.WithValue(badCtx, config.KeyLogger, mockLogger)
-
-		mockLogger.EXPECT().AddFuncName("ArchivedMaterial")
+		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
 		mockLogger.EXPECT().Error("uuid is required")
 
-		in := &materials.ArchivedMaterialIn{Uuid: materialUUID}
-		_, err := s.ArchivedMaterial(badCtx, in)
+		in := &materials.DeleteMaterialIn{Uuid: materialUUID}
+		_, err := s.DeleteMaterial(badCtx, in)
 
 		assert.Error(t, err)
 		sts := status.Convert(err)
@@ -493,14 +491,15 @@ func TestServer_ArchivedMaterial(t *testing.T) {
 	})
 
 	t.Run("get_owner_uuid_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("ArchivedMaterial")
+		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
 
 		dbErr := fmt.Errorf("database error")
 		mockLogger.EXPECT().Error(fmt.Sprintf("failed to get owner uuid: %v", dbErr))
 
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return("", dbErr)
-		in := &materials.ArchivedMaterialIn{Uuid: materialUUID}
-		_, err := s.ArchivedMaterial(ctx, in)
+
+		in := &materials.DeleteMaterialIn{Uuid: materialUUID}
+		_, err := s.DeleteMaterial(ctx, in)
 
 		assert.Error(t, err)
 		sts := status.Convert(err)
@@ -508,54 +507,54 @@ func TestServer_ArchivedMaterial(t *testing.T) {
 		assert.Contains(t, sts.Message(), "failed to get owner uuid: database error")
 	})
 	t.Run("user_not_owner", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("ArchivedMaterial")
-		mockLogger.EXPECT().Error("failed to archived: user is not owner")
+		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
+		mockLogger.EXPECT().Error("failed to delete: user is not owner")
 
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return("other-uuid", nil)
 
-		in := &materials.ArchivedMaterialIn{Uuid: materialUUID}
-		_, err := s.ArchivedMaterial(ctx, in)
+		in := &materials.DeleteMaterialIn{Uuid: materialUUID}
+		_, err := s.DeleteMaterial(ctx, in)
 
 		assert.Error(t, err)
 		sts := status.Convert(err)
 		assert.Equal(t, codes.PermissionDenied, sts.Code())
-		assert.Equal(t, "failed to archived: user is not owner", sts.Message())
+		assert.Equal(t, "failed to delete: user is not owner", sts.Message())
 	})
 
-	t.Run("Archived_material_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("ArchivedMaterial")
+	t.Run("delete_material_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
 
-		dbErr := fmt.Errorf("archived failed")
+		dbErr := fmt.Errorf("delete failed")
 
-		mockLogger.EXPECT().Error(fmt.Sprintf("failed to archived material: %v", dbErr))
+		mockLogger.EXPECT().Error(fmt.Sprintf("failed to delete material: %v", dbErr))
 
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
 
-		mockRepo.EXPECT().ArchivedMaterial(ctx, gomock.Any()).Return(int64(0), dbErr)
+		mockRepo.EXPECT().DeleteMaterial(ctx, gomock.Any()).Return(int64(0), dbErr)
 
-		in := &materials.ArchivedMaterialIn{Uuid: materialUUID}
-		_, err := s.ArchivedMaterial(ctx, in)
+		in := &materials.DeleteMaterialIn{Uuid: materialUUID}
+		_, err := s.DeleteMaterial(ctx, in)
 
 		assert.Error(t, err)
 		sts := status.Convert(err)
 		assert.Equal(t, codes.Internal, sts.Code())
-		assert.Contains(t, sts.Message(), "failed to archived material: archived failed")
+		assert.Contains(t, sts.Message(), "failed to delete material: delete failed")
 	})
 
 	t.Run("material_not_found", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("ArchivedMaterial")
-		mockLogger.EXPECT().Error("failed to archived material: material already archived or not found")
+		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
+		mockLogger.EXPECT().Error("failed to delete: material already deleted or not found")
 
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
-		mockRepo.EXPECT().ArchivedMaterial(ctx, materialUUID).Return(int64(0), nil)
+		mockRepo.EXPECT().DeleteMaterial(ctx, materialUUID).Return(int64(0), nil)
 
-		in := &materials.ArchivedMaterialIn{Uuid: materialUUID}
-		_, err := s.ArchivedMaterial(ctx, in)
+		in := &materials.DeleteMaterialIn{Uuid: materialUUID}
+		_, err := s.DeleteMaterial(ctx, in)
 
 		assert.Error(t, err)
 		sts := status.Convert(err)
 		assert.Equal(t, codes.NotFound, sts.Code())
-		assert.Contains(t, sts.Message(), "failed to archived material: material already archived or not found")
+		assert.Contains(t, sts.Message(), "failed to delete: material already deleted or not found")
 	})
 }
 
@@ -570,6 +569,7 @@ func TestServer_PublishMaterial(t *testing.T) {
 
 	userUUID := uuid.New().String()
 	materialUUID := uuid.New().String()
+
 	content := "material content"
 	createdAt := time.Now()
 	editedAt := time.Now()
@@ -620,7 +620,6 @@ func TestServer_PublishMaterial(t *testing.T) {
 		mockLogger.EXPECT().Error("material uuid is required")
 
 		in := &materials.PublishMaterialIn{Uuid: ""}
-
 		out, err := s.PublishMaterial(ctx, in)
 
 		assert.Nil(t, out)
@@ -638,7 +637,6 @@ func TestServer_PublishMaterial(t *testing.T) {
 		mockLogger.EXPECT().Error("user uuid is required")
 
 		in := &materials.PublishMaterialIn{Uuid: materialUUID}
-
 		out, err := s.PublishMaterial(noCtx, in)
 
 		assert.Nil(t, out)
@@ -651,11 +649,9 @@ func TestServer_PublishMaterial(t *testing.T) {
 	t.Run("user_not_owner", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("PublishMaterial")
 		mockLogger.EXPECT().Error("failed to publish: user is not owner")
-
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return("other-uuid", nil)
 
 		in := &materials.PublishMaterialIn{Uuid: materialUUID}
-
 		out, err := s.PublishMaterial(ctx, in)
 
 		assert.Nil(t, out)
@@ -688,7 +684,6 @@ func TestServer_PublishMaterial(t *testing.T) {
 		mockRepo.EXPECT().MaterialExists(ctx, materialUUID).Return(false, nil)
 
 		in := &materials.PublishMaterialIn{Uuid: materialUUID}
-
 		out, err := s.PublishMaterial(ctx, in)
 
 		assert.Nil(t, out)
@@ -708,7 +703,6 @@ func TestServer_PublishMaterial(t *testing.T) {
 		mockRepo.EXPECT().PublishMaterial(ctx, materialUUID).Return(nil, dbErr)
 
 		in := &materials.PublishMaterialIn{Uuid: materialUUID}
-
 		out, err := s.PublishMaterial(ctx, in)
 
 		assert.Nil(t, out)
@@ -716,5 +710,117 @@ func TestServer_PublishMaterial(t *testing.T) {
 		sts := status.Convert(err)
 		assert.Equal(t, codes.Internal, sts.Code())
 		assert.Contains(t, sts.Message(), "failed to publish material: publish failed")
+	})
+}
+
+func TestServer_ArchivedMaterial(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := NewMockDBRepo(ctrl)
+	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+	userUUID := uuid.New().String()
+	materialUUID := uuid.New().String()
+
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+	ctx = context.WithValue(ctx, config.KeyUUID, userUUID)
+
+	s := New(mockRepo)
+
+	t.Run("success", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("ArchivedMaterial")
+		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
+		mockRepo.EXPECT().ArchivedMaterial(ctx, materialUUID).Return(int64(1), nil)
+
+		in := &materials.ArchivedMaterialIn{Uuid: materialUUID}
+
+		out, err := s.ArchivedMaterial(ctx, in)
+
+		assert.NoError(t, err)
+		assert.Nil(t, out)
+	})
+
+	t.Run("no_user_uuid", func(t *testing.T) {
+		badCtx := context.Background()
+		badCtx = context.WithValue(badCtx, config.KeyLogger, mockLogger)
+		mockLogger.EXPECT().AddFuncName("ArchivedMaterial")
+		mockLogger.EXPECT().Error("uuid is required")
+
+		in := &materials.ArchivedMaterialIn{Uuid: materialUUID}
+		_, err := s.ArchivedMaterial(badCtx, in)
+
+		assert.Error(t, err)
+		sts := status.Convert(err)
+		assert.Equal(t, codes.Unauthenticated, sts.Code())
+		assert.Equal(t, "uuid is required", sts.Message())
+	})
+
+	t.Run("get_owner_uuid_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("ArchivedMaterial")
+
+		dbErr := fmt.Errorf("database error")
+		mockLogger.EXPECT().Error(fmt.Sprintf("failed to get owner uuid: %v", dbErr))
+		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return("", dbErr)
+
+		in := &materials.ArchivedMaterialIn{Uuid: materialUUID}
+		_, err := s.ArchivedMaterial(ctx, in)
+
+		assert.Error(t, err)
+		sts := status.Convert(err)
+		assert.Equal(t, codes.Internal, sts.Code())
+		assert.Contains(t, sts.Message(), "failed to get owner uuid: database error")
+	})
+	t.Run("user_not_owner", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("ArchivedMaterial")
+		mockLogger.EXPECT().Error("failed to archived: user is not owner")
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return("other-uuid", nil)
+
+		in := &materials.ArchivedMaterialIn{Uuid: materialUUID}
+		_, err := s.ArchivedMaterial(ctx, in)
+		assert.Error(t, err)
+		sts := status.Convert(err)
+		assert.Equal(t, codes.PermissionDenied, sts.Code())
+		assert.Equal(t, "failed to archived: user is not owner", sts.Message())
+	})
+
+	t.Run("Archived_material_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("ArchivedMaterial")
+
+		dbErr := fmt.Errorf("archived failed")
+
+		mockLogger.EXPECT().Error(fmt.Sprintf("failed to archived material: %v", dbErr))
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
+
+		mockRepo.EXPECT().ArchivedMaterial(ctx, gomock.Any()).Return(int64(0), dbErr)
+
+		in := &materials.ArchivedMaterialIn{Uuid: materialUUID}
+		_, err := s.ArchivedMaterial(ctx, in)
+
+		assert.Error(t, err)
+		sts := status.Convert(err)
+		assert.Equal(t, codes.Internal, sts.Code())
+		assert.Contains(t, sts.Message(), "failed to archived material: archived failed")
+	})
+
+	t.Run("material_not_found", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("ArchivedMaterial")
+		mockLogger.EXPECT().Error("failed to archived material: material already archived or not found")
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
+		mockRepo.EXPECT().ArchivedMaterial(ctx, materialUUID).Return(int64(0), nil)
+
+		in := &materials.ArchivedMaterialIn{Uuid: materialUUID}
+		_, err := s.ArchivedMaterial(ctx, in)
+
+		assert.Error(t, err)
+		sts := status.Convert(err)
+		assert.Equal(t, codes.NotFound, sts.Code())
+		assert.Contains(t, sts.Message(), "failed to archived material: material already archived or not found")
 	})
 }

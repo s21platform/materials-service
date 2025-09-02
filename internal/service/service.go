@@ -154,7 +154,8 @@ func (s *Service) DeleteMaterial(ctx context.Context, in *materials.DeleteMateri
 	}
 
 	if rowsAffected == 0 {
-		return nil, fmt.Errorf("material already deleted or not found")
+		logger.Error("failed to delete: material already deleted or not found")
+		return nil, status.Errorf(codes.NotFound, "failed to delete: material already deleted or not found")
 	}
 
 	return nil, nil
