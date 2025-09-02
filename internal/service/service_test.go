@@ -525,8 +525,7 @@ func TestServer_DeleteMaterial(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, sts.Code())
 		assert.Equal(t, "failed to delete: user is not owner", sts.Message())
 	})
-
-	//3
+	
 	t.Run("delete_material_error", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
 
