@@ -557,6 +557,8 @@ func TestServer_DeleteMaterial(t *testing.T) {
 		_, err := s.DeleteMaterial(ctx, in)
 
 		assert.Error(t, err)
-		assert.EqualError(t, err, "failed to delete: material already deleted or not found")
+		sts := status.Convert(err)
+		assert.Equal(t, codes.NotFound, sts.Code())
+		assert.Contains(t, sts.Message(), "failed to delete: material already deleted or not found")
 	})
 }
