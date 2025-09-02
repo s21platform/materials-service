@@ -38,7 +38,7 @@ func (r *Repository) Close() {
 	_ = r.connection.Close()
 }
 
-func (r *Repository) CreateMaterial(ctx context.Context, ownerUUID string, material *model.CreateMaterial) (string, error) {
+func (r *Repository) SaveDraftMaterial(ctx context.Context, ownerUUID string, material *model.SaveDraftMaterial) (string, error) {
 	var uuid string
 
 	query, args, err := sq.
@@ -207,6 +207,56 @@ func (r *Repository) DeleteMaterial(ctx context.Context, uuid string) (int64, er
 	}
 
 	return rowsAffected, nil
+}
+
+func (r *Repository) PublishMaterial(ctx context.Context, uuid string) (*model.Material, error) {
+	var updatedMaterial model.Material
+
+	query, args, err := sq.
+		Update("materials").
+		Set("status", "published").
+		Set("published_at", time.Now()).
+		Where(sq.Eq{"uuid": uuid}).
+		PlaceholderFormat(sq.Dollar).
+		Suffix("RETURNING uuid, owner_uuid, title, cover_image_url, description, content, read_time_minutes, status, created_at, edited_at, published_at, archived_at, deleted_at, likes_count").
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build update query: %v", err)
+	}
+
+	err = r.connection.GetContext(ctx, &updatedMaterial, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute update query: %v", err)
+	}
+
+	return &updatedMaterial, nil
+}
+
+func (r *Repository) MaterialExists(ctx context.Context, materialUUID string) (bool, error) {
+	var exists bool
+
+	subQuery := sq.
+		Select("1").
+		From("materials").
+		Where(sq.Eq{"uuid": materialUUID}).
+		Where("deleted_at IS NULL")
+
+	query := sq.
+		Select().
+		Column(sq.Expr("EXISTS(?) AS exists", subQuery)).
+		PlaceholderFormat(sq.Dollar)
+
+	querySQL, args, err := query.ToSql()
+	if err != nil {
+		return false, fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	err = r.connection.GetContext(ctx, &exists, querySQL, args...)
+	if err != nil {
+		return false, fmt.Errorf("failed to check material existence: %v", err)
+	}
+
+	return exists, nil
 }
 
 func (r *Repository) ArchivedMaterial(ctx context.Context, uuid string) (int64, error) {
