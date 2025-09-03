@@ -134,20 +134,57 @@ func (s *Service) ToggleLike(ctx context.Context, in *materials.ToggleLikeIn) (*
 		return nil, status.Error(codes.Unauthenticated, "uuid is required")
 	}
 
-	isLiked, err := s.repository.ToggleLike(ctx, in.MaterialUuid, userUUID)
+	db := s.repository.Conn()
+	tx, err := db.Beginx()
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to toggle like: %v", err))
-		return nil, status.Errorf(codes.Internal, "failed to toggle like: %v", err)
+		logger.Error("failed to begin transaction")
+		return nil, status.Error(codes.Internal, "failed to start transaction")
 	}
 
-	likesCount, err := s.repository.UpdateLikesNumber(ctx, in.MaterialUuid)
+	isLiked, err := s.repository.CheckLike(ctx, in.MaterialUuid, userUUID, tx)
 	if err != nil {
+		_ = tx.Rollback()
+		logger.Error(fmt.Sprintf("failed to check like: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to check like: %v", err)
+	}
+
+	if isLiked {
+		_, err = s.repository.RemoveLike(ctx, in.MaterialUuid, userUUID, tx)
+		if err != nil {
+			_ = tx.Rollback()
+			logger.Error(fmt.Sprintf("failed to remove like: %v", err))
+			return nil, status.Errorf(codes.Internal, "failed to remove like: %v", err)
+		}
+	} else {
+		_, err = s.repository.AddLike(ctx, in.MaterialUuid, userUUID, tx)
+		if err != nil {
+			_ = tx.Rollback()
+			logger.Error(fmt.Sprintf("failed to add like: %v", err))
+			return nil, status.Errorf(codes.Internal, "failed to add like: %v", err)
+		}
+	}
+
+	likesCount, err := s.repository.GetLikesCount(ctx, in.MaterialUuid, tx)
+	if err != nil {
+		_ = tx.Rollback()
+		logger.Error(fmt.Sprintf("failed to get likes count: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get likes count: %v", err)
+	}
+
+	_, err = s.repository.UpdateLikesCount(ctx, in.MaterialUuid, likesCount, tx)
+	if err != nil {
+		_ = tx.Rollback()
 		logger.Error(fmt.Sprintf("failed to update likes count: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to update likes count: %v", err)
 	}
 
+	if err := tx.Commit(); err != nil {
+		logger.Error(fmt.Sprintf("failed to commit transaction: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to commit transaction: %v", err)
+	}
+
 	return &materials.ToggleLikeOut{
-		IsLiked:    isLiked,
+		IsLiked:    !isLiked,
 		LikesCount: likesCount,
 	}, nil
 }

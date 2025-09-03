@@ -6,9 +6,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -449,79 +452,75 @@ func TestServer_EditMaterial(t *testing.T) {
 func TestServer_ToggleLike(t *testing.T) {
 	t.Parallel()
 
+	db, driverMock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer db.Close()
+	sqlxDB := sqlx.NewDb(db, "postgres")
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockRepo := NewMockDBRepo(ctrl)
 	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 
-	materialUUID := uuid.New().String()
 	userUUID := uuid.New().String()
-
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
-	ctxWithUUID := context.WithValue(ctx, config.KeyUUID, userUUID)
+	materialUUID := uuid.New().String()
 
 	s := New(mockRepo)
 
-	t.Run("success_like", func(t *testing.T) {
+	ctx := context.WithValue(context.Background(), config.KeyUUID, userUUID)
+	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+
+	t.Run("success_add_like", func(t *testing.T) {
+		driverMock.ExpectBegin()
+		driverMock.ExpectCommit()
+
 		mockLogger.EXPECT().AddFuncName("ToggleLike")
 
-		in := &materials.ToggleLikeIn{
-			MaterialUuid: materialUUID,
-		}
+		mockRepo.EXPECT().Conn().Return(sqlxDB)
+		mockRepo.EXPECT().CheckLike(gomock.Any(), materialUUID, userUUID, gomock.Any()).Return(false, nil)
+		mockRepo.EXPECT().AddLike(gomock.Any(), materialUUID, userUUID, gomock.Any()).Return(true, nil)
+		mockRepo.EXPECT().GetLikesCount(gomock.Any(), materialUUID, gomock.Any()).Return(int32(1), nil)
+		mockRepo.EXPECT().UpdateLikesCount(gomock.Any(), materialUUID, int32(1), gomock.Any()).Return(int32(1), nil)
 
-		mockRepo.EXPECT().
-			ToggleLike(ctxWithUUID, materialUUID, userUUID).
-			Return(true, nil)
-
-		mockRepo.EXPECT().
-			UpdateLikesNumber(ctxWithUUID, materialUUID).
-			Return(int32(5), nil)
-
-		out, err := s.ToggleLike(ctxWithUUID, in)
+		in := &materials.ToggleLikeIn{MaterialUuid: materialUUID}
+		out, err := s.ToggleLike(ctx, in)
 
 		assert.NoError(t, err)
-		assert.NotNil(t, out)
 		assert.True(t, out.IsLiked)
-		assert.Equal(t, int32(5), out.LikesCount)
+		assert.Equal(t, int32(1), out.LikesCount)
+		require.NoError(t, driverMock.ExpectationsWereMet())
 	})
 
-	t.Run("success_unlike", func(t *testing.T) {
+	t.Run("success_remove_like", func(t *testing.T) {
+		driverMock.ExpectBegin()
+		driverMock.ExpectCommit()
+
 		mockLogger.EXPECT().AddFuncName("ToggleLike")
 
-		in := &materials.ToggleLikeIn{
-			MaterialUuid: materialUUID,
-		}
+		mockRepo.EXPECT().Conn().Return(sqlxDB)
+		mockRepo.EXPECT().CheckLike(gomock.Any(), materialUUID, userUUID, gomock.Any()).Return(true, nil)
+		mockRepo.EXPECT().RemoveLike(gomock.Any(), materialUUID, userUUID, gomock.Any()).Return(true, nil)
+		mockRepo.EXPECT().GetLikesCount(gomock.Any(), materialUUID, gomock.Any()).Return(int32(0), nil)
+		mockRepo.EXPECT().UpdateLikesCount(gomock.Any(), materialUUID, int32(0), gomock.Any()).Return(int32(1), nil)
 
-		mockRepo.EXPECT().
-			ToggleLike(ctxWithUUID, materialUUID, userUUID).
-			Return(false, nil)
-
-		mockRepo.EXPECT().
-			UpdateLikesNumber(ctxWithUUID, materialUUID).
-			Return(int32(3), nil)
-
-		out, err := s.ToggleLike(ctxWithUUID, in)
+		in := &materials.ToggleLikeIn{MaterialUuid: materialUUID}
+		out, err := s.ToggleLike(ctx, in)
 
 		assert.NoError(t, err)
-		assert.NotNil(t, out)
 		assert.False(t, out.IsLiked)
-		assert.Equal(t, int32(3), out.LikesCount)
+		assert.Equal(t, int32(0), out.LikesCount)
+		require.NoError(t, driverMock.ExpectationsWereMet())
 	})
 
 	t.Run("missing_user_uuid", func(t *testing.T) {
-		badCtx := context.Background()
-		badCtx = context.WithValue(badCtx, config.KeyLogger, mockLogger)
-
 		mockLogger.EXPECT().AddFuncName("ToggleLike")
 		mockLogger.EXPECT().Error("uuid is required")
 
-		in := &materials.ToggleLikeIn{
-			MaterialUuid: materialUUID,
-		}
+		ctxNoUUID := context.WithValue(context.Background(), config.KeyLogger, mockLogger)
+		in := &materials.ToggleLikeIn{MaterialUuid: materialUUID}
 
-		out, err := s.ToggleLike(badCtx, in)
+		out, err := s.ToggleLike(ctxNoUUID, in)
 
 		assert.Nil(t, out)
 		assert.Error(t, err)
@@ -530,53 +529,90 @@ func TestServer_ToggleLike(t *testing.T) {
 		assert.Equal(t, "uuid is required", sts.Message())
 	})
 
-	t.Run("db_error_toggle", func(t *testing.T) {
+	t.Run("begin_tx_error", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("ToggleLike")
+		mockLogger.EXPECT().Error("failed to begin transaction")
 
-		dbErr := fmt.Errorf("db toggle failed")
-		mockLogger.EXPECT().Error(fmt.Sprintf("failed to toggle like: %v", dbErr))
+		badDB, _, _ := sqlmock.New()
+		defer badDB.Close()
+		sqlxBadDB := sqlx.NewDb(badDB, "postgres")
 
-		in := &materials.ToggleLikeIn{
-			MaterialUuid: materialUUID,
-		}
+		mockRepo.EXPECT().Conn().Return(sqlxBadDB)
 
-		mockRepo.EXPECT().
-			ToggleLike(ctxWithUUID, materialUUID, userUUID).
-			Return(false, dbErr)
+		in := &materials.ToggleLikeIn{MaterialUuid: materialUUID}
+		_, err := s.ToggleLike(ctx, in)
 
-		out, err := s.ToggleLike(ctxWithUUID, in)
-
-		assert.Nil(t, out)
 		assert.Error(t, err)
 		sts := status.Convert(err)
 		assert.Equal(t, codes.Internal, sts.Code())
-		assert.Contains(t, sts.Message(), "failed to toggle like: db toggle failed")
+		assert.Equal(t, "failed to start transaction", sts.Message())
 	})
 
-	t.Run("db_error_update_count", func(t *testing.T) {
+	t.Run("check_like_error", func(t *testing.T) {
+		driverMock.ExpectBegin()
+		driverMock.ExpectRollback()
+
 		mockLogger.EXPECT().AddFuncName("ToggleLike")
+		dbErr := fmt.Errorf("check failed")
+		mockLogger.EXPECT().Error(fmt.Sprintf("failed to check like: %v", dbErr))
 
-		dbErr := fmt.Errorf("db update failed")
-		mockLogger.EXPECT().Error(fmt.Sprintf("failed to update likes count: %v", dbErr))
+		mockRepo.EXPECT().Conn().Return(sqlxDB)
+		mockRepo.EXPECT().CheckLike(gomock.Any(), materialUUID, userUUID, gomock.Any()).Return(false, dbErr)
 
-		in := &materials.ToggleLikeIn{
-			MaterialUuid: materialUUID,
-		}
+		in := &materials.ToggleLikeIn{MaterialUuid: materialUUID}
+		_, err := s.ToggleLike(ctx, in)
 
-		mockRepo.EXPECT().
-			ToggleLike(ctxWithUUID, materialUUID, userUUID).
-			Return(true, nil)
-
-		mockRepo.EXPECT().
-			UpdateLikesNumber(ctxWithUUID, materialUUID).
-			Return(int32(0), dbErr)
-
-		out, err := s.ToggleLike(ctxWithUUID, in)
-
-		assert.Nil(t, out)
 		assert.Error(t, err)
 		sts := status.Convert(err)
 		assert.Equal(t, codes.Internal, sts.Code())
-		assert.Contains(t, sts.Message(), "failed to update likes count: db update failed")
+		assert.Contains(t, sts.Message(), "failed to check like")
+		require.NoError(t, driverMock.ExpectationsWereMet())
+	})
+
+	t.Run("update_likes_count_error", func(t *testing.T) {
+		driverMock.ExpectBegin()
+		driverMock.ExpectRollback()
+
+		mockLogger.EXPECT().AddFuncName("ToggleLike")
+		dbErr := fmt.Errorf("update failed")
+		mockLogger.EXPECT().Error(fmt.Sprintf("failed to update likes count: %v", dbErr))
+
+		mockRepo.EXPECT().Conn().Return(sqlxDB)
+		mockRepo.EXPECT().CheckLike(gomock.Any(), materialUUID, userUUID, gomock.Any()).Return(false, nil)
+		mockRepo.EXPECT().AddLike(gomock.Any(), materialUUID, userUUID, gomock.Any()).Return(true, nil)
+		mockRepo.EXPECT().GetLikesCount(gomock.Any(), materialUUID, gomock.Any()).Return(int32(10), nil)
+		mockRepo.EXPECT().UpdateLikesCount(gomock.Any(), materialUUID, int32(10), gomock.Any()).Return(int32(0), dbErr)
+
+		in := &materials.ToggleLikeIn{MaterialUuid: materialUUID}
+		_, err := s.ToggleLike(ctx, in)
+
+		assert.Error(t, err)
+		sts := status.Convert(err)
+		assert.Equal(t, codes.Internal, sts.Code())
+		assert.Contains(t, sts.Message(), "failed to update likes count")
+		require.NoError(t, driverMock.ExpectationsWereMet())
+	})
+
+	t.Run("commit_error", func(t *testing.T) {
+		driverMock.ExpectBegin()
+		driverMock.ExpectCommit().WillReturnError(fmt.Errorf("commit failed"))
+
+		mockLogger.EXPECT().AddFuncName("ToggleLike")
+		mockLogger.EXPECT().Error("failed to commit transaction: commit failed")
+
+		mockRepo.EXPECT().Conn().Return(sqlxDB)
+		mockRepo.EXPECT().CheckLike(gomock.Any(), materialUUID, userUUID, gomock.Any()).Return(false, nil)
+		mockRepo.EXPECT().AddLike(gomock.Any(), materialUUID, userUUID, gomock.Any()).Return(true, nil)
+		mockRepo.EXPECT().GetLikesCount(gomock.Any(), materialUUID, gomock.Any()).Return(int32(5), nil)
+		mockRepo.EXPECT().UpdateLikesCount(gomock.Any(), materialUUID, int32(5), gomock.Any()).Return(int32(1), nil)
+
+		in := &materials.ToggleLikeIn{MaterialUuid: materialUUID}
+		_, err := s.ToggleLike(ctx, in)
+
+		assert.Error(t, err)
+		sts := status.Convert(err)
+		assert.Equal(t, codes.Internal, sts.Code())
+		assert.Contains(t, sts.Message(), "failed to commit transaction")
+		require.NoError(t, driverMock.ExpectationsWereMet())
 	})
 }
