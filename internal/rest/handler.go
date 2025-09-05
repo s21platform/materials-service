@@ -9,27 +9,22 @@ import (
 	logger_lib "github.com/s21platform/logger-lib"
 	"github.com/s21platform/materials-service/internal/config"
 	api "github.com/s21platform/materials-service/internal/generated"
-	"github.com/s21platform/materials-service/internal/service"
-	"github.com/s21platform/materials-service/pkg/materials"
+	"github.com/s21platform/materials-service/internal/model"
 )
 
 type Handler struct {
 	repository DBRepo
-	service    *service.Service
 }
 
-func New(
-	repo service.DBRepo,
-	svc *service.Service) *Handler {
+func New(repo DBRepo) *Handler {
 	return &Handler{
 		repository: repo,
-		service:    svc,
 	}
 }
 
 func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request, params api.SaveDraftMaterialParams) {
 	logger := logger_lib.FromContext(r.Context(), config.KeyLogger)
-	logger.AddFuncName("CreateStream")
+	logger.AddFuncName("SaveDraftMaterial")
 
 	var req api.SaveDraftMaterialIn
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -51,16 +46,16 @@ func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request, para
 		return
 	}
 
-	saveReq := &materials.SaveDraftMaterialIn{
+	saveReq := &model.SaveDraftMaterial{
 		Title:           req.Title,
 		Content:         *req.Content,
 		Description:     *req.Description,
-		CoverImageUrl:   *req.CoverImageUrl,
+		CoverImageURL:   *req.CoverImageUrl,
 		ReadTimeMinutes: *req.ReadTimeMinutes,
 	}
 
 	ctx := r.Context()
-	resp, err := h.service.SaveDraftMaterial(ctx, saveReq)
+	respUUID, err := h.repository.SaveDraftMaterial(ctx, userUUID, saveReq)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to save draft material: %v", err))
 		h.writeError(w, fmt.Sprintf("failed to save draft material: %v", err), http.StatusInternalServerError)
@@ -68,7 +63,7 @@ func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request, para
 	}
 
 	response := api.SaveDraftMaterialOut{
-		Uuid: resp.Uuid,
+		Uuid: respUUID,
 	}
 
 	h.writeJSON(w, response, http.StatusOK)

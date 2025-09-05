@@ -15,7 +15,7 @@ import (
 	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/materials-service/internal/config"
-	"github.com/s21platform/materials-service/internal/generated"
+	api "github.com/s21platform/materials-service/internal/generated"
 	"github.com/s21platform/materials-service/internal/infra"
 	"github.com/s21platform/materials-service/internal/repository/postgres"
 	"github.com/s21platform/materials-service/internal/rest"
@@ -39,7 +39,7 @@ func main() {
 	)
 	materials.RegisterMaterialsServiceServer(grpcServer, materialsService)
 
-	handler := rest.New(dbRepo, materialsService)
+	handler := rest.New(dbRepo)
 	router := chi.NewRouter()
 
 	router.Use(func(next http.Handler) http.Handler {
