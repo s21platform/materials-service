@@ -4,14 +4,18 @@
 ## Table of Contents
 
 - [api/materials.proto](#api_materials-proto)
-    - [CreateMaterialIn](#-CreateMaterialIn)
-    - [CreateMaterialOut](#-CreateMaterialOut)
+    - [ArchivedMaterialIn](#-ArchivedMaterialIn)
+    - [DeleteMaterialIn](#-DeleteMaterialIn)
     - [EditMaterialIn](#-EditMaterialIn)
     - [EditMaterialOut](#-EditMaterialOut)
     - [GetAllMaterialsOut](#-GetAllMaterialsOut)
     - [GetMaterialIn](#-GetMaterialIn)
     - [GetMaterialOut](#-GetMaterialOut)
     - [Material](#-Material)
+    - [PublishMaterialIn](#-PublishMaterialIn)
+    - [PublishMaterialOut](#-PublishMaterialOut)
+    - [SaveDraftMaterialIn](#-SaveDraftMaterialIn)
+    - [SaveDraftMaterialOut](#-SaveDraftMaterialOut)
     - [ToggleLikeIn](#-ToggleLikeIn)
     - [ToggleLikeOut](#-ToggleLikeOut)
   
@@ -28,34 +32,30 @@
 
 
 
-<a name="-CreateMaterialIn"></a>
+<a name="-ArchivedMaterialIn"></a>
 
-### CreateMaterialIn
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| title | [string](#string) |  | Заголовок материала |
-| cover_image_url | [string](#string) |  | URL обложки материала |
-| description | [string](#string) |  | Описание материала |
-| content | [string](#string) |  | Содержимое материала |
-| read_time_minutes | [int32](#int32) |  | Время чтения в минутах |
-
-
-
-
-
-
-<a name="-CreateMaterialOut"></a>
-
-### CreateMaterialOut
+### ArchivedMaterialIn
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| uuid | [string](#string) |  | UUID созданного материала |
+| uuid | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="-DeleteMaterialIn"></a>
+
+### DeleteMaterialIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
 
 
 
@@ -170,6 +170,70 @@
 
 
 
+<a name="-PublishMaterialIn"></a>
+
+### PublishMaterialIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  | UUID материала |
+
+
+
+
+
+
+<a name="-PublishMaterialOut"></a>
+
+### PublishMaterialOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| material | [Material](#Material) |  | Весь материал |
+
+
+
+
+
+
+<a name="-SaveDraftMaterialIn"></a>
+
+### SaveDraftMaterialIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| title | [string](#string) |  | Заголовок материала |
+| cover_image_url | [string](#string) |  | URL обложки материала |
+| description | [string](#string) |  | Описание материала |
+| content | [string](#string) |  | Содержимое материала |
+| read_time_minutes | [int32](#int32) |  | Время чтения в минутах |
+
+
+
+
+
+
+<a name="-SaveDraftMaterialOut"></a>
+
+### SaveDraftMaterialOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  | UUID созданного материала |
+
+
+
+
+
+
 <a name="-ToggleLikeIn"></a>
 
 ### ToggleLikeIn
@@ -214,10 +278,13 @@
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| CreateMaterial | [.CreateMaterialIn](#CreateMaterialIn) | [.CreateMaterialOut](#CreateMaterialOut) |  |
+| SaveDraftMaterial | [.SaveDraftMaterialIn](#SaveDraftMaterialIn) | [.SaveDraftMaterialOut](#SaveDraftMaterialOut) |  |
 | GetMaterial | [.GetMaterialIn](#GetMaterialIn) | [.GetMaterialOut](#GetMaterialOut) |  |
 | GetAllMaterials | [.google.protobuf.Empty](#google-protobuf-Empty) | [.GetAllMaterialsOut](#GetAllMaterialsOut) |  |
 | EditMaterial | [.EditMaterialIn](#EditMaterialIn) | [.EditMaterialOut](#EditMaterialOut) |  |
+| PublishMaterial | [.PublishMaterialIn](#PublishMaterialIn) | [.PublishMaterialOut](#PublishMaterialOut) |  |
+| DeleteMaterial | [.DeleteMaterialIn](#DeleteMaterialIn) | [.google.protobuf.Empty](#google-protobuf-Empty) |  |
+| ArchivedMaterial | [.ArchivedMaterialIn](#ArchivedMaterialIn) | [.google.protobuf.Empty](#google-protobuf-Empty) |  |
 | ToggleLike | [.ToggleLikeIn](#ToggleLikeIn) | [.ToggleLikeOut](#ToggleLikeOut) |  |
 
  
