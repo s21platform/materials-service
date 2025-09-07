@@ -29,15 +29,10 @@ type Material struct {
 
 func (m *Material) FromDTO() *materials.Material {
 	protoMaterial := &materials.Material{
-		Uuid:            m.UUID,
-		OwnerUuid:       m.OwnerUUID,
-		Title:           m.Title,
-		CoverImageUrl:   m.CoverImageURL,
-		Description:     m.Description,
-		ReadTimeMinutes: m.ReadTimeMinutes,
-		Status:          m.Status,
-		CreatedAt:       timestamppb.New(m.CreatedAt),
-		LikesCount:      m.LikesCount,
+		Uuid:       m.UUID,
+		OwnerUuid:  m.OwnerUUID,
+		Title:      m.Title,
+		LikesCount: m.LikesCount,
 	}
 
 	if m.Content != nil {
