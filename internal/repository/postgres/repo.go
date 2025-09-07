@@ -305,8 +305,8 @@ func (r *Repository) CheckLike(ctx context.Context, materialUUID string, userUUI
 func (r *Repository) AddLike(ctx context.Context, materialUUID string, userUUID string) error {
 	query, args, err := sq.
 		Insert("material_likes").
-		Columns("material_uuid", "user_uuid", "created_at").
-		Values(materialUUID, userUUID, time.Now()).
+		Columns("material_uuid", "user_uuid").
+		Values(materialUUID, userUUID).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
@@ -331,14 +331,9 @@ func (r *Repository) RemoveLike(ctx context.Context, materialUUID string, userUU
 		return fmt.Errorf("failed to build sql query: %w", err)
 	}
 
-	result, err := r.Chk(ctx).ExecContext(ctx, query, args...)
+	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("failed to remove like: %w", err)
-	}
-
-	_, err = result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("failed to get rows affected: %w", err)
 	}
 
 	return nil
