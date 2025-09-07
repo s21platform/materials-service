@@ -6,14 +6,17 @@ import "google/protobuf/empty.proto";
 option go_package = "pkg/materials";
 
 service MaterialsService {
-  rpc CreateMaterial(CreateMaterialIn) returns (CreateMaterialOut){};
+  rpc SaveDraftMaterial(SaveDraftMaterialIn) returns (SaveDraftMaterialOut){};
   rpc GetMaterial(GetMaterialIn) returns (GetMaterialOut) {};
   rpc GetAllMaterials(google.protobuf.Empty) returns (GetAllMaterialsOut){};
   rpc EditMaterial(EditMaterialIn) returns (EditMaterialOut) {};
+  rpc PublishMaterial(PublishMaterialIn) returns (PublishMaterialOut){};
+  rpc DeleteMaterial(DeleteMaterialIn) returns (google.protobuf.Empty) {};
+  rpc ArchivedMaterial(ArchivedMaterialIn) returns (google.protobuf.Empty) {};
   rpc ToggleLike(ToggleLikeIn) returns (ToggleLikeOut) {};
 }
 
-message CreateMaterialIn {
+message SaveDraftMaterialIn {
   string title = 1;             // Заголовок материала
   string cover_image_url = 2;   // URL обложки материала
   string description = 3;       // Описание материала
@@ -21,7 +24,7 @@ message CreateMaterialIn {
   int32 read_time_minutes = 5;  // Время чтения в минутах
 }
 
-message CreateMaterialOut {
+message SaveDraftMaterialOut {
   string uuid = 1;     // UUID созданного материала
 }
 
@@ -65,6 +68,22 @@ message EditMaterialIn {
 
 message EditMaterialOut {
   Material material = 1; // Весь материал
+}
+
+message DeleteMaterialIn{
+  string uuid = 1;
+}
+
+message PublishMaterialIn{
+  string uuid = 1; // UUID материала
+}
+
+message PublishMaterialOut{
+  Material material = 1; // Весь материал
+}
+
+message ArchivedMaterialIn{
+  string uuid = 1;
 }
 
 message ToggleLikeIn {

@@ -28,9 +28,9 @@ func New(repo DBRepo) *Service {
 	}
 }
 
-func (s *Service) CreateMaterial(ctx context.Context, in *materials.CreateMaterialIn) (*materials.CreateMaterialOut, error) {
+func (s *Service) SaveDraftMaterial(ctx context.Context, in *materials.SaveDraftMaterialIn) (*materials.SaveDraftMaterialOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("CreateMaterial")
+	logger.AddFuncName("SaveDraftMaterial")
 
 	if strings.TrimSpace(in.Title) == "" {
 		logger.Error("title is required")
@@ -42,15 +42,17 @@ func (s *Service) CreateMaterial(ctx context.Context, in *materials.CreateMateri
 		logger.Error("uuid is required")
 		return nil, status.Error(codes.Unauthenticated, "uuid is required")
 	}
-	newMaterialData := &model.CreateMaterial{}
+
+	newMaterialData := &model.SaveDraftMaterial{}
 	newMaterialData.ToDTO(in)
-	materialUUID, err := s.repository.CreateMaterial(ctx, ownerUUID, newMaterialData)
+	materialUUID, err := s.repository.SaveDraftMaterial(ctx, ownerUUID, newMaterialData)
+
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to create material: %v", err))
-		return nil, status.Errorf(codes.Internal, "failed to create material: %v", err)
+		logger.Error(fmt.Sprintf("failed to save draft material: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to save draft material: %v", err)
 	}
 
-	return &materials.CreateMaterialOut{
+	return &materials.SaveDraftMaterialOut{
 		Uuid: materialUUID,
 	}, nil
 }
@@ -122,6 +124,124 @@ func (s *Service) GetAllMaterials(ctx context.Context, _ *emptypb.Empty) (*mater
 
 	return &materials.GetAllMaterialsOut{
 		MaterialList: materialsList.ListFromDTO(),
+	}, nil
+}
+
+func (s *Service) DeleteMaterial(ctx context.Context, in *materials.DeleteMaterialIn) (*emptypb.Empty, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("DeleteMaterial")
+
+	userUUID, ok := ctx.Value(config.KeyUUID).(string)
+	if !ok || userUUID == "" {
+		logger.Error("uuid is required")
+		return nil, status.Error(codes.Unauthenticated, "uuid is required")
+	}
+
+	materialOwnerUUID, err := s.repository.GetMaterialOwnerUUID(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get owner uuid: %v", err)
+	}
+
+	if materialOwnerUUID != userUUID {
+		logger.Error("failed to delete: user is not owner")
+		return nil, status.Errorf(codes.PermissionDenied, "failed to delete: user is not owner")
+	}
+
+	rowsAffected, err := s.repository.DeleteMaterial(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to delete material: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to delete material: %v", err)
+	}
+
+	if rowsAffected == 0 {
+		logger.Error("failed to delete: material already deleted or not found")
+		return nil, status.Errorf(codes.NotFound, "failed to delete: material already deleted or not found")
+	}
+
+	return nil, nil
+}
+
+func (s *Service) ArchivedMaterial(ctx context.Context, in *materials.ArchivedMaterialIn) (*emptypb.Empty, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("ArchivedMaterial")
+
+	userUUID, ok := ctx.Value(config.KeyUUID).(string)
+	if !ok || userUUID == "" {
+		logger.Error("uuid is required")
+		return nil, status.Error(codes.Unauthenticated, "uuid is required")
+	}
+
+	materialOwnerUUID, err := s.repository.GetMaterialOwnerUUID(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get owner uuid: %v", err)
+	}
+
+	if materialOwnerUUID != userUUID {
+		logger.Error("failed to archived: user is not owner")
+		return nil, status.Errorf(codes.PermissionDenied, "failed to archived: user is not owner")
+	}
+
+	rowsAffected, err := s.repository.ArchivedMaterial(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to archived material: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to archived material: %v", err)
+	}
+
+	if rowsAffected == 0 {
+		logger.Error("failed to archived material: material already archived or not found")
+		return nil, status.Error(codes.NotFound, "failed to archived material: material already archived or not found")
+	}
+
+	return nil, nil
+}
+
+func (s *Service) PublishMaterial(ctx context.Context, in *materials.PublishMaterialIn) (*materials.PublishMaterialOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("PublishMaterial")
+
+	if in.Uuid == "" {
+		logger.Error("material uuid is required")
+		return nil, status.Error(codes.InvalidArgument, "material uuid is required")
+	}
+
+	userUUID, ok := ctx.Value(config.KeyUUID).(string)
+	if !ok || userUUID == "" {
+		logger.Error("user uuid is required")
+		return nil, status.Error(codes.Unauthenticated, "user uuid is required")
+	}
+
+	materialOwnerUUID, err := s.repository.GetMaterialOwnerUUID(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to get owner uuid: %v", err)
+	}
+
+	if materialOwnerUUID != userUUID {
+		logger.Error("failed to publish: user is not owner")
+		return nil, status.Errorf(codes.PermissionDenied, "failed to publish: user is not owner")
+	}
+
+	exists, err := s.repository.MaterialExists(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to check material existence: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to check material existence: %v", err)
+	}
+
+	if !exists {
+		logger.Error("material does not exist")
+		return nil, status.Errorf(codes.FailedPrecondition, "material does not exist")
+	}
+
+	publishedMaterial, err := s.repository.PublishMaterial(ctx, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to publish material: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to publish material: %v", err)
+	}
+
+	return &materials.PublishMaterialOut{
+		Material: publishedMaterial.FromDTO(),
 	}, nil
 }
 
