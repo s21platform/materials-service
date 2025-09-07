@@ -23,11 +23,5 @@ type SaveDraftMaterialOut struct {
 	Uuid string `json:"uuid"`
 }
 
-// SaveDraftMaterialParams defines parameters for SaveDraftMaterial.
-type SaveDraftMaterialParams struct {
-	// XUserID UUID of the authenticated user
-	XUserID string `json:"X-User-ID"`
-}
-
 // SaveDraftMaterialJSONRequestBody defines body for SaveDraftMaterial for application/json ContentType.
 type SaveDraftMaterialJSONRequestBody = SaveDraftMaterialIn

@@ -8,13 +8,6 @@ paths:
     post:
       summary: Save a draft material
       operationId: SaveDraftMaterial
-      parameters:
-        - name: X-User-ID
-          in: header
-          required: true
-          schema:
-            type: string
-          description: UUID of the authenticated user
       requestBody:
         required: true
         content:

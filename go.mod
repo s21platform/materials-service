@@ -10,7 +10,6 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.10.9
-	github.com/oapi-codegen/runtime v1.1.2
 	github.com/s21platform/logger-lib v0.0.6
 	github.com/soheilhy/cmux v0.1.5
 	github.com/stretchr/testify v1.10.0
@@ -21,7 +20,6 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.5.0 // indirect
-	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dprotaso/go-yit v0.0.0-20220510233725-9ba8df137936 // indirect
 	github.com/getkin/kin-openapi v0.132.0 // indirect

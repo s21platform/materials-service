@@ -8,14 +8,13 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/oapi-codegen/runtime"
 )
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Save a draft material
 	// (POST /api/materials/save-draft-material)
-	SaveDraftMaterial(w http.ResponseWriter, r *http.Request, params SaveDraftMaterialParams)
+	SaveDraftMaterial(w http.ResponseWriter, r *http.Request)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -24,7 +23,7 @@ type Unimplemented struct{}
 
 // Save a draft material
 // (POST /api/materials/save-draft-material)
-func (_ Unimplemented) SaveDraftMaterial(w http.ResponseWriter, r *http.Request, params SaveDraftMaterialParams) {
+func (_ Unimplemented) SaveDraftMaterial(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -41,38 +40,8 @@ type MiddlewareFunc func(http.Handler) http.Handler
 func (siw *ServerInterfaceWrapper) SaveDraftMaterial(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params SaveDraftMaterialParams
-
-	headers := r.Header
-
-	// ------------- Required header parameter "X-User-ID" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-User-ID")]; found {
-		var XUserID string
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-User-ID", Count: n})
-			return
-		}
-
-		err = runtime.BindStyledParameterWithLocation("simple", false, "X-User-ID", runtime.ParamLocationHeader, valueList[0], &XUserID)
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-User-ID", Err: err})
-			return
-		}
-
-		params.XUserID = XUserID
-
-	} else {
-		err := fmt.Errorf("Header parameter X-User-ID is required, but not found")
-		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "X-User-ID", Err: err})
-		return
-	}
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.SaveDraftMaterial(w, r, params)
+		siw.Handler.SaveDraftMaterial(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
