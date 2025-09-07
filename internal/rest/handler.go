@@ -69,7 +69,7 @@ func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request, head
 	h.writeJSON(w, response, http.StatusOK)
 }
 
-func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request, headerID api.PublishMaterialParams) {
+func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request) {
 	logger := logger_lib.FromContext(r.Context(), config.KeyLogger)
 	logger.AddFuncName("PublishMaterial")
 
@@ -90,12 +90,6 @@ func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request, header
 	if !ok || userUUID == "" {
 		logger.Error("failed to get user UUID")
 		h.writeError(w, "user UUID is required", http.StatusUnauthorized)
-		return
-	}
-
-	if userUUID != headerID.XUserID {
-		logger.Error("user UUID mismatch with X-User-ID header")
-		h.writeError(w, "user UUID mismatch", http.StatusUnauthorized)
 		return
 	}
 

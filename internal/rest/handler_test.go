@@ -312,13 +312,12 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		req = req.WithContext(reqCtx)
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", userUUID)
 
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 		w := httptest.NewRecorder()
-		handler.PublishMaterial(w, req, api.PublishMaterialParams{XUserID: userUUID})
+		handler.PublishMaterial(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 
@@ -357,13 +356,12 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		req = req.WithContext(reqCtx)
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", userUUID)
 
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 		w := httptest.NewRecorder()
-		handler.PublishMaterial(w, req, api.PublishMaterialParams{XUserID: userUUID})
+		handler.PublishMaterial(w, req)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 
@@ -400,13 +398,12 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		req = req.WithContext(reqCtx)
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", userUUID)
 
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 		w := httptest.NewRecorder()
-		handler.PublishMaterial(w, req, api.PublishMaterialParams{XUserID: userUUID})
+		handler.PublishMaterial(w, req)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 
@@ -442,13 +439,12 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		req = req.WithContext(reqCtx)
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", userUUID)
 
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 		w := httptest.NewRecorder()
-		handler.PublishMaterial(w, req, api.PublishMaterialParams{XUserID: userUUID})
+		handler.PublishMaterial(w, req)
 
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 
@@ -456,49 +452,6 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
 		require.NoError(t, err)
 		assert.Contains(t, errorResp.Message, "user UUID is required")
-	})
-
-	t.Run("user_uuid_mismatch", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockRepo := NewMockDBRepo(ctrl)
-		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-
-		handler := &Handler{
-			repository: mockRepo,
-		}
-
-		mockLogger.EXPECT().AddFuncName("PublishMaterial")
-		mockLogger.EXPECT().Error("user UUID mismatch with X-User-ID header")
-
-		requestBody := api.PublishMaterialIn{
-			Uuid: materialUUID,
-		}
-
-		bodyBytes, _ := json.Marshal(requestBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/materials/publish-material", bytes.NewReader(bodyBytes))
-
-		reqCtx := req.Context()
-		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
-		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
-		req = req.WithContext(reqCtx)
-
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", uuid.New().String())
-
-		rctx := chi.NewRouteContext()
-		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
-
-		w := httptest.NewRecorder()
-		handler.PublishMaterial(w, req, api.PublishMaterialParams{XUserID: uuid.New().String()})
-
-		assert.Equal(t, http.StatusUnauthorized, w.Code)
-
-		var errorResp api.Error
-		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
-		require.NoError(t, err)
-		assert.Contains(t, errorResp.Message, "user UUID mismatch")
 	})
 
 	t.Run("material_owner_mismatch", func(t *testing.T) {
@@ -530,13 +483,12 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		req = req.WithContext(reqCtx)
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", userUUID)
 
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 		w := httptest.NewRecorder()
-		handler.PublishMaterial(w, req, api.PublishMaterialParams{XUserID: userUUID})
+		handler.PublishMaterial(w, req)
 
 		assert.Equal(t, http.StatusForbidden, w.Code)
 
@@ -576,13 +528,12 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		req = req.WithContext(reqCtx)
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", userUUID)
 
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 		w := httptest.NewRecorder()
-		handler.PublishMaterial(w, req, api.PublishMaterialParams{XUserID: userUUID})
+		handler.PublishMaterial(w, req)
 
 		assert.Equal(t, http.StatusPreconditionFailed, w.Code)
 
@@ -621,13 +572,12 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		req = req.WithContext(reqCtx)
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", userUUID)
 
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 		w := httptest.NewRecorder()
-		handler.PublishMaterial(w, req, api.PublishMaterialParams{XUserID: userUUID})
+		handler.PublishMaterial(w, req)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 
@@ -667,13 +617,12 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		req = req.WithContext(reqCtx)
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", userUUID)
 
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 		w := httptest.NewRecorder()
-		handler.PublishMaterial(w, req, api.PublishMaterialParams{XUserID: userUUID})
+		handler.PublishMaterial(w, req)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 
@@ -714,13 +663,12 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		req = req.WithContext(reqCtx)
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", userUUID)
 
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 		w := httptest.NewRecorder()
-		handler.PublishMaterial(w, req, api.PublishMaterialParams{XUserID: userUUID})
+		handler.PublishMaterial(w, req)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 

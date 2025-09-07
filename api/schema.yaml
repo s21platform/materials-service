@@ -51,13 +51,6 @@ paths:
     post:
       summary: Publish a material
       operationId: PublishMaterial
-      parameters:
-        - name: X-User-ID
-          in: header
-          required: true
-          schema:
-            type: string
-          description: UUID of the authenticated user
       requestBody:
         required: true
         content:
