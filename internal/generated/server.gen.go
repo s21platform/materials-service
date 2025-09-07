@@ -13,6 +13,9 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Publish a material
+	// (POST /api/materials/publish-material)
+	PublishMaterial(w http.ResponseWriter, r *http.Request, params PublishMaterialParams)
 	// Save a draft material
 	// (POST /api/materials/save-draft-material)
 	SaveDraftMaterial(w http.ResponseWriter, r *http.Request, params SaveDraftMaterialParams)
@@ -21,6 +24,12 @@ type ServerInterface interface {
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
 
 type Unimplemented struct{}
+
+// Publish a material
+// (POST /api/materials/publish-material)
+func (_ Unimplemented) PublishMaterial(w http.ResponseWriter, r *http.Request, params PublishMaterialParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
 
 // Save a draft material
 // (POST /api/materials/save-draft-material)
@@ -36,6 +45,51 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// PublishMaterial operation middleware
+func (siw *ServerInterfaceWrapper) PublishMaterial(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PublishMaterialParams
+
+	headers := r.Header
+
+	// ------------- Required header parameter "X-User-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-User-ID")]; found {
+		var XUserID string
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-User-ID", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithLocation("simple", false, "X-User-ID", runtime.ParamLocationHeader, valueList[0], &XUserID)
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-User-ID", Err: err})
+			return
+		}
+
+		params.XUserID = XUserID
+
+	} else {
+		err := fmt.Errorf("Header parameter X-User-ID is required, but not found")
+		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "X-User-ID", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PublishMaterial(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
 
 // SaveDraftMaterial operation middleware
 func (siw *ServerInterfaceWrapper) SaveDraftMaterial(w http.ResponseWriter, r *http.Request) {
@@ -195,6 +249,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/materials/publish-material", wrapper.PublishMaterial)
+	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/materials/save-draft-material", wrapper.SaveDraftMaterial)
 	})

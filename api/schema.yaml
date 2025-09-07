@@ -47,6 +47,61 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/materials/publish-material:
+    post:
+      summary: Publish a material
+      operationId: PublishMaterial
+      parameters:
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+          description: UUID of the authenticated user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishMaterialIn'
+      responses:
+        '200':
+          description: Material published successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishMaterialOut'
+        '400':
+          description: Invalid input, missing required material UUID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthenticated, user UUID not provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Permission denied, user is not the owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Material does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   schemas:
     SaveDraftMaterialIn:
@@ -72,6 +127,47 @@ components:
       properties:
         uuid:
           type: string
+
+    PublishMaterialIn:
+      type: object
+      required:
+        - uuid
+      properties:
+        uuid:
+          type: string
+          description: UUID of the material to publish
+    PublishMaterialOut:
+      type: object
+      required:
+        - material
+      properties:
+        material:
+          $ref: '#/components/schemas/Material'
+
+    Material:
+      type: object
+      required:
+        - uuid
+        - title
+      properties:
+        uuid:
+          type: string
+        owner_uuid:
+          type: string
+        title:
+          type: string
+        cover_image_url:
+          type: string
+        description:
+          type: string
+        content:
+          type: string
+        read_time_minutes:
+          type: integer
+          format: int32
+        status:
+          type: string
+
     Error:
       type: object
       required:
@@ -84,6 +180,7 @@ components:
         message:
           type: string
           example: "title is required"
+
   securitySchemes:
     BearerAuth:
       type: http
