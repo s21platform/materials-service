@@ -17,7 +17,7 @@ import (
 )
 
 type Repository struct {
-	connection *sqlx.DB
+	*sqlx.DB
 }
 
 func New(cfg *config.Config) *Repository {
@@ -30,16 +30,12 @@ func New(cfg *config.Config) *Repository {
 	}
 
 	return &Repository{
-		connection: conn,
+		conn,
 	}
 }
 
 func (r *Repository) Close() {
-	_ = r.connection.Close()
-}
-
-func (r *Repository) Conn() *sqlx.DB {
-	return r.connection
+	_ = r.DB.Close()
 }
 
 func (r *Repository) CreateMaterial(ctx context.Context, ownerUUID string, material *model.CreateMaterial) (string, error) {
@@ -57,7 +53,7 @@ func (r *Repository) CreateMaterial(ctx context.Context, ownerUUID string, mater
 		return "", fmt.Errorf("failed to build SQL query: %w", err)
 	}
 
-	err = r.connection.GetContext(ctx, &uuid, query, args...)
+	err = r.Chk(ctx).GetContext(ctx, &uuid, query, args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to execute query: %w", err)
 	}
@@ -92,7 +88,7 @@ func (r *Repository) GetMaterial(ctx context.Context, uuid string) (*model.Mater
 		return nil, fmt.Errorf("failed to build sql query: %v", err)
 	}
 
-	err = r.connection.GetContext(ctx, &material, query, args...)
+	err = r.Chk(ctx).GetContext(ctx, &material, query, args...)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.New("material doesn't exist")
@@ -131,7 +127,7 @@ func (r *Repository) GetAllMaterials(ctx context.Context) (*model.MaterialList, 
 		return nil, fmt.Errorf("failed to build query: %w", err)
 	}
 
-	err = r.connection.SelectContext(ctx, &materials, query, args...)
+	err = r.Chk(ctx).SelectContext(ctx, &materials, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch materials: %w", err)
 	}
@@ -157,7 +153,7 @@ func (r *Repository) EditMaterial(ctx context.Context, material *model.EditMater
 		return nil, fmt.Errorf("failed to build update query: %v", err)
 	}
 
-	err = r.connection.GetContext(ctx, &updatedMaterial, query, args...)
+	err = r.Chk(ctx).GetContext(ctx, &updatedMaterial, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update material: %v", err)
 	}
@@ -178,7 +174,7 @@ func (r *Repository) GetMaterialOwnerUUID(ctx context.Context, uuid string) (str
 		return "", fmt.Errorf("failed to build sql query: %v", err)
 	}
 
-	err = r.connection.GetContext(ctx, &ownerUUID, query, args...)
+	err = r.Chk(ctx).GetContext(ctx, &ownerUUID, query, args...)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", errors.New("material doesn't exist")
@@ -189,7 +185,7 @@ func (r *Repository) GetMaterialOwnerUUID(ctx context.Context, uuid string) (str
 	return ownerUUID, nil
 }
 
-func (r *Repository) CheckLike(ctx context.Context, materialUUID string, userUUID string, tx *sqlx.Tx) (bool, error) {
+func (r *Repository) CheckLike(ctx context.Context, materialUUID string, userUUID string) (bool, error) {
 	var exists bool
 
 	query, _, err := sq.
@@ -200,7 +196,7 @@ func (r *Repository) CheckLike(ctx context.Context, materialUUID string, userUUI
 		return false, fmt.Errorf("failed to build sql query: %w", err)
 	}
 
-	err = tx.GetContext(ctx, &exists, query, materialUUID, userUUID)
+	err = r.Chk(ctx).GetContext(ctx, &exists, query, materialUUID, userUUID)
 	if err != nil {
 		return false, fmt.Errorf("failed to check like: %w", err)
 	}
@@ -208,7 +204,7 @@ func (r *Repository) CheckLike(ctx context.Context, materialUUID string, userUUI
 	return exists, nil
 }
 
-func (r *Repository) AddLike(ctx context.Context, materialUUID string, userUUID string, tx *sqlx.Tx) (bool, error) {
+func (r *Repository) AddLike(ctx context.Context, materialUUID string, userUUID string) (bool, error) {
 	query, args, err := sq.
 		Insert("material_likes").
 		Columns("uuid", "material_uuid", "user_uuid", "created_at").
@@ -219,7 +215,7 @@ func (r *Repository) AddLike(ctx context.Context, materialUUID string, userUUID 
 		return false, fmt.Errorf("failed to build sql query: %w", err)
 	}
 
-	_, err = tx.ExecContext(ctx, query, args...)
+	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
 	if err != nil {
 		return false, fmt.Errorf("failed to add like: %w", err)
 	}
@@ -227,7 +223,7 @@ func (r *Repository) AddLike(ctx context.Context, materialUUID string, userUUID 
 	return true, nil
 }
 
-func (r *Repository) RemoveLike(ctx context.Context, materialUUID string, userUUID string, tx *sqlx.Tx) (bool, error) {
+func (r *Repository) RemoveLike(ctx context.Context, materialUUID string, userUUID string) (bool, error) {
 	query, args, err := sq.
 		Delete("material_likes").
 		Where(sq.Eq{"material_uuid": materialUUID, "user_uuid": userUUID}).
@@ -237,7 +233,7 @@ func (r *Repository) RemoveLike(ctx context.Context, materialUUID string, userUU
 		return false, fmt.Errorf("failed to build sql query: %w", err)
 	}
 
-	result, err := tx.ExecContext(ctx, query, args...)
+	result, err := r.Chk(ctx).ExecContext(ctx, query, args...)
 	if err != nil {
 		return false, fmt.Errorf("failed to remove like: %w", err)
 	}
@@ -250,7 +246,7 @@ func (r *Repository) RemoveLike(ctx context.Context, materialUUID string, userUU
 	return rowsAffected > 0, nil
 }
 
-func (r *Repository) GetLikesCount(ctx context.Context, materialUUID string, tx *sqlx.Tx) (int32, error) {
+func (r *Repository) GetLikesCount(ctx context.Context, materialUUID string) (int32, error) {
 	var likesCount int32
 
 	query, args, err := sq.
@@ -263,7 +259,7 @@ func (r *Repository) GetLikesCount(ctx context.Context, materialUUID string, tx 
 		return 0, fmt.Errorf("failed to build sql query: %w", err)
 	}
 
-	err = tx.GetContext(ctx, &likesCount, query, args...)
+	err = r.Chk(ctx).GetContext(ctx, &likesCount, query, args...)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get likes count: %w", err)
 	}
@@ -271,7 +267,7 @@ func (r *Repository) GetLikesCount(ctx context.Context, materialUUID string, tx 
 	return likesCount, nil
 }
 
-func (r *Repository) UpdateLikesCount(ctx context.Context, materialUUID string, likesCount int32, tx *sqlx.Tx) (int32, error) {
+func (r *Repository) UpdateLikesCount(ctx context.Context, materialUUID string, likesCount int32) (int32, error) {
 	query, args, err := sq.
 		Update("materials").
 		Set("likes_count", likesCount).
@@ -284,7 +280,7 @@ func (r *Repository) UpdateLikesCount(ctx context.Context, materialUUID string, 
 	}
 
 	var updatedLikesCount int32
-	err = tx.GetContext(ctx, &updatedLikesCount, query, args...)
+	err = r.Chk(ctx).GetContext(ctx, &updatedLikesCount, query, args...)
 	if err != nil {
 		return 0, fmt.Errorf("failed to update likes count: %w", err)
 	}

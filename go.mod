@@ -3,7 +3,6 @@ module github.com/s21platform/materials-service
 go 1.24
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
