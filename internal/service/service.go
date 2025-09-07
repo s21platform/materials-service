@@ -265,12 +265,12 @@ func (s *Service) ToggleLike(ctx context.Context, in *materials.ToggleLikeIn) (*
 		}
 
 		if isLiked {
-			_, err = s.repository.RemoveLike(ctx, in.MaterialUuid, userUUID)
+			err = s.repository.RemoveLike(ctx, in.MaterialUuid, userUUID)
 			if err != nil {
 				return fmt.Errorf("failed to remove like: %v", err)
 			}
 		} else {
-			_, err = s.repository.AddLike(ctx, in.MaterialUuid, userUUID)
+			err = s.repository.AddLike(ctx, in.MaterialUuid, userUUID)
 			if err != nil {
 				return fmt.Errorf("failed to add like: %v", err)
 			}
@@ -281,7 +281,7 @@ func (s *Service) ToggleLike(ctx context.Context, in *materials.ToggleLikeIn) (*
 			return fmt.Errorf("failed to get likes count: %v", err)
 		}
 
-		_, err = s.repository.UpdateLikesCount(ctx, in.MaterialUuid, likesCount)
+		err = s.repository.UpdateLikesCount(ctx, in.MaterialUuid, likesCount)
 		if err != nil {
 			return fmt.Errorf("failed to update likes count: %v", err)
 		}

@@ -26,9 +26,9 @@ func main() {
 	materialsService := service.New(dbRepo)
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			tx.TxMiddleWire(dbRepo),
 			infra.AuthInterceptor,
 			infra.Logger(logger),
+			tx.TxMiddleWire(dbRepo),
 		),
 	)
 

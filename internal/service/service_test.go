@@ -854,9 +854,9 @@ func TestService_ToggleLike(t *testing.T) {
 			return cb(ctx)
 		})
 		mockRepo.EXPECT().CheckLike(gomock.Any(), materialUUID, userUUID).Return(false, nil)
-		mockRepo.EXPECT().AddLike(gomock.Any(), materialUUID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().AddLike(gomock.Any(), materialUUID, userUUID).Return(nil)
 		mockRepo.EXPECT().GetLikesCount(gomock.Any(), materialUUID).Return(int32(5), nil)
-		mockRepo.EXPECT().UpdateLikesCount(gomock.Any(), materialUUID, int32(5)).Return(int32(5), nil)
+		mockRepo.EXPECT().UpdateLikesCount(gomock.Any(), materialUUID, int32(5)).Return(nil)
 
 		out, err := s.ToggleLike(ctx, in)
 
@@ -878,9 +878,9 @@ func TestService_ToggleLike(t *testing.T) {
 			return cb(ctx)
 		})
 		mockRepo.EXPECT().CheckLike(gomock.Any(), materialUUID, userUUID).Return(true, nil)
-		mockRepo.EXPECT().RemoveLike(gomock.Any(), materialUUID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().RemoveLike(gomock.Any(), materialUUID, userUUID).Return(nil)
 		mockRepo.EXPECT().GetLikesCount(gomock.Any(), materialUUID).Return(int32(4), nil)
-		mockRepo.EXPECT().UpdateLikesCount(gomock.Any(), materialUUID, int32(4)).Return(int32(4), nil)
+		mockRepo.EXPECT().UpdateLikesCount(gomock.Any(), materialUUID, int32(4)).Return(nil)
 
 		out, err := s.ToggleLike(ctx, in)
 
@@ -947,7 +947,7 @@ func TestService_ToggleLike(t *testing.T) {
 			return cb(ctx)
 		})
 		mockRepo.EXPECT().CheckLike(gomock.Any(), materialUUID, userUUID).Return(false, nil)
-		mockRepo.EXPECT().AddLike(gomock.Any(), materialUUID, userUUID).Return(false, dbErr)
+		mockRepo.EXPECT().AddLike(gomock.Any(), materialUUID, userUUID).Return(dbErr)
 
 		in := &materials.ToggleLikeIn{MaterialUuid: materialUUID}
 		out, err := s.ToggleLike(ctx, in)
@@ -973,7 +973,7 @@ func TestService_ToggleLike(t *testing.T) {
 			return cb(ctx)
 		})
 		mockRepo.EXPECT().CheckLike(gomock.Any(), materialUUID, userUUID).Return(true, nil)
-		mockRepo.EXPECT().RemoveLike(gomock.Any(), materialUUID, userUUID).Return(false, dbErr)
+		mockRepo.EXPECT().RemoveLike(gomock.Any(), materialUUID, userUUID).Return(dbErr)
 
 		in := &materials.ToggleLikeIn{MaterialUuid: materialUUID}
 		out, err := s.ToggleLike(ctx, in)
@@ -999,7 +999,7 @@ func TestService_ToggleLike(t *testing.T) {
 			return cb(ctx)
 		})
 		mockRepo.EXPECT().CheckLike(gomock.Any(), materialUUID, userUUID).Return(false, nil)
-		mockRepo.EXPECT().AddLike(gomock.Any(), materialUUID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().AddLike(gomock.Any(), materialUUID, userUUID).Return(nil)
 		mockRepo.EXPECT().GetLikesCount(gomock.Any(), materialUUID).Return(int32(0), dbErr)
 
 		in := &materials.ToggleLikeIn{MaterialUuid: materialUUID}
@@ -1026,9 +1026,9 @@ func TestService_ToggleLike(t *testing.T) {
 			return cb(ctx)
 		})
 		mockRepo.EXPECT().CheckLike(gomock.Any(), materialUUID, userUUID).Return(false, nil)
-		mockRepo.EXPECT().AddLike(gomock.Any(), materialUUID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().AddLike(gomock.Any(), materialUUID, userUUID).Return(nil)
 		mockRepo.EXPECT().GetLikesCount(gomock.Any(), materialUUID).Return(int32(5), nil)
-		mockRepo.EXPECT().UpdateLikesCount(gomock.Any(), materialUUID, int32(5)).Return(int32(0), dbErr)
+		mockRepo.EXPECT().UpdateLikesCount(gomock.Any(), materialUUID, int32(5)).Return(dbErr)
 
 		in := &materials.ToggleLikeIn{MaterialUuid: materialUUID}
 		out, err := s.ToggleLike(ctx, in)

@@ -302,46 +302,46 @@ func (r *Repository) CheckLike(ctx context.Context, materialUUID string, userUUI
 	return exists, nil
 }
 
-func (r *Repository) AddLike(ctx context.Context, materialUUID string, userUUID string) (bool, error) {
+func (r *Repository) AddLike(ctx context.Context, materialUUID string, userUUID string) error {
 	query, args, err := sq.
 		Insert("material_likes").
-		Columns("uuid", "material_uuid", "user_uuid", "created_at").
-		Values(sq.Expr("gen_random_uuid()"), materialUUID, userUUID, time.Now()).
+		Columns("material_uuid", "user_uuid", "created_at").
+		Values(materialUUID, userUUID, time.Now()).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		return false, fmt.Errorf("failed to build sql query: %w", err)
+		return fmt.Errorf("failed to build sql query: %w", err)
 	}
 
 	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
 	if err != nil {
-		return false, fmt.Errorf("failed to add like: %w", err)
+		return fmt.Errorf("failed to add like: %w", err)
 	}
 
-	return true, nil
+	return nil
 }
 
-func (r *Repository) RemoveLike(ctx context.Context, materialUUID string, userUUID string) (bool, error) {
+func (r *Repository) RemoveLike(ctx context.Context, materialUUID string, userUUID string) error {
 	query, args, err := sq.
 		Delete("material_likes").
 		Where(sq.Eq{"material_uuid": materialUUID, "user_uuid": userUUID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		return false, fmt.Errorf("failed to build sql query: %w", err)
+		return fmt.Errorf("failed to build sql query: %w", err)
 	}
 
 	result, err := r.Chk(ctx).ExecContext(ctx, query, args...)
 	if err != nil {
-		return false, fmt.Errorf("failed to remove like: %w", err)
+		return fmt.Errorf("failed to remove like: %w", err)
 	}
 
-	rowsAffected, err := result.RowsAffected()
+	_, err = result.RowsAffected()
 	if err != nil {
-		return false, fmt.Errorf("failed to get rows affected: %w", err)
+		return fmt.Errorf("failed to get rows affected: %w", err)
 	}
 
-	return rowsAffected > 0, nil
+	return nil
 }
 
 func (r *Repository) GetLikesCount(ctx context.Context, materialUUID string) (int32, error) {
@@ -365,7 +365,7 @@ func (r *Repository) GetLikesCount(ctx context.Context, materialUUID string) (in
 	return likesCount, nil
 }
 
-func (r *Repository) UpdateLikesCount(ctx context.Context, materialUUID string, likesCount int32) (int32, error) {
+func (r *Repository) UpdateLikesCount(ctx context.Context, materialUUID string, likesCount int32) error {
 	query, args, err := sq.
 		Update("materials").
 		Set("likes_count", likesCount).
@@ -374,14 +374,14 @@ func (r *Repository) UpdateLikesCount(ctx context.Context, materialUUID string, 
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("failed to build sql query: %w", err)
+		return fmt.Errorf("failed to build sql query: %w", err)
 	}
 
 	var updatedLikesCount int32
 	err = r.Chk(ctx).GetContext(ctx, &updatedLikesCount, query, args...)
 	if err != nil {
-		return 0, fmt.Errorf("failed to update likes count: %w", err)
+		return fmt.Errorf("failed to update likes count: %w", err)
 	}
 
-	return updatedLikesCount, nil
+	return nil
 }

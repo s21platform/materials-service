@@ -36,12 +36,11 @@ func (m *MockDBRepo) EXPECT() *MockDBRepoMockRecorder {
 }
 
 // AddLike mocks base method.
-func (m *MockDBRepo) AddLike(ctx context.Context, materialUUID, userUUID string) (bool, error) {
+func (m *MockDBRepo) AddLike(ctx context.Context, materialUUID, userUUID string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddLike", ctx, materialUUID, userUUID)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // AddLike indicates an expected call of AddLike.
@@ -201,12 +200,11 @@ func (mr *MockDBRepoMockRecorder) PublishMaterial(ctx, uuid interface{}) *gomock
 }
 
 // RemoveLike mocks base method.
-func (m *MockDBRepo) RemoveLike(ctx context.Context, materialUUID, userUUID string) (bool, error) {
+func (m *MockDBRepo) RemoveLike(ctx context.Context, materialUUID, userUUID string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveLike", ctx, materialUUID, userUUID)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // RemoveLike indicates an expected call of RemoveLike.
@@ -231,12 +229,11 @@ func (mr *MockDBRepoMockRecorder) SaveDraftMaterial(ctx, ownerUUID, material int
 }
 
 // UpdateLikesCount mocks base method.
-func (m *MockDBRepo) UpdateLikesCount(ctx context.Context, materialUUID string, likesCount int32) (int32, error) {
+func (m *MockDBRepo) UpdateLikesCount(ctx context.Context, materialUUID string, likesCount int32) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateLikesCount", ctx, materialUUID, likesCount)
-	ret0, _ := ret[0].(int32)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // UpdateLikesCount indicates an expected call of UpdateLikesCount.
