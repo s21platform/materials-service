@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	logger_lib "github.com/s21platform/logger-lib"
+
 	"github.com/s21platform/materials-service/internal/config"
 	api "github.com/s21platform/materials-service/internal/generated"
 	"github.com/s21platform/materials-service/internal/model"
@@ -22,7 +23,7 @@ func New(repo DBRepo) *Handler {
 	}
 }
 
-func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request, params api.SaveDraftMaterialParams) {
+func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request, headerID api.SaveDraftMaterialParams) {
 	logger := logger_lib.FromContext(r.Context(), config.KeyLogger)
 	logger.AddFuncName("SaveDraftMaterial")
 
@@ -40,7 +41,7 @@ func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request, para
 		return
 	}
 
-	if userUUID != params.XUserID {
+	if userUUID != headerID.XUserID {
 		logger.Error("user UUID mismatch with X-User-ID header")
 		h.writeError(w, "user UUID mismatch", http.StatusUnauthorized)
 		return
@@ -54,8 +55,7 @@ func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request, para
 		ReadTimeMinutes: *req.ReadTimeMinutes,
 	}
 
-	ctx := r.Context()
-	respUUID, err := h.repository.SaveDraftMaterial(ctx, userUUID, saveReq)
+	respUUID, err := h.repository.SaveDraftMaterial(r.Context(), userUUID, saveReq)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to save draft material: %v", err))
 		h.writeError(w, fmt.Sprintf("failed to save draft material: %v", err), http.StatusInternalServerError)
