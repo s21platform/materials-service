@@ -16,6 +16,8 @@
     - [PublishMaterialOut](#-PublishMaterialOut)
     - [SaveDraftMaterialIn](#-SaveDraftMaterialIn)
     - [SaveDraftMaterialOut](#-SaveDraftMaterialOut)
+    - [ToggleLikeIn](#-ToggleLikeIn)
+    - [ToggleLikeOut](#-ToggleLikeOut)
   
     - [MaterialsService](#-MaterialsService)
   
@@ -231,6 +233,37 @@
 
 
 
+
+<a name="-ToggleLikeIn"></a>
+
+### ToggleLikeIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| material_uuid | [string](#string) |  | UUID материала |
+
+
+
+
+
+
+<a name="-ToggleLikeOut"></a>
+
+### ToggleLikeOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| is_liked | [bool](#bool) |  | Состояние лайка |
+| likes_count | [int32](#int32) |  | Количество лайков |
+
+
+
+
+
  
 
  
@@ -252,6 +285,7 @@
 | PublishMaterial | [.PublishMaterialIn](#PublishMaterialIn) | [.PublishMaterialOut](#PublishMaterialOut) |  |
 | DeleteMaterial | [.DeleteMaterialIn](#DeleteMaterialIn) | [.google.protobuf.Empty](#google-protobuf-Empty) |  |
 | ArchivedMaterial | [.ArchivedMaterialIn](#ArchivedMaterialIn) | [.google.protobuf.Empty](#google-protobuf-Empty) |  |
+| ToggleLike | [.ToggleLikeIn](#ToggleLikeIn) | [.ToggleLikeOut](#ToggleLikeOut) |  |
 
  
 
