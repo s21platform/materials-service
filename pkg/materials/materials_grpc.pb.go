@@ -26,6 +26,8 @@ const (
 	MaterialsService_EditMaterial_FullMethodName      = "/MaterialsService/EditMaterial"
 	MaterialsService_PublishMaterial_FullMethodName   = "/MaterialsService/PublishMaterial"
 	MaterialsService_DeleteMaterial_FullMethodName    = "/MaterialsService/DeleteMaterial"
+	MaterialsService_ArchivedMaterial_FullMethodName  = "/MaterialsService/ArchivedMaterial"
+	MaterialsService_ToggleLike_FullMethodName        = "/MaterialsService/ToggleLike"
 )
 
 // MaterialsServiceClient is the client API for MaterialsService service.
@@ -38,6 +40,8 @@ type MaterialsServiceClient interface {
 	EditMaterial(ctx context.Context, in *EditMaterialIn, opts ...grpc.CallOption) (*EditMaterialOut, error)
 	PublishMaterial(ctx context.Context, in *PublishMaterialIn, opts ...grpc.CallOption) (*PublishMaterialOut, error)
 	DeleteMaterial(ctx context.Context, in *DeleteMaterialIn, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ArchivedMaterial(ctx context.Context, in *ArchivedMaterialIn, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ToggleLike(ctx context.Context, in *ToggleLikeIn, opts ...grpc.CallOption) (*ToggleLikeOut, error)
 }
 
 type materialsServiceClient struct {
@@ -108,6 +112,26 @@ func (c *materialsServiceClient) DeleteMaterial(ctx context.Context, in *DeleteM
 	return out, nil
 }
 
+func (c *materialsServiceClient) ArchivedMaterial(ctx context.Context, in *ArchivedMaterialIn, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, MaterialsService_ArchivedMaterial_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *materialsServiceClient) ToggleLike(ctx context.Context, in *ToggleLikeIn, opts ...grpc.CallOption) (*ToggleLikeOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ToggleLikeOut)
+	err := c.cc.Invoke(ctx, MaterialsService_ToggleLike_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MaterialsServiceServer is the server API for MaterialsService service.
 // All implementations must embed UnimplementedMaterialsServiceServer
 // for forward compatibility.
@@ -118,6 +142,8 @@ type MaterialsServiceServer interface {
 	EditMaterial(context.Context, *EditMaterialIn) (*EditMaterialOut, error)
 	PublishMaterial(context.Context, *PublishMaterialIn) (*PublishMaterialOut, error)
 	DeleteMaterial(context.Context, *DeleteMaterialIn) (*emptypb.Empty, error)
+	ArchivedMaterial(context.Context, *ArchivedMaterialIn) (*emptypb.Empty, error)
+	ToggleLike(context.Context, *ToggleLikeIn) (*ToggleLikeOut, error)
 	mustEmbedUnimplementedMaterialsServiceServer()
 }
 
@@ -145,6 +171,12 @@ func (UnimplementedMaterialsServiceServer) PublishMaterial(context.Context, *Pub
 }
 func (UnimplementedMaterialsServiceServer) DeleteMaterial(context.Context, *DeleteMaterialIn) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteMaterial not implemented")
+}
+func (UnimplementedMaterialsServiceServer) ArchivedMaterial(context.Context, *ArchivedMaterialIn) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ArchivedMaterial not implemented")
+}
+func (UnimplementedMaterialsServiceServer) ToggleLike(context.Context, *ToggleLikeIn) (*ToggleLikeOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ToggleLike not implemented")
 }
 func (UnimplementedMaterialsServiceServer) mustEmbedUnimplementedMaterialsServiceServer() {}
 func (UnimplementedMaterialsServiceServer) testEmbeddedByValue()                          {}
@@ -275,6 +307,42 @@ func _MaterialsService_DeleteMaterial_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MaterialsService_ArchivedMaterial_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ArchivedMaterialIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MaterialsServiceServer).ArchivedMaterial(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MaterialsService_ArchivedMaterial_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MaterialsServiceServer).ArchivedMaterial(ctx, req.(*ArchivedMaterialIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MaterialsService_ToggleLike_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ToggleLikeIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MaterialsServiceServer).ToggleLike(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MaterialsService_ToggleLike_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MaterialsServiceServer).ToggleLike(ctx, req.(*ToggleLikeIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MaterialsService_ServiceDesc is the grpc.ServiceDesc for MaterialsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -305,6 +373,14 @@ var MaterialsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteMaterial",
 			Handler:    _MaterialsService_DeleteMaterial_Handler,
+		},
+		{
+			MethodName: "ArchivedMaterial",
+			Handler:    _MaterialsService_ArchivedMaterial_Handler,
+		},
+		{
+			MethodName: "ToggleLike",
+			Handler:    _MaterialsService_ToggleLike_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

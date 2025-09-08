@@ -12,6 +12,8 @@ service MaterialsService {
   rpc EditMaterial(EditMaterialIn) returns (EditMaterialOut) {};
   rpc PublishMaterial(PublishMaterialIn) returns (PublishMaterialOut){};
   rpc DeleteMaterial(DeleteMaterialIn) returns (google.protobuf.Empty) {};
+  rpc ArchivedMaterial(ArchivedMaterialIn) returns (google.protobuf.Empty) {};
+  rpc ToggleLike(ToggleLikeIn) returns (ToggleLikeOut) {};
 }
 
 message SaveDraftMaterialIn {
@@ -56,11 +58,11 @@ message GetAllMaterialsOut {
 }
 
 message EditMaterialIn {
-  string uuid = 1; // UUID материала
-  string title = 2; // Заголовок материала
-  string cover_image_url = 3; // URL обложки материала
-  string description = 4; // Описание материала
-  string content = 5; // Содержание материала
+  string uuid = 1;             // UUID материала
+  string title = 2;            // Заголовок материала
+  string cover_image_url = 3;  // URL обложки материала
+  string description = 4;      // Описание материала
+  string content = 5;          // Содержание материала
   int32 read_time_minutes = 6; // Время чтения в минутах
 }
 
@@ -78,4 +80,17 @@ message PublishMaterialIn{
 
 message PublishMaterialOut{
   Material material = 1; // Весь материал
+}
+
+message ArchivedMaterialIn{
+  string uuid = 1;
+}
+
+message ToggleLikeIn {
+  string material_uuid = 1; // UUID материала
+}
+
+message ToggleLikeOut {
+  bool is_liked = 1;     // Состояние лайка
+  int32 likes_count = 2; // Количество лайков
 }

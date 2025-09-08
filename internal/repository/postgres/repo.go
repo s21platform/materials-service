@@ -17,7 +17,7 @@ import (
 )
 
 type Repository struct {
-	connection *sqlx.DB
+	*sqlx.DB
 }
 
 func New(cfg *config.Config) *Repository {
@@ -30,12 +30,12 @@ func New(cfg *config.Config) *Repository {
 	}
 
 	return &Repository{
-		connection: conn,
+		conn,
 	}
 }
 
 func (r *Repository) Close() {
-	_ = r.connection.Close()
+	_ = r.DB.Close()
 }
 
 func (r *Repository) SaveDraftMaterial(ctx context.Context, ownerUUID string, material *model.SaveDraftMaterial) (string, error) {
@@ -53,7 +53,7 @@ func (r *Repository) SaveDraftMaterial(ctx context.Context, ownerUUID string, ma
 		return "", fmt.Errorf("failed to build SQL query: %w", err)
 	}
 
-	err = r.connection.GetContext(ctx, &uuid, query, args...)
+	err = r.Chk(ctx).GetContext(ctx, &uuid, query, args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to execute query: %w", err)
 	}
@@ -88,7 +88,7 @@ func (r *Repository) GetMaterial(ctx context.Context, uuid string) (*model.Mater
 		return nil, fmt.Errorf("failed to build sql query: %v", err)
 	}
 
-	err = r.connection.GetContext(ctx, &material, query, args...)
+	err = r.Chk(ctx).GetContext(ctx, &material, query, args...)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.New("material doesn't exist")
@@ -127,7 +127,7 @@ func (r *Repository) GetAllMaterials(ctx context.Context) (*model.MaterialList, 
 		return nil, fmt.Errorf("failed to build query: %w", err)
 	}
 
-	err = r.connection.SelectContext(ctx, &materials, query, args...)
+	err = r.Chk(ctx).SelectContext(ctx, &materials, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch materials: %w", err)
 	}
@@ -153,7 +153,7 @@ func (r *Repository) EditMaterial(ctx context.Context, material *model.EditMater
 		return nil, fmt.Errorf("failed to build update query: %v", err)
 	}
 
-	err = r.connection.GetContext(ctx, &updatedMaterial, query, args...)
+	err = r.Chk(ctx).GetContext(ctx, &updatedMaterial, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update material: %v", err)
 	}
@@ -174,7 +174,7 @@ func (r *Repository) GetMaterialOwnerUUID(ctx context.Context, uuid string) (str
 		return "", fmt.Errorf("failed to build sql query: %v", err)
 	}
 
-	err = r.connection.GetContext(ctx, &ownerUUID, query, args...)
+	err = r.Chk(ctx).GetContext(ctx, &ownerUUID, query, args...)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", errors.New("material doesn't exist")
@@ -196,7 +196,7 @@ func (r *Repository) DeleteMaterial(ctx context.Context, uuid string) (int64, er
 		return 0, fmt.Errorf("failed to build sql query: %v", err)
 	}
 
-	res, err := r.connection.ExecContext(ctx, query, args...)
+	res, err := r.Chk(ctx).ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, fmt.Errorf("failed to execute query: %v", err)
 	}
@@ -224,7 +224,7 @@ func (r *Repository) PublishMaterial(ctx context.Context, uuid string) (*model.M
 		return nil, fmt.Errorf("failed to build update query: %v", err)
 	}
 
-	err = r.connection.GetContext(ctx, &updatedMaterial, query, args...)
+	err = r.Chk(ctx).GetContext(ctx, &updatedMaterial, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute update query: %v", err)
 	}
@@ -251,10 +251,132 @@ func (r *Repository) MaterialExists(ctx context.Context, materialUUID string) (b
 		return false, fmt.Errorf("failed to build sql query: %v", err)
 	}
 
-	err = r.connection.GetContext(ctx, &exists, querySQL, args...)
+	err = r.Chk(ctx).GetContext(ctx, &exists, querySQL, args...)
 	if err != nil {
 		return false, fmt.Errorf("failed to check material existence: %v", err)
 	}
 
 	return exists, nil
+}
+
+func (r *Repository) ArchivedMaterial(ctx context.Context, uuid string) (int64, error) {
+	query, args, err := sq.
+		Update("materials").
+		Set("archived_at", time.Now()).
+		Where(sq.Eq{"uuid": uuid, "archived_at": nil}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	res, err := r.Chk(ctx).ExecContext(ctx, query, args...)
+	if err != nil {
+		return 0, fmt.Errorf("failed to execute query: %v", err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("failed to check rows affected: %v", err)
+	}
+
+	return rowsAffected, nil
+}
+
+func (r *Repository) CheckLike(ctx context.Context, materialUUID string, userUUID string) (bool, error) {
+	var exists bool
+
+	query, _, err := sq.
+		Select("EXISTS (SELECT 1 FROM material_likes WHERE material_uuid = ? AND user_uuid = ?)").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return false, fmt.Errorf("failed to build sql query: %w", err)
+	}
+
+	err = r.Chk(ctx).GetContext(ctx, &exists, query, materialUUID, userUUID)
+	if err != nil {
+		return false, fmt.Errorf("failed to check like: %w", err)
+	}
+
+	return exists, nil
+}
+
+func (r *Repository) AddLike(ctx context.Context, materialUUID string, userUUID string) error {
+	query, args, err := sq.
+		Insert("material_likes").
+		Columns("material_uuid", "user_uuid").
+		Values(materialUUID, userUUID).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build sql query: %w", err)
+	}
+
+	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to add like: %w", err)
+	}
+
+	return nil
+}
+
+func (r *Repository) RemoveLike(ctx context.Context, materialUUID string, userUUID string) error {
+	query, args, err := sq.
+		Delete("material_likes").
+		Where(sq.Eq{"material_uuid": materialUUID, "user_uuid": userUUID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build sql query: %w", err)
+	}
+
+	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to remove like: %w", err)
+	}
+
+	return nil
+}
+
+func (r *Repository) GetLikesCount(ctx context.Context, materialUUID string) (int32, error) {
+	var likesCount int32
+
+	query, args, err := sq.
+		Select("COUNT(material_uuid)").
+		From("material_likes").
+		Where(sq.Eq{"material_uuid": materialUUID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("failed to build sql query: %w", err)
+	}
+
+	err = r.Chk(ctx).GetContext(ctx, &likesCount, query, args...)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get likes count: %w", err)
+	}
+
+	return likesCount, nil
+}
+
+func (r *Repository) UpdateLikesCount(ctx context.Context, materialUUID string, likesCount int32) error {
+	query, args, err := sq.
+		Update("materials").
+		Set("likes_count", likesCount).
+		Where(sq.Eq{"uuid": materialUUID}).
+		Suffix("RETURNING likes_count").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build sql query: %w", err)
+	}
+
+	var updatedLikesCount int32
+	err = r.Chk(ctx).GetContext(ctx, &updatedLikesCount, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to update likes count: %w", err)
+	}
+
+	return nil
 }
