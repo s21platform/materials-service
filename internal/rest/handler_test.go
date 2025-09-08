@@ -68,13 +68,12 @@ func TestHandler_SaveDraftMaterial(t *testing.T) {
 		req = req.WithContext(reqCtx)
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", userUUID)
 
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 		w := httptest.NewRecorder()
-		handler.SaveDraftMaterial(w, req, api.SaveDraftMaterialParams{XUserID: userUUID})
+		handler.SaveDraftMaterial(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 
@@ -106,13 +105,12 @@ func TestHandler_SaveDraftMaterial(t *testing.T) {
 		req = req.WithContext(reqCtx)
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", userUUID)
 
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 		w := httptest.NewRecorder()
-		handler.SaveDraftMaterial(w, req, api.SaveDraftMaterialParams{XUserID: userUUID})
+		handler.SaveDraftMaterial(w, req)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 
@@ -152,13 +150,12 @@ func TestHandler_SaveDraftMaterial(t *testing.T) {
 		req = req.WithContext(reqCtx)
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", userUUID)
 
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 		w := httptest.NewRecorder()
-		handler.SaveDraftMaterial(w, req, api.SaveDraftMaterialParams{XUserID: userUUID})
+		handler.SaveDraftMaterial(w, req)
 
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 
@@ -166,53 +163,6 @@ func TestHandler_SaveDraftMaterial(t *testing.T) {
 		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
 		require.NoError(t, err)
 		assert.Contains(t, errorResp.Message, "user UUID is required")
-	})
-
-	t.Run("user_uuid_mismatch", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockRepo := NewMockDBRepo(ctrl)
-		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-
-		handler := &Handler{
-			repository: mockRepo,
-		}
-
-		mockLogger.EXPECT().AddFuncName("SaveDraftMaterial")
-		mockLogger.EXPECT().Error("user UUID mismatch with X-User-ID header")
-
-		requestBody := api.SaveDraftMaterialIn{
-			Title:           "Test Title",
-			Content:         stringPtr("Test Content"),
-			Description:     stringPtr("Test Description"),
-			CoverImageUrl:   stringPtr("http://example.com/cover.jpg"),
-			ReadTimeMinutes: int32Ptr(5),
-		}
-
-		bodyBytes, _ := json.Marshal(requestBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/materials/draft", bytes.NewReader(bodyBytes))
-
-		reqCtx := req.Context()
-		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
-		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
-		req = req.WithContext(reqCtx)
-
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", uuid.New().String())
-
-		rctx := chi.NewRouteContext()
-		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
-
-		w := httptest.NewRecorder()
-		handler.SaveDraftMaterial(w, req, api.SaveDraftMaterialParams{XUserID: uuid.New().String()})
-
-		assert.Equal(t, http.StatusUnauthorized, w.Code)
-
-		var errorResp api.Error
-		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
-		require.NoError(t, err)
-		assert.Contains(t, errorResp.Message, "user UUID mismatch")
 	})
 
 	t.Run("repository_error", func(t *testing.T) {
@@ -248,13 +198,12 @@ func TestHandler_SaveDraftMaterial(t *testing.T) {
 		req = req.WithContext(reqCtx)
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-User-ID", userUUID)
 
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 		w := httptest.NewRecorder()
-		handler.SaveDraftMaterial(w, req, api.SaveDraftMaterialParams{XUserID: userUUID})
+		handler.SaveDraftMaterial(w, req)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 

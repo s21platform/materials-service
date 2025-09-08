@@ -35,6 +35,20 @@ func (m *MockDBRepo) EXPECT() *MockDBRepoMockRecorder {
 	return m.recorder
 }
 
+// AddLike mocks base method.
+func (m *MockDBRepo) AddLike(ctx context.Context, materialUUID, userUUID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddLike", ctx, materialUUID, userUUID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddLike indicates an expected call of AddLike.
+func (mr *MockDBRepoMockRecorder) AddLike(ctx, materialUUID, userUUID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddLike", reflect.TypeOf((*MockDBRepo)(nil).AddLike), ctx, materialUUID, userUUID)
+}
+
 // ArchivedMaterial mocks base method.
 func (m *MockDBRepo) ArchivedMaterial(ctx context.Context, uuid string) (int64, error) {
 	m.ctrl.T.Helper()
@@ -48,6 +62,21 @@ func (m *MockDBRepo) ArchivedMaterial(ctx context.Context, uuid string) (int64, 
 func (mr *MockDBRepoMockRecorder) ArchivedMaterial(ctx, uuid interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ArchivedMaterial", reflect.TypeOf((*MockDBRepo)(nil).ArchivedMaterial), ctx, uuid)
+}
+
+// CheckLike mocks base method.
+func (m *MockDBRepo) CheckLike(ctx context.Context, materialUUID, userUUID string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckLike", ctx, materialUUID, userUUID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckLike indicates an expected call of CheckLike.
+func (mr *MockDBRepoMockRecorder) CheckLike(ctx, materialUUID, userUUID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckLike", reflect.TypeOf((*MockDBRepo)(nil).CheckLike), ctx, materialUUID, userUUID)
 }
 
 // DeleteMaterial mocks base method.
@@ -93,6 +122,21 @@ func (m *MockDBRepo) GetAllMaterials(ctx context.Context) (*model.MaterialList, 
 func (mr *MockDBRepoMockRecorder) GetAllMaterials(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllMaterials", reflect.TypeOf((*MockDBRepo)(nil).GetAllMaterials), ctx)
+}
+
+// GetLikesCount mocks base method.
+func (m *MockDBRepo) GetLikesCount(ctx context.Context, materialUUID string) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLikesCount", ctx, materialUUID)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLikesCount indicates an expected call of GetLikesCount.
+func (mr *MockDBRepoMockRecorder) GetLikesCount(ctx, materialUUID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLikesCount", reflect.TypeOf((*MockDBRepo)(nil).GetLikesCount), ctx, materialUUID)
 }
 
 // GetMaterial mocks base method.
@@ -155,6 +199,20 @@ func (mr *MockDBRepoMockRecorder) PublishMaterial(ctx, uuid interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishMaterial", reflect.TypeOf((*MockDBRepo)(nil).PublishMaterial), ctx, uuid)
 }
 
+// RemoveLike mocks base method.
+func (m *MockDBRepo) RemoveLike(ctx context.Context, materialUUID, userUUID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveLike", ctx, materialUUID, userUUID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveLike indicates an expected call of RemoveLike.
+func (mr *MockDBRepoMockRecorder) RemoveLike(ctx, materialUUID, userUUID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveLike", reflect.TypeOf((*MockDBRepo)(nil).RemoveLike), ctx, materialUUID, userUUID)
+}
+
 // SaveDraftMaterial mocks base method.
 func (m *MockDBRepo) SaveDraftMaterial(ctx context.Context, ownerUUID string, material *model.SaveDraftMaterial) (string, error) {
 	m.ctrl.T.Helper()
@@ -168,4 +226,32 @@ func (m *MockDBRepo) SaveDraftMaterial(ctx context.Context, ownerUUID string, ma
 func (mr *MockDBRepoMockRecorder) SaveDraftMaterial(ctx, ownerUUID, material interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveDraftMaterial", reflect.TypeOf((*MockDBRepo)(nil).SaveDraftMaterial), ctx, ownerUUID, material)
+}
+
+// UpdateLikesCount mocks base method.
+func (m *MockDBRepo) UpdateLikesCount(ctx context.Context, materialUUID string, likesCount int32) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateLikesCount", ctx, materialUUID, likesCount)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateLikesCount indicates an expected call of UpdateLikesCount.
+func (mr *MockDBRepoMockRecorder) UpdateLikesCount(ctx, materialUUID, likesCount interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateLikesCount", reflect.TypeOf((*MockDBRepo)(nil).UpdateLikesCount), ctx, materialUUID, likesCount)
+}
+
+// WithTx mocks base method.
+func (m *MockDBRepo) WithTx(ctx context.Context, cb func(context.Context) error) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WithTx", ctx, cb)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WithTx indicates an expected call of WithTx.
+func (mr *MockDBRepoMockRecorder) WithTx(ctx, cb interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithTx", reflect.TypeOf((*MockDBRepo)(nil).WithTx), ctx, cb)
 }
