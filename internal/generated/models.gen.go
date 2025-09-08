@@ -9,6 +9,29 @@ type Error struct {
 	Message string `json:"message"`
 }
 
+// Material defines model for Material.
+type Material struct {
+	Content         *string `json:"content,omitempty"`
+	CoverImageUrl   *string `json:"cover_image_url,omitempty"`
+	Description     *string `json:"description,omitempty"`
+	OwnerUuid       *string `json:"owner_uuid,omitempty"`
+	ReadTimeMinutes *int32  `json:"read_time_minutes,omitempty"`
+	Status          *string `json:"status,omitempty"`
+	Title           string  `json:"title"`
+	Uuid            string  `json:"uuid"`
+}
+
+// PublishMaterialIn defines model for PublishMaterialIn.
+type PublishMaterialIn struct {
+	// Uuid UUID of the material to publish
+	Uuid string `json:"uuid"`
+}
+
+// PublishMaterialOut defines model for PublishMaterialOut.
+type PublishMaterialOut struct {
+	Material Material `json:"material"`
+}
+
 // SaveDraftMaterialIn defines model for SaveDraftMaterialIn.
 type SaveDraftMaterialIn struct {
 	Content         *string `json:"content,omitempty"`
@@ -22,6 +45,9 @@ type SaveDraftMaterialIn struct {
 type SaveDraftMaterialOut struct {
 	Uuid string `json:"uuid"`
 }
+
+// PublishMaterialJSONRequestBody defines body for PublishMaterial for application/json ContentType.
+type PublishMaterialJSONRequestBody = PublishMaterialIn
 
 // SaveDraftMaterialJSONRequestBody defines body for SaveDraftMaterial for application/json ContentType.
 type SaveDraftMaterialJSONRequestBody = SaveDraftMaterialIn

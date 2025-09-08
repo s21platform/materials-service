@@ -35,6 +35,51 @@ func (m *MockDBRepo) EXPECT() *MockDBRepoMockRecorder {
 	return m.recorder
 }
 
+// GetMaterialOwnerUUID mocks base method.
+func (m *MockDBRepo) GetMaterialOwnerUUID(ctx context.Context, materialUUID string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMaterialOwnerUUID", ctx, materialUUID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMaterialOwnerUUID indicates an expected call of GetMaterialOwnerUUID.
+func (mr *MockDBRepoMockRecorder) GetMaterialOwnerUUID(ctx, materialUUID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMaterialOwnerUUID", reflect.TypeOf((*MockDBRepo)(nil).GetMaterialOwnerUUID), ctx, materialUUID)
+}
+
+// MaterialExists mocks base method.
+func (m *MockDBRepo) MaterialExists(ctx context.Context, materialUUID string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MaterialExists", ctx, materialUUID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MaterialExists indicates an expected call of MaterialExists.
+func (mr *MockDBRepoMockRecorder) MaterialExists(ctx, materialUUID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MaterialExists", reflect.TypeOf((*MockDBRepo)(nil).MaterialExists), ctx, materialUUID)
+}
+
+// PublishMaterial mocks base method.
+func (m *MockDBRepo) PublishMaterial(ctx context.Context, materialUUID string) (*model.Material, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublishMaterial", ctx, materialUUID)
+	ret0, _ := ret[0].(*model.Material)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PublishMaterial indicates an expected call of PublishMaterial.
+func (mr *MockDBRepoMockRecorder) PublishMaterial(ctx, materialUUID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishMaterial", reflect.TypeOf((*MockDBRepo)(nil).PublishMaterial), ctx, materialUUID)
+}
+
 // SaveDraftMaterial mocks base method.
 func (m *MockDBRepo) SaveDraftMaterial(ctx context.Context, ownerUUID string, material *model.SaveDraftMaterial) (string, error) {
 	m.ctrl.T.Helper()

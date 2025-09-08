@@ -12,6 +12,9 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Publish a material
+	// (POST /api/materials/publish-material)
+	PublishMaterial(w http.ResponseWriter, r *http.Request)
 	// Save a draft material
 	// (POST /api/materials/save-draft-material)
 	SaveDraftMaterial(w http.ResponseWriter, r *http.Request)
@@ -20,6 +23,12 @@ type ServerInterface interface {
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
 
 type Unimplemented struct{}
+
+// Publish a material
+// (POST /api/materials/publish-material)
+func (_ Unimplemented) PublishMaterial(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
 
 // Save a draft material
 // (POST /api/materials/save-draft-material)
@@ -35,6 +44,21 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// PublishMaterial operation middleware
+func (siw *ServerInterfaceWrapper) PublishMaterial(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PublishMaterial(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
 
 // SaveDraftMaterial operation middleware
 func (siw *ServerInterfaceWrapper) SaveDraftMaterial(w http.ResponseWriter, r *http.Request) {
@@ -164,6 +188,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/materials/publish-material", wrapper.PublishMaterial)
+	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/materials/save-draft-material", wrapper.SaveDraftMaterial)
 	})

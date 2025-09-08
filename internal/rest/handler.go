@@ -63,6 +63,79 @@ func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request) {
 	h.writeJSON(w, response, http.StatusOK)
 }
 
+func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request) {
+	logger := logger_lib.FromContext(r.Context(), config.KeyLogger)
+	logger.AddFuncName("PublishMaterial")
+
+	var req api.PublishMaterialIn
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		logger.Error(fmt.Sprintf("failed to decode request: %v", err))
+		h.writeError(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.Uuid == "" {
+		logger.Error("material uuid is required")
+		h.writeError(w, "material uuid is required", http.StatusBadRequest)
+		return
+	}
+
+	userUUID, ok := r.Context().Value(config.KeyUUID).(string)
+	if !ok || userUUID == "" {
+		logger.Error("failed to get user UUID")
+		h.writeError(w, "user UUID is required", http.StatusUnauthorized)
+		return
+	}
+
+	materialOwnerUUID, err := h.repository.GetMaterialOwnerUUID(r.Context(), req.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
+		h.writeError(w, fmt.Sprintf("failed to get owner uuid: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	if materialOwnerUUID != userUUID {
+		logger.Error("failed to publish: user is not owner")
+		h.writeError(w, "failed to publish: user is not owner", http.StatusForbidden)
+		return
+	}
+
+	exists, err := h.repository.MaterialExists(r.Context(), req.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to check material existence: %v", err))
+		h.writeError(w, fmt.Sprintf("failed to check material existence: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	if !exists {
+		logger.Error("material does not exist")
+		h.writeError(w, "material does not exist", http.StatusPreconditionFailed)
+		return
+	}
+
+	publishedMaterial, err := h.repository.PublishMaterial(r.Context(), req.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to publish material: %v", err))
+		h.writeError(w, fmt.Sprintf("failed to publish material: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	response := api.PublishMaterialOut{
+		Material: api.Material{
+			Uuid:            publishedMaterial.UUID,
+			OwnerUuid:       &publishedMaterial.OwnerUUID,
+			Title:           publishedMaterial.Title,
+			Content:         publishedMaterial.Content,
+			Description:     &publishedMaterial.Description,
+			CoverImageUrl:   &publishedMaterial.CoverImageURL,
+			ReadTimeMinutes: &publishedMaterial.ReadTimeMinutes,
+			Status:          &publishedMaterial.Status,
+		},
+	}
+
+	h.writeJSON(w, response, http.StatusOK)
+}
+
 // ----------------------------- helpers -----------------------------
 
 func (h *Handler) writeJSON(w http.ResponseWriter, data interface{}, statusCode int) {
