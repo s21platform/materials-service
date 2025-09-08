@@ -1,0 +1,83 @@
+openapi: 3.0.3
+info:
+  title: Materials Service
+  version: 1.0.0
+
+paths:
+  /api/materials/save-draft-material:
+    post:
+      summary: Save a draft material
+      operationId: SaveDraftMaterial
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveDraftMaterialIn'
+      responses:
+        '200':
+          description: Draft material saved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveDraftMaterialOut'
+        '400':
+          description: Invalid input, missing required title
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthenticated, user UUID not provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    SaveDraftMaterialIn:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+        cover_image_url:
+          type: string
+        description:
+          type: string
+        content:
+          type: string
+        read_time_minutes:
+          type: integer
+          format: int32
+    SaveDraftMaterialOut:
+      type: object
+      required:
+        - uuid
+      properties:
+        uuid:
+          type: string
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: "title is required"
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
