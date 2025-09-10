@@ -36,7 +36,7 @@ func main() {
 		grpc.ChainUnaryInterceptor(
 			infra.AuthInterceptorGRPC,
 			infra.LoggerGRPC(logger),
-			tx.TxMiddleWire(dbRepo),
+			tx.TxMiddleWareGRPC(dbRepo),
 		),
 	)
 	materials.RegisterMaterialsServiceServer(grpcServer, materialsService)
@@ -49,6 +49,9 @@ func main() {
 	})
 	router.Use(func(next http.Handler) http.Handler {
 		return infra.LoggerHTTP(next, logger)
+	})
+	router.Use(func(next http.Handler) http.Handler {
+		return tx.TxMiddlewareHTTP(dbRepo)(next)
 	})
 
 	api.HandlerFromMux(handler, router)

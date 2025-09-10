@@ -11,6 +11,7 @@ import (
 	"github.com/s21platform/materials-service/internal/config"
 	api "github.com/s21platform/materials-service/internal/generated"
 	"github.com/s21platform/materials-service/internal/model"
+	"github.com/s21platform/materials-service/internal/pkg/tx"
 )
 
 type Handler struct {
@@ -42,11 +43,11 @@ func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request) {
 	}
 
 	saveReq := &model.SaveDraftMaterial{
-		Title:           req.Title,
-		Content:         *req.Content,
-		Description:     *req.Description,
-		CoverImageURL:   *req.CoverImageUrl,
-		ReadTimeMinutes: *req.ReadTimeMinutes,
+		Title:           &req.Title,
+		Content:         req.Content,
+		Description:     req.Description,
+		CoverImageURL:   req.CoverImageUrl,
+		ReadTimeMinutes: req.ReadTimeMinutes,
 	}
 
 	respUUID, err := h.repository.SaveDraftMaterial(r.Context(), userUUID, saveReq)
@@ -126,11 +127,82 @@ func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request) {
 			OwnerUuid:       &publishedMaterial.OwnerUUID,
 			Title:           publishedMaterial.Title,
 			Content:         publishedMaterial.Content,
-			Description:     &publishedMaterial.Description,
-			CoverImageUrl:   &publishedMaterial.CoverImageURL,
-			ReadTimeMinutes: &publishedMaterial.ReadTimeMinutes,
-			Status:          &publishedMaterial.Status,
+			Description:     publishedMaterial.Description,
+			CoverImageUrl:   publishedMaterial.CoverImageURL,
+			ReadTimeMinutes: publishedMaterial.ReadTimeMinutes,
+			Status:          publishedMaterial.Status,
 		},
+	}
+
+	h.writeJSON(w, response, http.StatusOK)
+}
+
+func (h *Handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
+	logger := logger_lib.FromContext(r.Context(), config.KeyLogger)
+	logger.AddFuncName("ToggleLike")
+
+	var req api.ToggleLikeIn
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		logger.Error(fmt.Sprintf("failed to decode request: %v", err))
+		h.writeError(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.MaterialUuid == "" {
+		logger.Error("material uuid is required")
+		h.writeError(w, "material uuid is required", http.StatusBadRequest)
+		return
+	}
+
+	userUUID, ok := r.Context().Value(config.KeyUUID).(string)
+	if !ok || userUUID == "" {
+		logger.Error("failed to get user UUID")
+		h.writeError(w, "user UUID is required", http.StatusUnauthorized)
+		return
+	}
+
+	var isLiked bool
+	var likesCount int32
+	err := tx.TxExecute(r.Context(), func(ctx context.Context) error {
+		var err error
+		isLiked, err = h.repository.CheckLike(ctx, req.MaterialUuid, userUUID)
+		if err != nil {
+			return fmt.Errorf("failed to check like: %v", err)
+		}
+
+		if isLiked {
+			err = h.repository.RemoveLike(ctx, req.MaterialUuid, userUUID)
+			if err != nil {
+				return fmt.Errorf("failed to remove like: %v", err)
+			}
+		} else {
+			err = h.repository.AddLike(ctx, req.MaterialUuid, userUUID)
+			if err != nil {
+				return fmt.Errorf("failed to add like: %v", err)
+			}
+		}
+
+		likesCount, err = h.repository.GetLikesCount(ctx, req.MaterialUuid)
+		if err != nil {
+			return fmt.Errorf("failed to get likes count: %v", err)
+		}
+
+		err = h.repository.UpdateLikesCount(ctx, req.MaterialUuid, likesCount)
+		if err != nil {
+			return fmt.Errorf("failed to update likes count: %v", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to toggle like: %v", err))
+		h.writeError(w, fmt.Sprintf("failed to toggle like: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	response := api.ToggleLikeOut{
+		IsLiked:    !isLiked,
+		LikesCount: likesCount,
 	}
 
 	h.writeJSON(w, response, http.StatusOK)

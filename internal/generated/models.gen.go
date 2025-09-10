@@ -46,6 +46,24 @@ type SaveDraftMaterialOut struct {
 	Uuid string `json:"uuid"`
 }
 
+// ToggleLikeIn defines model for ToggleLikeIn.
+type ToggleLikeIn struct {
+	// MaterialUuid UUID of the material to toggle like on
+	MaterialUuid string `json:"material_uuid"`
+}
+
+// ToggleLikeOut defines model for ToggleLikeOut.
+type ToggleLikeOut struct {
+	// IsLiked Whether the material is now liked by the user
+	IsLiked bool `json:"is_liked"`
+
+	// LikesCount Updated count of likes on the material
+	LikesCount int32 `json:"likes_count"`
+}
+
+// ToggleLikeJSONRequestBody defines body for ToggleLike for application/json ContentType.
+type ToggleLikeJSONRequestBody = ToggleLikeIn
+
 // PublishMaterialJSONRequestBody defines body for PublishMaterial for application/json ContentType.
 type PublishMaterialJSONRequestBody = PublishMaterialIn
 

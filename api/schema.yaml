@@ -88,6 +88,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/materials:
+    put:
+      summary: Toggle like on a material
+      operationId: ToggleLike
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToggleLikeIn'
+      responses:
+        '200':
+          description: Like toggled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToggleLikeOut'
+        '400':
+          description: Invalid input, missing required material UUID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthenticated, user UUID not provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   schemas:
     SaveDraftMaterialIn:
@@ -153,6 +189,29 @@ components:
           format: int32
         status:
           type: string
+
+    ToggleLikeIn:
+      type: object
+      required:
+        - material_uuid
+      properties:
+        material_uuid:
+          type: string
+          description: UUID of the material to toggle like on
+
+    ToggleLikeOut:
+      type: object
+      required:
+        - is_liked
+        - likes_count
+      properties:
+        is_liked:
+          type: boolean
+          description: Whether the material is now liked by the user
+        likes_count:
+          type: integer
+          format: int32
+          description: Updated count of likes on the material
 
     Error:
       type: object
