@@ -43,11 +43,11 @@ func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request) {
 	}
 
 	saveReq := &model.SaveDraftMaterial{
-		Title:           &req.Title,
-		Content:         req.Content,
-		Description:     req.Description,
-		CoverImageURL:   req.CoverImageUrl,
-		ReadTimeMinutes: req.ReadTimeMinutes,
+		Title:           req.Title,
+		Content:         *req.Content,
+		Description:     *req.Description,
+		CoverImageURL:   *req.CoverImageUrl,
+		ReadTimeMinutes: *req.ReadTimeMinutes,
 	}
 
 	respUUID, err := h.repository.SaveDraftMaterial(r.Context(), userUUID, saveReq)
@@ -127,10 +127,10 @@ func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request) {
 			OwnerUuid:       &publishedMaterial.OwnerUUID,
 			Title:           publishedMaterial.Title,
 			Content:         publishedMaterial.Content,
-			Description:     publishedMaterial.Description,
-			CoverImageUrl:   publishedMaterial.CoverImageURL,
-			ReadTimeMinutes: publishedMaterial.ReadTimeMinutes,
-			Status:          publishedMaterial.Status,
+			Description:     &publishedMaterial.Description,
+			CoverImageUrl:   &publishedMaterial.CoverImageURL,
+			ReadTimeMinutes: &publishedMaterial.ReadTimeMinutes,
+			Status:          &publishedMaterial.Status,
 		},
 	}
 

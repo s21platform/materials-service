@@ -14,17 +14,17 @@ type Material struct {
 	UUID            string     `db:"uuid"`
 	OwnerUUID       string     `db:"owner_uuid"`
 	Title           string     `db:"title"`
-	CoverImageURL   *string    `db:"cover_image_url"`
-	Description     *string    `db:"description"`
+	CoverImageURL   string     `db:"cover_image_url"`
+	Description     string     `db:"description"`
 	Content         *string    `db:"content"`
-	ReadTimeMinutes *int32     `db:"read_time_minutes"`
-	Status          *string    `db:"status"`
-	CreatedAt       *time.Time `db:"created_at"`
+	ReadTimeMinutes int32      `db:"read_time_minutes"`
+	Status          string     `db:"status"`
+	CreatedAt       time.Time  `db:"created_at"`
 	EditedAt        *time.Time `db:"edited_at"`
 	PublishedAt     *time.Time `db:"published_at"`
 	ArchivedAt      *time.Time `db:"archived_at"`
 	DeletedAt       *time.Time `db:"deleted_at"`
-	LikesCount      *int32     `db:"likes_count"`
+	LikesCount      int32      `db:"likes_count"`
 }
 
 func (m *Material) FromDTO() *materials.Material {
@@ -32,12 +32,12 @@ func (m *Material) FromDTO() *materials.Material {
 		Uuid:            m.UUID,
 		OwnerUuid:       m.OwnerUUID,
 		Title:           m.Title,
-		CoverImageUrl:   *m.CoverImageURL,
-		Description:     *m.Description,
-		ReadTimeMinutes: *m.ReadTimeMinutes,
-		Status:          *m.Status,
-		CreatedAt:       timestamppb.New(*m.CreatedAt),
-		LikesCount:      *m.LikesCount,
+		CoverImageUrl:   m.CoverImageURL,
+		Description:     m.Description,
+		ReadTimeMinutes: m.ReadTimeMinutes,
+		Status:          m.Status,
+		CreatedAt:       timestamppb.New(m.CreatedAt),
+		LikesCount:      m.LikesCount,
 	}
 
 	if m.Content != nil {
@@ -67,11 +67,11 @@ func (a *MaterialList) ListFromDTO() []*materials.Material {
 			Uuid:            material.UUID,
 			OwnerUuid:       material.OwnerUUID,
 			Title:           material.Title,
-			CoverImageUrl:   *material.CoverImageURL,
-			Description:     *material.Description,
-			ReadTimeMinutes: *material.ReadTimeMinutes,
-			Status:          *material.Status,
-			LikesCount:      *material.LikesCount,
+			CoverImageUrl:   material.CoverImageURL,
+			Description:     material.Description,
+			ReadTimeMinutes: material.ReadTimeMinutes,
+			Status:          material.Status,
+			LikesCount:      material.LikesCount,
 		}
 
 		if material.Content != nil {
