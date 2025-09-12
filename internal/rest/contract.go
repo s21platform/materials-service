@@ -12,4 +12,10 @@ type DBRepo interface {
 	GetMaterialOwnerUUID(ctx context.Context, materialUUID string) (string, error)
 	MaterialExists(ctx context.Context, materialUUID string) (bool, error)
 	PublishMaterial(ctx context.Context, materialUUID string) (*model.Material, error)
+	CheckLike(ctx context.Context, materialUUID string, userUUID string) (bool, error)
+	AddLike(ctx context.Context, materialUUID string, userUUID string) error
+	RemoveLike(ctx context.Context, materialUUID string, userUUID string) error
+	GetLikesCount(ctx context.Context, materialUUID string) (int32, error)
+	UpdateLikesCount(ctx context.Context, materialUUID string, likesCount int32) error
+	WithTx(ctx context.Context, cb func(ctx context.Context) error) (err error)
 }
