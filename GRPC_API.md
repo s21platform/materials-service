@@ -4,6 +4,7 @@
 ## Table of Contents
 
 - [api/materials.proto](#api_materials-proto)
+    - [ArchivedMaterialIn](#-ArchivedMaterialIn)
     - [DeleteMaterialIn](#-DeleteMaterialIn)
     - [EditMaterialIn](#-EditMaterialIn)
     - [EditMaterialOut](#-EditMaterialOut)
@@ -16,6 +17,8 @@
     - [PublishMaterialOut](#-PublishMaterialOut)
     - [SaveDraftMaterialIn](#-SaveDraftMaterialIn)
     - [SaveDraftMaterialOut](#-SaveDraftMaterialOut)
+    - [ToggleLikeIn](#-ToggleLikeIn)
+    - [ToggleLikeOut](#-ToggleLikeOut)
   
     - [MaterialsService](#-MaterialsService)
   
@@ -27,6 +30,21 @@
 <p align="right"><a href="#top">Top</a></p>
 
 ## api/materials.proto
+
+
+
+<a name="-ArchivedMaterialIn"></a>
+
+### ArchivedMaterialIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+
+
+
 
 
 
@@ -233,6 +251,37 @@
 
 
 
+
+<a name="-ToggleLikeIn"></a>
+
+### ToggleLikeIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| material_uuid | [string](#string) |  | UUID материала |
+
+
+
+
+
+
+<a name="-ToggleLikeOut"></a>
+
+### ToggleLikeOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| is_liked | [bool](#bool) |  | Состояние лайка |
+| likes_count | [int32](#int32) |  | Количество лайков |
+
+
+
+
+
  
 
  
@@ -253,6 +302,8 @@
 | EditMaterial | [.EditMaterialIn](#EditMaterialIn) | [.EditMaterialOut](#EditMaterialOut) |  |
 | PublishMaterial | [.PublishMaterialIn](#PublishMaterialIn) | [.PublishMaterialOut](#PublishMaterialOut) |  |
 | DeleteMaterial | [.DeleteMaterialIn](#DeleteMaterialIn) | [.google.protobuf.Empty](#google-protobuf-Empty) |  |
+| ArchivedMaterial | [.ArchivedMaterialIn](#ArchivedMaterialIn) | [.google.protobuf.Empty](#google-protobuf-Empty) |  |
+| ToggleLike | [.ToggleLikeIn](#ToggleLikeIn) | [.ToggleLikeOut](#ToggleLikeOut) |  |
 
  
 

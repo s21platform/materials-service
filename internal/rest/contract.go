@@ -1,5 +1,5 @@
 //go:generate mockgen -destination=mock_contract_test.go -package=${GOPACKAGE} -source=contract.go
-package service
+package rest
 
 import (
 	"context"
@@ -9,22 +9,13 @@ import (
 
 type DBRepo interface {
 	SaveDraftMaterial(ctx context.Context, ownerUUID string, material *model.SaveDraftMaterial) (string, error)
-	GetMaterial(ctx context.Context, uuid string) (*model.Material, error)
-	GetAllMaterials(ctx context.Context) (*model.MaterialList, error)
-	EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error)
-	GetMaterialOwnerUUID(ctx context.Context, uuid string) (string, error)
-	PublishMaterial(ctx context.Context, uuid string) (*model.Material, error)
+	GetMaterialOwnerUUID(ctx context.Context, materialUUID string) (string, error)
 	MaterialExists(ctx context.Context, materialUUID string) (bool, error)
-	DeleteMaterial(ctx context.Context, uuid string) (int64, error)
-	ArchivedMaterial(ctx context.Context, uuid string) (int64, error)
+	PublishMaterial(ctx context.Context, materialUUID string) (*model.Material, error)
 	CheckLike(ctx context.Context, materialUUID string, userUUID string) (bool, error)
 	AddLike(ctx context.Context, materialUUID string, userUUID string) error
 	RemoveLike(ctx context.Context, materialUUID string, userUUID string) error
 	GetLikesCount(ctx context.Context, materialUUID string) (int32, error)
 	UpdateLikesCount(ctx context.Context, materialUUID string, likesCount int32) error
 	WithTx(ctx context.Context, cb func(ctx context.Context) error) (err error)
-}
-
-type KafkaProducer interface {
-	ProduceMessage(ctx context.Context, message interface{}, key interface{}) error
 }
