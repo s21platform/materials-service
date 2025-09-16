@@ -6,6 +6,7 @@ import (
 
 	"google.golang.org/grpc"
 
+	kafkalib "github.com/s21platform/kafka-lib"
 	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/materials-service/internal/config"
@@ -22,7 +23,11 @@ func main() {
 	dbRepo := postgres.New(cfg)
 	defer dbRepo.Close()
 
-	materialsService := service.New(dbRepo)
+	deleteProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.MaterialDeleted)
+
+	deleteKafkaProducer := kafkalib.NewProducer(deleteProducerConfig)
+
+	materialsService := service.New(dbRepo, deleteKafkaProducer)
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			infra.AuthInterceptor,

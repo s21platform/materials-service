@@ -12,6 +12,7 @@ type Config struct {
 	Platform Platform
 	Postgres Postgres
 	Logger   Logger
+	Kafka    Kafka
 }
 
 type Service struct {
@@ -39,6 +40,12 @@ type Postgres struct {
 type Logger struct {
 	Host string `env:"LOGGER_SERVICE_HOST"`
 	Port string `env:"LOGGER_SERVICE_PORT"`
+}
+
+type Kafka struct {
+	Host            string `env:"KAFKA_HOST"`
+	Port            string `env:"KAFKA_PORT"`
+	MaterialDeleted string `env:"MATERIAL_SET_MATERIAL_DELETED"`
 }
 
 func MustLoad() *Config {

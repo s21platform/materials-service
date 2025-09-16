@@ -17,3 +17,7 @@ type DBRepo interface {
 	MaterialExists(ctx context.Context, materialUUID string) (bool, error)
 	DeleteMaterial(ctx context.Context, uuid string) (int64, error)
 }
+
+type KafkaProducer interface {
+	ProduceMessage(ctx context.Context, message interface{}, key interface{}) error
+}

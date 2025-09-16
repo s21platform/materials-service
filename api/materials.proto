@@ -79,3 +79,11 @@ message PublishMaterialIn{
 message PublishMaterialOut{
   Material material = 1; // Весь материал
 }
+
+// Kafka
+
+message MaterialDeletedMessage {
+  string uuid = 1;
+  string owner_uuid = 2;
+  google.protobuf.Timestamp deleted_at = 4;
+}

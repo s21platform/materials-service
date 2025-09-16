@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"strings"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -18,12 +20,14 @@ import (
 
 type Service struct {
 	materials.UnimplementedMaterialsServiceServer
-	repository DBRepo
+	repository          DBRepo
+	deleteKafkaProducer KafkaProducer
 }
 
-func New(repo DBRepo) *Service {
+func New(repo DBRepo, deleteKafkaProducer KafkaProducer) *Service {
 	return &Service{
-		repository: repo,
+		repository:          repo,
+		deleteKafkaProducer: deleteKafkaProducer,
 	}
 }
 
@@ -156,6 +160,17 @@ func (s *Service) DeleteMaterial(ctx context.Context, in *materials.DeleteMateri
 	if rowsAffected == 0 {
 		logger.Error("failed to delete: material already deleted or not found")
 		return nil, status.Errorf(codes.NotFound, "failed to delete: material already deleted or not found")
+	}
+
+	deleteMaterial := &materials.MaterialDeletedMessage{
+		Uuid:      in.Uuid,
+		OwnerUuid: materialOwnerUUID,
+		DeletedAt: timestamppb.New(time.Now()),
+	}
+
+	err = s.deleteKafkaProducer.ProduceMessage(ctx, deleteMaterial, in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to produce message to society service: %v", err))
 	}
 
 	return nil, nil

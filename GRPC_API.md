@@ -11,6 +11,7 @@
     - [GetMaterialIn](#-GetMaterialIn)
     - [GetMaterialOut](#-GetMaterialOut)
     - [Material](#-Material)
+    - [MaterialDeletedMessage](#-MaterialDeletedMessage)
     - [PublishMaterialIn](#-PublishMaterialIn)
     - [PublishMaterialOut](#-PublishMaterialOut)
     - [SaveDraftMaterialIn](#-SaveDraftMaterialIn)
@@ -146,6 +147,23 @@
 | archived_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время архивации |
 | deleted_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Время удаления |
 | likes_count | [int32](#int32) |  | Количество лайков |
+
+
+
+
+
+
+<a name="-MaterialDeletedMessage"></a>
+
+### MaterialDeletedMessage
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+| owner_uuid | [string](#string) |  |  |
+| deleted_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
 
 
 
