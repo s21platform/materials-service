@@ -228,7 +228,34 @@ func (mr *MockDBRepoMockRecorder) SaveDraftMaterial(ctx, ownerUUID, material int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveDraftMaterial", reflect.TypeOf((*MockDBRepo)(nil).SaveDraftMaterial), ctx, ownerUUID, material)
 }
 
-<<<<<<< HEAD
+// UpdateLikesCount mocks base method.
+func (m *MockDBRepo) UpdateLikesCount(ctx context.Context, materialUUID string, likesCount int32) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateLikesCount", ctx, materialUUID, likesCount)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateLikesCount indicates an expected call of UpdateLikesCount.
+func (mr *MockDBRepoMockRecorder) UpdateLikesCount(ctx, materialUUID, likesCount interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateLikesCount", reflect.TypeOf((*MockDBRepo)(nil).UpdateLikesCount), ctx, materialUUID, likesCount)
+}
+
+// WithTx mocks base method.
+func (m *MockDBRepo) WithTx(ctx context.Context, cb func(context.Context) error) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WithTx", ctx, cb)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WithTx indicates an expected call of WithTx.
+func (mr *MockDBRepoMockRecorder) WithTx(ctx, cb interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithTx", reflect.TypeOf((*MockDBRepo)(nil).WithTx), ctx, cb)
+}
+
 // MockKafkaProducer is a mock of KafkaProducer interface.
 type MockKafkaProducer struct {
 	ctrl     *gomock.Controller
@@ -256,39 +283,12 @@ func (m *MockKafkaProducer) EXPECT() *MockKafkaProducerMockRecorder {
 func (m *MockKafkaProducer) ProduceMessage(ctx context.Context, message, key interface{}) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProduceMessage", ctx, message, key)
-=======
-// UpdateLikesCount mocks base method.
-func (m *MockDBRepo) UpdateLikesCount(ctx context.Context, materialUUID string, likesCount int32) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateLikesCount", ctx, materialUUID, likesCount)
->>>>>>> origin/main
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-<<<<<<< HEAD
 // ProduceMessage indicates an expected call of ProduceMessage.
 func (mr *MockKafkaProducerMockRecorder) ProduceMessage(ctx, message, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProduceMessage", reflect.TypeOf((*MockKafkaProducer)(nil).ProduceMessage), ctx, message, key)
-=======
-// UpdateLikesCount indicates an expected call of UpdateLikesCount.
-func (mr *MockDBRepoMockRecorder) UpdateLikesCount(ctx, materialUUID, likesCount interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateLikesCount", reflect.TypeOf((*MockDBRepo)(nil).UpdateLikesCount), ctx, materialUUID, likesCount)
-}
-
-// WithTx mocks base method.
-func (m *MockDBRepo) WithTx(ctx context.Context, cb func(context.Context) error) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WithTx", ctx, cb)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// WithTx indicates an expected call of WithTx.
-func (mr *MockDBRepoMockRecorder) WithTx(ctx, cb interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithTx", reflect.TypeOf((*MockDBRepo)(nil).WithTx), ctx, cb)
->>>>>>> origin/main
 }

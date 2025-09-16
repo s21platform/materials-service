@@ -81,8 +81,6 @@ message PublishMaterialIn{
 message PublishMaterialOut{
   Material material = 1; // Весь материал
 }
-
-<<<<<<< HEAD
 // Kafka
 
 message MaterialDeletedMessage {
@@ -90,7 +88,7 @@ message MaterialDeletedMessage {
   string owner_uuid = 2;
   google.protobuf.Timestamp deleted_at = 4;
 }
-=======
+
 message ArchivedMaterialIn{
   string uuid = 1;
 }
@@ -103,4 +101,3 @@ message ToggleLikeOut {
   bool is_liked = 1;     // Состояние лайка
   int32 likes_count = 2; // Количество лайков
 }
->>>>>>> origin/main

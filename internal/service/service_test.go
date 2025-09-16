@@ -729,6 +729,7 @@ func TestServer_ArchivedMaterial(t *testing.T) {
 
 	mockRepo := NewMockDBRepo(ctrl)
 	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+	mockDeleteKafka := NewMockKafkaProducer(ctrl)
 
 	userUUID := uuid.New().String()
 	materialUUID := uuid.New().String()
@@ -737,7 +738,7 @@ func TestServer_ArchivedMaterial(t *testing.T) {
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
 	ctx = context.WithValue(ctx, config.KeyUUID, userUUID)
 
-	s := New(mockRepo)
+	s := New(mockRepo, mockDeleteKafka)
 
 	t.Run("success", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("ArchivedMaterial")
@@ -842,11 +843,12 @@ func TestService_ToggleLike(t *testing.T) {
 
 	mockRepo := NewMockDBRepo(ctrl)
 	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+	mockDeleteKafka := NewMockKafkaProducer(ctrl)
 
 	userUUID := uuid.New().String()
 	materialUUID := uuid.New().String()
 
-	s := New(mockRepo)
+	s := New(mockRepo, mockDeleteKafka)
 
 	t.Run("add_like_successfully", func(t *testing.T) {
 		ctx := context.WithValue(baseCtx, config.KeyLogger, mockLogger)
