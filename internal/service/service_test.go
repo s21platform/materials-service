@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/stretchr/testify/mock"
 	"testing"
 	"time"
 
@@ -474,6 +475,13 @@ func TestServer_DeleteMaterial(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
 		mockRepo.EXPECT().DeleteMaterial(ctx, materialUUID).Return(int64(1), nil)
+		mockDeleteKafka.EXPECT().ProduceMessage(
+			ctx, mock.MatchedBy(func(msg interface{}) bool {
+				deletedMsg, ok := msg.(*materials.MaterialDeletedMessage)
+				return ok && deletedMsg.Uuid == materialUUID && deletedMsg.OwnerUuid == userUUID
+			}),
+			materialUUID,
+		).Return(nil)
 
 		in := &materials.DeleteMaterialIn{Uuid: materialUUID}
 		out, err := s.DeleteMaterial(ctx, in)
