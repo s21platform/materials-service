@@ -61,7 +61,7 @@ func main() {
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Service.Port))
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to start TCP listener: %v", err))
+		logger_lib.Error(context.Background(), fmt.Sprintf("failed to start TCP listener: %v", err))
 	}
 
 	m := cmux.New(listener)
@@ -93,6 +93,6 @@ func main() {
 	})
 
 	if err := g.Wait(); err != nil {
-		logger.Error(fmt.Sprintf("server error: %v", err))
+		logger_lib.Error(context.Background(), fmt.Sprintf("server error: %v", err))
 	}
 }

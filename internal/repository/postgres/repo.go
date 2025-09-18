@@ -380,3 +380,21 @@ func (r *Repository) UpdateLikesCount(ctx context.Context, materialUUID string, 
 
 	return nil
 }
+
+func (r *Repository) UpdateUserNickname(ctx context.Context, userUUID, newNickname string) error {
+	query, args, err := sq.Update("users").
+		Set("nickname", newNickname).
+		Where(sq.Eq{"uuid": userUUID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to update user: %v", err)
+	}
+
+	return nil
+}
