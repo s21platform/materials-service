@@ -40,5 +40,6 @@ func (h *Handler) Handler(ctx context.Context, in []byte) error {
 		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to update user nickname")
 		return err
 	}
+
 	return nil
 }

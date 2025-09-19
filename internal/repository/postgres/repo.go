@@ -393,7 +393,7 @@ func (r *Repository) UpdateUserNickname(ctx context.Context, userUUID, newNickna
 
 	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("failed to update user: %v", err)
+		return fmt.Errorf("failed to update user nickname: %v", err)
 	}
 
 	return nil

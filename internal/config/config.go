@@ -43,9 +43,10 @@ type Logger struct {
 }
 
 type Kafka struct {
-	Host      string `env:"KAFKA_HOST"`
-	Port      string `env:"KAFKA_PORT"`
-	UserTopic string `env:"USER_UPDATE_PROFILE"`
+	Host                        string `env:"KAFKA_HOST"`
+	Port                        string `env:"KAFKA_PORT"`
+	UserNicknameTopic           string `env:"USER_UPDATE_NICKNAME"`
+	UserNicknameConsumerGroupID string `env:"USER_NICKNAME_CONSUMER_GROUP_ID"`
 }
 
 func MustLoad() *Config {

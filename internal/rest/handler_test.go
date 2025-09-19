@@ -28,6 +28,213 @@ func createTxContext(ctx context.Context, mockRepo *MockDBRepo) context.Context 
 	return context.WithValue(ctx, tx.KeyTx, tx.Tx{DbRepo: mockRepo})
 }
 
+func TestHandler_SaveDraftMaterial(t *testing.T) {
+	t.Parallel()
+
+	userUUID := uuid.New().String()
+	materialUUID := uuid.New().String()
+
+	t.Run("success", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		title := "Test Title"
+		content := "Test Content"
+		description := "Test Description"
+		coverImageURL := "http://example.com/cover.jpg"
+		readTimeMinutes := int32(5)
+
+		expectedMaterial := &model.SaveDraftMaterial{
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageURL:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		mockRepo.EXPECT().SaveDraftMaterial(gomock.Any(), userUUID, expectedMaterial).Return(materialUUID, nil)
+
+		requestBody := api.SaveDraftMaterialIn{
+			Title:           title,
+			Content:         &content,
+			Description:     &description,
+			CoverImageUrl:   &coverImageURL,
+			ReadTimeMinutes: &readTimeMinutes,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/save-draft-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.SaveDraftMaterial(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response api.SaveDraftMaterialOut
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Equal(t, materialUUID, response.Uuid)
+	})
+
+	t.Run("invalid_json", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/save-draft-material", strings.NewReader("invalid json"))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.SaveDraftMaterial(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Contains(t, errorResp.Message, "invalid request body")
+	})
+
+	t.Run("missing_user_uuid", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		title := "Test Title"
+		content := "Test Content"
+		description := "Test Description"
+		coverImageURL := "http://example.com/cover.jpg"
+		readTimeMinutes := int32(5)
+
+		requestBody := api.SaveDraftMaterialIn{
+			Title:           title,
+			Content:         &content,
+			Description:     &description,
+			CoverImageUrl:   &coverImageURL,
+			ReadTimeMinutes: &readTimeMinutes,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/save-draft-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.SaveDraftMaterial(w, req)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Contains(t, errorResp.Message, "user UUID is required")
+	})
+
+	t.Run("repository_error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		title := "Test Title"
+		content := "Test Content"
+		description := "Test Description"
+		coverImageURL := "http://example.com/cover.jpg"
+		readTimeMinutes := int32(5)
+
+		expectedMaterial := &model.SaveDraftMaterial{
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageURL:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		mockRepo.EXPECT().SaveDraftMaterial(gomock.Any(), userUUID, expectedMaterial).Return("", fmt.Errorf("db error"))
+
+		requestBody := api.SaveDraftMaterialIn{
+			Title:           title,
+			Content:         &content,
+			Description:     &description,
+			CoverImageUrl:   &coverImageURL,
+			ReadTimeMinutes: &readTimeMinutes,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/save-draft-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.SaveDraftMaterial(w, req)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Contains(t, errorResp.Message, "failed to save draft material")
+	})
+}
+
 func TestHandler_PublishMaterial(t *testing.T) {
 	t.Parallel()
 
@@ -526,5 +733,5 @@ func stringPtr(s string) *string {
 }
 
 //func int32Ptr(i int32) *int32 {
-//  return &i
+//	return &i
 //}

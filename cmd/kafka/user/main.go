@@ -12,8 +12,6 @@ import (
 	"github.com/s21platform/materials-service/internal/repository/postgres"
 )
 
-const userNicknameConsumerGroupID = "user-nickname-updater"
-
 func main() {
 	ctx := context.Background()
 	cfg := config.MustLoad()
@@ -29,8 +27,8 @@ func main() {
 	consumerConfig := kafkalib.DefaultConsumerConfig(
 		cfg.Kafka.Host,
 		cfg.Kafka.Port,
-		cfg.Kafka.UserTopic,
-		userNicknameConsumerGroupID,
+		cfg.Kafka.UserNicknameTopic,
+		cfg.Kafka.UserNicknameConsumerGroupID,
 	)
 	consumer, err := kafkalib.NewConsumer(consumerConfig, metrics)
 	if err != nil {
