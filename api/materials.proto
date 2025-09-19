@@ -94,3 +94,8 @@ message ToggleLikeOut {
   bool is_liked = 1;     // Состояние лайка
   int32 likes_count = 2; // Количество лайков
 }
+
+// kafka contracts
+message createdMaterial {
+  Material material = 1;
+}
