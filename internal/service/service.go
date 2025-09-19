@@ -171,7 +171,7 @@ func (s *Service) DeleteMaterial(ctx context.Context, in *materials.DeleteMateri
 
 	err = s.deleteKafkaProducer.ProduceMessage(ctx, deleteMaterial, in.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to produce message to material service: %v", err))
+		logger.Error(fmt.Sprintf("failed to produce message: %v", err))
 	}
 
 	return nil, nil
