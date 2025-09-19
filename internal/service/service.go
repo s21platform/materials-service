@@ -3,13 +3,11 @@ package service
 import (
 	"context"
 	"fmt"
-	"strings"
-
+	logger_lib "github.com/s21platform/logger-lib"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-
-	logger_lib "github.com/s21platform/logger-lib"
+	"strings"
 
 	"github.com/s21platform/materials-service/internal/config"
 	"github.com/s21platform/materials-service/internal/model"
@@ -20,26 +18,27 @@ import (
 type Service struct {
 	materials.UnimplementedMaterialsServiceServer
 	repository DBRepo
+	//editKafkaProducer KafkaProducer
 }
 
 func New(repo DBRepo) *Service {
 	return &Service{
 		repository: repo,
+		//editKafkaProducer: editKafkaProducer,
 	}
 }
 
 func (s *Service) SaveDraftMaterial(ctx context.Context, in *materials.SaveDraftMaterialIn) (*materials.SaveDraftMaterialOut, error) {
-	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("SaveDraftMaterial")
+	ctx = logger_lib.WithField(ctx, "func_name", "SaveDraftMaterial")
 
 	if strings.TrimSpace(in.Title) == "" {
-		logger.Error("title is required")
+		logger_lib.Error(ctx, "title is required")
 		return nil, status.Error(codes.InvalidArgument, "title is required")
 	}
 
 	ownerUUID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok || ownerUUID == "" {
-		logger.Error("uuid is required")
+		logger_lib.Error(ctx, "uuid is required")
 		return nil, status.Error(codes.Unauthenticated, "uuid is required")
 	}
 
@@ -48,7 +47,7 @@ func (s *Service) SaveDraftMaterial(ctx context.Context, in *materials.SaveDraft
 	materialUUID, err := s.repository.SaveDraftMaterial(ctx, ownerUUID, newMaterialData)
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to save draft material: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to save draft material: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to save draft material: %v", err)
 	}
 
@@ -58,12 +57,11 @@ func (s *Service) SaveDraftMaterial(ctx context.Context, in *materials.SaveDraft
 }
 
 func (s *Service) GetMaterial(ctx context.Context, in *materials.GetMaterialIn) (*materials.GetMaterialOut, error) {
-	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("GetMaterial")
+	ctx = logger_lib.WithField(ctx, "func_name", "GetMaterial")
 
 	material, err := s.repository.GetMaterial(ctx, in.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to get material: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to get material: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to get material: %v", err)
 	}
 
@@ -73,28 +71,27 @@ func (s *Service) GetMaterial(ctx context.Context, in *materials.GetMaterialIn) 
 }
 
 func (s *Service) EditMaterial(ctx context.Context, in *materials.EditMaterialIn) (*materials.EditMaterialOut, error) {
-	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("EditMaterial")
+	ctx = logger_lib.WithField(ctx, "func_name", "EditMaterial")
 
 	if strings.TrimSpace(in.Title) == "" {
-		logger.Error("title is required")
+		logger_lib.Error(ctx, "title is required")
 		return nil, status.Error(codes.InvalidArgument, "title is required")
 	}
 
 	userUUID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok || userUUID == "" {
-		logger.Error("uuid is required")
+		logger_lib.Error(ctx, "uuid is required")
 		return nil, status.Error(codes.Unauthenticated, "uuid is required")
 	}
 
 	materialOwnerUUID, err := s.repository.GetMaterialOwnerUUID(ctx, in.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to get owner uuid: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to get owner uuid: %v", err)
 	}
 
 	if materialOwnerUUID != userUUID {
-		logger.Error("failed to edit: user is not owner")
+		logger_lib.Error(ctx, "failed to edit: user is not owner")
 		return nil, status.Errorf(codes.PermissionDenied, "failed to edit: user is not owner")
 	}
 
@@ -103,9 +100,21 @@ func (s *Service) EditMaterial(ctx context.Context, in *materials.EditMaterialIn
 
 	editedMaterial, err := s.repository.EditMaterial(ctx, updatedMaterial)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to edit material: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to edit material: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to edit material: %v", err)
 	}
+
+	//msg := &materials.EditMaterialMessage{
+	//	Uuid:      in.Uuid,
+	//	OwnerUuid: materialOwnerUUID,
+	//	Title:     in.Title,
+	//	EditedAt:  timestamppb.New(time.Now()),
+	//}
+	//
+	//if err = s.editKafkaProducer.ProduceMessage(ctx, msg, in.Uuid); err != nil {
+	//	logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to produce message to materials service: %v", err))
+	//	return nil, status.Errorf(codes.Internal, "failed to produce message to chat service: %v", err)
+	//}
 
 	return &materials.EditMaterialOut{
 		Material: editedMaterial.FromDTO(),
@@ -113,12 +122,11 @@ func (s *Service) EditMaterial(ctx context.Context, in *materials.EditMaterialIn
 }
 
 func (s *Service) GetAllMaterials(ctx context.Context, _ *emptypb.Empty) (*materials.GetAllMaterialsOut, error) {
-	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("GetAllMaterials")
+	ctx = logger_lib.WithField(ctx, "func_name", "GetAllMaterials")
 
 	materialsList, err := s.repository.GetAllMaterials(ctx)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to get all materials: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to get all materials: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to get all materials: %v", err)
 	}
 
@@ -128,34 +136,33 @@ func (s *Service) GetAllMaterials(ctx context.Context, _ *emptypb.Empty) (*mater
 }
 
 func (s *Service) DeleteMaterial(ctx context.Context, in *materials.DeleteMaterialIn) (*emptypb.Empty, error) {
-	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("DeleteMaterial")
+	ctx = logger_lib.WithField(ctx, "func_name", "DeleteMaterial")
 
 	userUUID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok || userUUID == "" {
-		logger.Error("uuid is required")
+		logger_lib.Error(ctx, "uuid is required")
 		return nil, status.Error(codes.Unauthenticated, "uuid is required")
 	}
 
 	materialOwnerUUID, err := s.repository.GetMaterialOwnerUUID(ctx, in.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to get owner uuid: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to get owner uuid: %v", err)
 	}
 
 	if materialOwnerUUID != userUUID {
-		logger.Error("failed to delete: user is not owner")
+		logger_lib.Error(ctx, "failed to delete: user is not owner")
 		return nil, status.Errorf(codes.PermissionDenied, "failed to delete: user is not owner")
 	}
 
 	rowsAffected, err := s.repository.DeleteMaterial(ctx, in.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to delete material: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to delete material: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to delete material: %v", err)
 	}
 
 	if rowsAffected == 0 {
-		logger.Error("failed to delete: material already deleted or not found")
+		logger_lib.Error(ctx, "failed to delete: material already deleted or not found")
 		return nil, status.Errorf(codes.NotFound, "failed to delete: material already deleted or not found")
 	}
 
@@ -163,34 +170,33 @@ func (s *Service) DeleteMaterial(ctx context.Context, in *materials.DeleteMateri
 }
 
 func (s *Service) ArchivedMaterial(ctx context.Context, in *materials.ArchivedMaterialIn) (*emptypb.Empty, error) {
-	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("ArchivedMaterial")
+	ctx = logger_lib.WithField(ctx, "func_name", "ArchivedMaterial")
 
 	userUUID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok || userUUID == "" {
-		logger.Error("uuid is required")
+		logger_lib.Error(ctx, "uuid is required")
 		return nil, status.Error(codes.Unauthenticated, "uuid is required")
 	}
 
 	materialOwnerUUID, err := s.repository.GetMaterialOwnerUUID(ctx, in.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to get owner uuid: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to get owner uuid: %v", err)
 	}
 
 	if materialOwnerUUID != userUUID {
-		logger.Error("failed to archived: user is not owner")
+		logger_lib.Error(ctx, "failed to archived: user is not owner")
 		return nil, status.Errorf(codes.PermissionDenied, "failed to archived: user is not owner")
 	}
 
 	rowsAffected, err := s.repository.ArchivedMaterial(ctx, in.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to archived material: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to archived material: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to archived material: %v", err)
 	}
 
 	if rowsAffected == 0 {
-		logger.Error("failed to archived material: material already archived or not found")
+		logger_lib.Error(ctx, "failed to archived material: material already archived or not found")
 		return nil, status.Error(codes.NotFound, "failed to archived material: material already archived or not found")
 	}
 
@@ -198,45 +204,44 @@ func (s *Service) ArchivedMaterial(ctx context.Context, in *materials.ArchivedMa
 }
 
 func (s *Service) PublishMaterial(ctx context.Context, in *materials.PublishMaterialIn) (*materials.PublishMaterialOut, error) {
-	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("PublishMaterial")
+	ctx = logger_lib.WithField(ctx, "func_name", "PublishMaterial")
 
 	if in.Uuid == "" {
-		logger.Error("material uuid is required")
+		logger_lib.Error(ctx, "material uuid is required")
 		return nil, status.Error(codes.InvalidArgument, "material uuid is required")
 	}
 
 	userUUID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok || userUUID == "" {
-		logger.Error("user uuid is required")
+		logger_lib.Error(ctx, "user uuid is required")
 		return nil, status.Error(codes.Unauthenticated, "user uuid is required")
 	}
 
 	materialOwnerUUID, err := s.repository.GetMaterialOwnerUUID(ctx, in.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to get owner uuid: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to get owner uuid: %v", err)
 	}
 
 	if materialOwnerUUID != userUUID {
-		logger.Error("failed to publish: user is not owner")
+		logger_lib.Error(ctx, "failed to publish: user is not owner")
 		return nil, status.Errorf(codes.PermissionDenied, "failed to publish: user is not owner")
 	}
 
 	exists, err := s.repository.MaterialExists(ctx, in.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to check material existence: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to check material existence: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to check material existence: %v", err)
 	}
 
 	if !exists {
-		logger.Error("material does not exist")
+		logger_lib.Error(ctx, "material does not exist")
 		return nil, status.Errorf(codes.FailedPrecondition, "material does not exist")
 	}
 
 	publishedMaterial, err := s.repository.PublishMaterial(ctx, in.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to publish material: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to publish material: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to publish material: %v", err)
 	}
 
@@ -246,12 +251,11 @@ func (s *Service) PublishMaterial(ctx context.Context, in *materials.PublishMate
 }
 
 func (s *Service) ToggleLike(ctx context.Context, in *materials.ToggleLikeIn) (*materials.ToggleLikeOut, error) {
-	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("ToggleLike")
+	ctx = logger_lib.WithField(ctx, "func_name", "ToggleLike")
 
 	userUUID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok || userUUID == "" {
-		logger.Error("uuid is required")
+		logger_lib.Error(ctx, "uuid is required")
 		return nil, status.Error(codes.Unauthenticated, "uuid is required")
 	}
 
@@ -289,7 +293,7 @@ func (s *Service) ToggleLike(ctx context.Context, in *materials.ToggleLikeIn) (*
 		return nil
 	})
 	if err != nil {
-		logger.Error(fmt.Sprintf("transaction failed: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("transaction failed: %v", err))
 		return nil, status.Errorf(codes.Internal, "transaction failed: %v", err)
 	}
 
