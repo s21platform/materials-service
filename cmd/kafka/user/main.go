@@ -12,8 +12,6 @@ import (
 	"github.com/s21platform/materials-service/internal/repository/postgres"
 )
 
-const userCreatedConsumerGroupID = "user-created-consumer"
-
 func main() {
 	ctx := context.Background()
 	cfg := config.MustLoad()
@@ -30,7 +28,7 @@ func main() {
 		cfg.Kafka.Host,
 		cfg.Kafka.Port,
 		cfg.Kafka.UserTopic,
-		userCreatedConsumerGroupID,
+		cfg.Kafka.UserCreatedConsumerGroup,
 	)
 	consumer, err := kafkalib.NewConsumer(consumerConfig, metrics)
 	if err != nil {

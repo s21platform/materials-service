@@ -37,7 +37,7 @@ func (h *Handler) Handler(ctx context.Context, in []byte) error {
 
 	err = h.repository.CreateUser(ctx, msg.UserUuid, msg.UserNickname, "", "", "")
 	if err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to update nickname")
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to create user")
 		return err
 	}
 
