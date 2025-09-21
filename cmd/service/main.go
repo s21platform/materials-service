@@ -12,6 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
+	kafkalib "github.com/s21platform/kafka-lib"
 	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/materials-service/internal/config"
@@ -33,7 +34,11 @@ func main() {
 	dbRepo := postgres.New(cfg)
 	defer dbRepo.Close()
 
-	materialsService := service.New(dbRepo)
+	editProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.EditMaterialTopic)
+
+	editKafkaProducer := kafkalib.NewProducer(editProducerConfig)
+
+	materialsService := service.New(dbRepo, editKafkaProducer)
 
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
