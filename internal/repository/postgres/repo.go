@@ -380,3 +380,21 @@ func (r *Repository) UpdateLikesCount(ctx context.Context, materialUUID string, 
 
 	return nil
 }
+
+func (r *Repository) CreateUser(ctx context.Context, userUUID, nickname, avatarLink, name, surname string) error {
+	query, args, err := sq.Insert("users").
+		Columns("uuid", "nickname", "avatar_link", "name", "surname").
+		Values(userUUID, nickname, avatarLink, name, surname).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to insert user: %v", err)
+	}
+
+	return nil
+}

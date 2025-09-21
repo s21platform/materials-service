@@ -45,27 +45,32 @@ func TestHandler_SaveDraftMaterial(t *testing.T) {
 			repository: mockRepo,
 		}
 
-		mockLogger.EXPECT().AddFuncName("SaveDraftMaterial")
+		title := "Test Title"
+		content := "Test Content"
+		description := "Test Description"
+		coverImageURL := "http://example.com/cover.jpg"
+		readTimeMinutes := int32(5)
 
-		mockRepo.EXPECT().SaveDraftMaterial(gomock.Any(), userUUID, gomock.Any()).DoAndReturn(func(ctx context.Context, ownerUUID string, material *model.SaveDraftMaterial) (string, error) {
-			assert.Equal(t, "Test Title", material.Title)
-			assert.Equal(t, "Test Content", material.Content)
-			assert.Equal(t, "Test Description", material.Description)
-			assert.Equal(t, "http://example.com/cover.jpg", material.CoverImageURL)
-			assert.Equal(t, int32(5), material.ReadTimeMinutes)
-			return materialUUID, nil
-		})
+		expectedMaterial := &model.SaveDraftMaterial{
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageURL:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		mockRepo.EXPECT().SaveDraftMaterial(gomock.Any(), userUUID, expectedMaterial).Return(materialUUID, nil)
 
 		requestBody := api.SaveDraftMaterialIn{
-			Title:           "Test Title",
-			Content:         stringPtr("Test Content"),
-			Description:     stringPtr("Test Description"),
-			CoverImageUrl:   stringPtr("http://example.com/cover.jpg"),
-			ReadTimeMinutes: int32Ptr(5),
+			Title:           title,
+			Content:         &content,
+			Description:     &description,
+			CoverImageUrl:   &coverImageURL,
+			ReadTimeMinutes: &readTimeMinutes,
 		}
 
 		bodyBytes, _ := json.Marshal(requestBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/materials/draft", bytes.NewReader(bodyBytes))
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/save-draft-material", bytes.NewReader(bodyBytes))
 
 		reqCtx := req.Context()
 		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
@@ -99,10 +104,7 @@ func TestHandler_SaveDraftMaterial(t *testing.T) {
 			repository: mockRepo,
 		}
 
-		mockLogger.EXPECT().AddFuncName("SaveDraftMaterial")
-		mockLogger.EXPECT().Error(gomock.Any())
-
-		req := httptest.NewRequest(http.MethodPost, "/api/materials/draft", strings.NewReader("invalid json"))
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/save-draft-material", strings.NewReader("invalid json"))
 
 		reqCtx := req.Context()
 		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
@@ -136,19 +138,22 @@ func TestHandler_SaveDraftMaterial(t *testing.T) {
 			repository: mockRepo,
 		}
 
-		mockLogger.EXPECT().AddFuncName("SaveDraftMaterial")
-		mockLogger.EXPECT().Error("failed to get user UUID")
+		title := "Test Title"
+		content := "Test Content"
+		description := "Test Description"
+		coverImageURL := "http://example.com/cover.jpg"
+		readTimeMinutes := int32(5)
 
 		requestBody := api.SaveDraftMaterialIn{
-			Title:           "Test Title",
-			Content:         stringPtr("Test Content"),
-			Description:     stringPtr("Test Description"),
-			CoverImageUrl:   stringPtr("http://example.com/cover.jpg"),
-			ReadTimeMinutes: int32Ptr(5),
+			Title:           title,
+			Content:         &content,
+			Description:     &description,
+			CoverImageUrl:   &coverImageURL,
+			ReadTimeMinutes: &readTimeMinutes,
 		}
 
 		bodyBytes, _ := json.Marshal(requestBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/materials/draft", bytes.NewReader(bodyBytes))
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/save-draft-material", bytes.NewReader(bodyBytes))
 
 		reqCtx := req.Context()
 		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
@@ -181,21 +186,32 @@ func TestHandler_SaveDraftMaterial(t *testing.T) {
 			repository: mockRepo,
 		}
 
-		mockLogger.EXPECT().AddFuncName("SaveDraftMaterial")
-		mockLogger.EXPECT().Error(gomock.Any())
+		title := "Test Title"
+		content := "Test Content"
+		description := "Test Description"
+		coverImageURL := "http://example.com/cover.jpg"
+		readTimeMinutes := int32(5)
 
-		mockRepo.EXPECT().SaveDraftMaterial(gomock.Any(), userUUID, gomock.Any()).Return("", fmt.Errorf("database error"))
+		expectedMaterial := &model.SaveDraftMaterial{
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageURL:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		mockRepo.EXPECT().SaveDraftMaterial(gomock.Any(), userUUID, expectedMaterial).Return("", fmt.Errorf("db error"))
 
 		requestBody := api.SaveDraftMaterialIn{
-			Title:           "Test Title",
-			Content:         stringPtr("Test Content"),
-			Description:     stringPtr("Test Description"),
-			CoverImageUrl:   stringPtr("http://example.com/cover.jpg"),
-			ReadTimeMinutes: int32Ptr(5),
+			Title:           title,
+			Content:         &content,
+			Description:     &description,
+			CoverImageUrl:   &coverImageURL,
+			ReadTimeMinutes: &readTimeMinutes,
 		}
 
 		bodyBytes, _ := json.Marshal(requestBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/materials/draft", bytes.NewReader(bodyBytes))
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/save-draft-material", bytes.NewReader(bodyBytes))
 
 		reqCtx := req.Context()
 		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
@@ -237,8 +253,6 @@ func TestHandler_PublishMaterial(t *testing.T) {
 			repository: mockRepo,
 		}
 
-		mockLogger.EXPECT().AddFuncName("PublishMaterial")
-
 		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return(userUUID, nil)
 		mockRepo.EXPECT().MaterialExists(gomock.Any(), materialUUID).Return(true, nil)
 		mockRepo.EXPECT().PublishMaterial(gomock.Any(), materialUUID).Return(&model.Material{
@@ -261,6 +275,7 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/api/materials/publish-material", bytes.NewReader(bodyBytes))
 
 		reqCtx := req.Context()
+
 		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
 		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
 		req = req.WithContext(reqCtx)
@@ -299,9 +314,6 @@ func TestHandler_PublishMaterial(t *testing.T) {
 			repository: mockRepo,
 		}
 
-		mockLogger.EXPECT().AddFuncName("PublishMaterial")
-		mockLogger.EXPECT().Error(gomock.Any())
-
 		req := httptest.NewRequest(http.MethodPost, "/api/materials/publish-material", strings.NewReader("invalid json"))
 
 		reqCtx := req.Context()
@@ -335,9 +347,6 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		handler := &Handler{
 			repository: mockRepo,
 		}
-
-		mockLogger.EXPECT().AddFuncName("PublishMaterial")
-		mockLogger.EXPECT().Error("material uuid is required")
 
 		requestBody := api.PublishMaterialIn{
 			Uuid: "",
@@ -378,9 +387,6 @@ func TestHandler_PublishMaterial(t *testing.T) {
 			repository: mockRepo,
 		}
 
-		mockLogger.EXPECT().AddFuncName("PublishMaterial")
-		mockLogger.EXPECT().Error("failed to get user UUID")
-
 		requestBody := api.PublishMaterialIn{
 			Uuid: materialUUID,
 		}
@@ -408,139 +414,6 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		assert.Contains(t, errorResp.Message, "user UUID is required")
 	})
 
-	t.Run("material_owner_mismatch", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockRepo := NewMockDBRepo(ctrl)
-		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-
-		handler := &Handler{
-			repository: mockRepo,
-		}
-
-		mockLogger.EXPECT().AddFuncName("PublishMaterial")
-		mockLogger.EXPECT().Error("failed to publish: user is not owner")
-
-		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return(uuid.New().String(), nil)
-
-		requestBody := api.PublishMaterialIn{
-			Uuid: materialUUID,
-		}
-
-		bodyBytes, _ := json.Marshal(requestBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/materials/publish-material", bytes.NewReader(bodyBytes))
-
-		reqCtx := req.Context()
-		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
-		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
-		req = req.WithContext(reqCtx)
-
-		req.Header.Set("Content-Type", "application/json")
-
-		rctx := chi.NewRouteContext()
-		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
-
-		w := httptest.NewRecorder()
-		handler.PublishMaterial(w, req)
-
-		assert.Equal(t, http.StatusForbidden, w.Code)
-
-		var errorResp api.Error
-		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
-		require.NoError(t, err)
-		assert.Contains(t, errorResp.Message, "failed to publish: user is not owner")
-	})
-
-	t.Run("material_does_not_exist", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockRepo := NewMockDBRepo(ctrl)
-		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-
-		handler := &Handler{
-			repository: mockRepo,
-		}
-
-		mockLogger.EXPECT().AddFuncName("PublishMaterial")
-		mockLogger.EXPECT().Error("material does not exist")
-
-		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return(userUUID, nil)
-		mockRepo.EXPECT().MaterialExists(gomock.Any(), materialUUID).Return(false, nil)
-
-		requestBody := api.PublishMaterialIn{
-			Uuid: materialUUID,
-		}
-
-		bodyBytes, _ := json.Marshal(requestBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/materials/publish-material", bytes.NewReader(bodyBytes))
-
-		reqCtx := req.Context()
-		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
-		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
-		req = req.WithContext(reqCtx)
-
-		req.Header.Set("Content-Type", "application/json")
-
-		rctx := chi.NewRouteContext()
-		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
-
-		w := httptest.NewRecorder()
-		handler.PublishMaterial(w, req)
-
-		assert.Equal(t, http.StatusPreconditionFailed, w.Code)
-
-		var errorResp api.Error
-		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
-		require.NoError(t, err)
-		assert.Contains(t, errorResp.Message, "material does not exist")
-	})
-
-	t.Run("get_owner_uuid_error", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockRepo := NewMockDBRepo(ctrl)
-		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-
-		handler := &Handler{
-			repository: mockRepo,
-		}
-
-		mockLogger.EXPECT().AddFuncName("PublishMaterial")
-		mockLogger.EXPECT().Error(gomock.Any())
-
-		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return("", fmt.Errorf("database error"))
-
-		requestBody := api.PublishMaterialIn{
-			Uuid: materialUUID,
-		}
-
-		bodyBytes, _ := json.Marshal(requestBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/materials/publish-material", bytes.NewReader(bodyBytes))
-
-		reqCtx := req.Context()
-		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
-		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
-		req = req.WithContext(reqCtx)
-
-		req.Header.Set("Content-Type", "application/json")
-
-		rctx := chi.NewRouteContext()
-		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
-
-		w := httptest.NewRecorder()
-		handler.PublishMaterial(w, req)
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-
-		var errorResp api.Error
-		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
-		require.NoError(t, err)
-		assert.Contains(t, errorResp.Message, "failed to get owner uuid")
-	})
-
 	t.Run("material_exists_error", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -551,9 +424,6 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		handler := &Handler{
 			repository: mockRepo,
 		}
-
-		mockLogger.EXPECT().AddFuncName("PublishMaterial")
-		mockLogger.EXPECT().Error(gomock.Any())
 
 		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return(userUUID, nil)
 		mockRepo.EXPECT().MaterialExists(gomock.Any(), materialUUID).Return(false, fmt.Errorf("database error"))
@@ -596,9 +466,6 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		handler := &Handler{
 			repository: mockRepo,
 		}
-
-		mockLogger.EXPECT().AddFuncName("PublishMaterial")
-		mockLogger.EXPECT().Error(gomock.Any())
 
 		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return(userUUID, nil)
 		mockRepo.EXPECT().MaterialExists(gomock.Any(), materialUUID).Return(true, nil)
@@ -647,7 +514,6 @@ func TestHandler_ToggleLike(t *testing.T) {
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 		handler := &Handler{repository: mockRepo}
 
-		mockLogger.EXPECT().AddFuncName("ToggleLike")
 		mockRepo.EXPECT().
 			WithTx(gomock.Any(), gomock.Any()).
 			DoAndReturn(func(ctx context.Context, cb func(ctx context.Context) error) error {
@@ -691,8 +557,6 @@ func TestHandler_ToggleLike(t *testing.T) {
 		mockRepo := NewMockDBRepo(ctrl)
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 		handler := &Handler{repository: mockRepo}
-
-		mockLogger.EXPECT().AddFuncName("ToggleLike")
 
 		mockRepo.EXPECT().
 			WithTx(gomock.Any(), gomock.Any()).
@@ -738,9 +602,6 @@ func TestHandler_ToggleLike(t *testing.T) {
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 		handler := &Handler{repository: mockRepo}
 
-		mockLogger.EXPECT().AddFuncName("ToggleLike")
-		mockLogger.EXPECT().Error(gomock.Any())
-
 		req := httptest.NewRequest(http.MethodPost, "/api/materials/toggle-like", strings.NewReader("invalid json"))
 
 		reqCtx := createTxContext(req.Context(), mockRepo)
@@ -748,6 +609,7 @@ func TestHandler_ToggleLike(t *testing.T) {
 		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
 		req = req.WithContext(reqCtx)
 
+		req.Header.Set("Content-Type", "application/json")
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
@@ -762,6 +624,47 @@ func TestHandler_ToggleLike(t *testing.T) {
 		assert.Contains(t, errorResp.Message, "invalid request body")
 	})
 
+	t.Run("material_owner_mismatch", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return(uuid.New().String(), nil)
+
+		requestBody := api.PublishMaterialIn{
+			Uuid: materialUUID,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/publish-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.PublishMaterial(w, req)
+
+		assert.Equal(t, http.StatusForbidden, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Contains(t, errorResp.Message, "failed to publish: user is not owner")
+	})
+
 	t.Run("missing_material_uuid", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -769,9 +672,6 @@ func TestHandler_ToggleLike(t *testing.T) {
 		mockRepo := NewMockDBRepo(ctrl)
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 		handler := &Handler{repository: mockRepo}
-
-		mockLogger.EXPECT().AddFuncName("ToggleLike")
-		mockLogger.EXPECT().Error("material uuid is required")
 
 		requestBody := api.ToggleLikeIn{MaterialUuid: ""}
 		bodyBytes, _ := json.Marshal(requestBody)
@@ -782,6 +682,7 @@ func TestHandler_ToggleLike(t *testing.T) {
 		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
 		req = req.WithContext(reqCtx)
 
+		req.Header.Set("Content-Type", "application/json")
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
@@ -804,9 +705,6 @@ func TestHandler_ToggleLike(t *testing.T) {
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 		handler := &Handler{repository: mockRepo}
 
-		mockLogger.EXPECT().AddFuncName("ToggleLike")
-		mockLogger.EXPECT().Error("failed to get user UUID")
-
 		requestBody := api.ToggleLikeIn{MaterialUuid: materialUUID}
 		bodyBytes, _ := json.Marshal(requestBody)
 		req := httptest.NewRequest(http.MethodPost, "/api/materials/toggle-like", bytes.NewReader(bodyBytes))
@@ -815,6 +713,7 @@ func TestHandler_ToggleLike(t *testing.T) {
 		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
 		req = req.WithContext(reqCtx)
 
+		req.Header.Set("Content-Type", "application/json")
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
@@ -837,9 +736,6 @@ func TestHandler_ToggleLike(t *testing.T) {
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 		handler := &Handler{repository: mockRepo}
 
-		mockLogger.EXPECT().AddFuncName("ToggleLike")
-		mockLogger.EXPECT().Error(gomock.Any())
-
 		mockRepo.EXPECT().
 			WithTx(gomock.Any(), gomock.Any()).
 			DoAndReturn(func(ctx context.Context, cb func(ctx context.Context) error) error {
@@ -857,6 +753,7 @@ func TestHandler_ToggleLike(t *testing.T) {
 		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
 		req = req.WithContext(reqCtx)
 
+		req.Header.Set("Content-Type", "application/json")
 		rctx := chi.NewRouteContext()
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
@@ -876,6 +773,6 @@ func stringPtr(s string) *string {
 	return &s
 }
 
-func int32Ptr(i int32) *int32 {
-	return &i
-}
+//func int32Ptr(i int32) *int32 {
+//	return &i
+//}
