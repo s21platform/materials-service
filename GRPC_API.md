@@ -18,6 +18,7 @@
     - [SaveDraftMaterialOut](#-SaveDraftMaterialOut)
     - [ToggleLikeIn](#-ToggleLikeIn)
     - [ToggleLikeOut](#-ToggleLikeOut)
+    - [createMaterial](#-createMaterial)
   
     - [MaterialsService](#-MaterialsService)
   
@@ -259,6 +260,21 @@
 | ----- | ---- | ----- | ----------- |
 | is_liked | [bool](#bool) |  | Состояние лайка |
 | likes_count | [int32](#int32) |  | Количество лайков |
+
+
+
+
+
+
+<a name="-createMaterial"></a>
+
+### createMaterial
+kafka contracts
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| material | [Material](#Material) |  |  |
 
 
 

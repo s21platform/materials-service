@@ -130,6 +130,10 @@ components:
       type: object
       required:
         - title
+        - cover_image_url
+        - description
+        - content
+        - read_time_minutes
       properties:
         title:
           type: string
@@ -154,6 +158,7 @@ components:
       type: object
       required:
         - uuid
+        - description
       properties:
         uuid:
           type: string
@@ -171,6 +176,11 @@ components:
       required:
         - uuid
         - title
+        - cover_image_url
+        - description
+        - content
+        - read_time_minutes
+        - status
       properties:
         uuid:
           type: string
