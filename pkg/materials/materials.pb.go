@@ -824,27 +824,27 @@ func (x *ToggleLikeOut) GetLikesCount() int32 {
 }
 
 // kafka contracts
-type CreatedMaterial struct {
+type CreateMaterial struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Material      *Material              `protobuf:"bytes,1,opt,name=material,proto3" json:"material,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreatedMaterial) Reset() {
-	*x = CreatedMaterial{}
+func (x *CreateMaterial) Reset() {
+	*x = CreateMaterial{}
 	mi := &file_api_materials_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreatedMaterial) String() string {
+func (x *CreateMaterial) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreatedMaterial) ProtoMessage() {}
+func (*CreateMaterial) ProtoMessage() {}
 
-func (x *CreatedMaterial) ProtoReflect() protoreflect.Message {
+func (x *CreateMaterial) ProtoReflect() protoreflect.Message {
 	mi := &file_api_materials_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -856,12 +856,12 @@ func (x *CreatedMaterial) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreatedMaterial.ProtoReflect.Descriptor instead.
-func (*CreatedMaterial) Descriptor() ([]byte, []int) {
+// Deprecated: Use CreateMaterial.ProtoReflect.Descriptor instead.
+func (*CreateMaterial) Descriptor() ([]byte, []int) {
 	return file_api_materials_proto_rawDescGZIP(), []int{14}
 }
 
-func (x *CreatedMaterial) GetMaterial() *Material {
+func (x *CreateMaterial) GetMaterial() *Material {
 	if x != nil {
 		return x.Material
 	}
@@ -930,8 +930,8 @@ const file_api_materials_proto_rawDesc = "" +
 	"\rToggleLikeOut\x12\x19\n" +
 	"\bis_liked\x18\x01 \x01(\bR\aisLiked\x12\x1f\n" +
 	"\vlikes_count\x18\x02 \x01(\x05R\n" +
-	"likesCount\"8\n" +
-	"\x0fcreatedMaterial\x12%\n" +
+	"likesCount\"7\n" +
+	"\x0ecreateMaterial\x12%\n" +
 	"\bmaterial\x18\x01 \x01(\v2\t.MaterialR\bmaterial2\xee\x03\n" +
 	"\x10MaterialsService\x12B\n" +
 	"\x11SaveDraftMaterial\x12\x14.SaveDraftMaterialIn\x1a\x15.SaveDraftMaterialOut\"\x00\x120\n" +
@@ -972,7 +972,7 @@ var file_api_materials_proto_goTypes = []any{
 	(*ArchivedMaterialIn)(nil),    // 11: ArchivedMaterialIn
 	(*ToggleLikeIn)(nil),          // 12: ToggleLikeIn
 	(*ToggleLikeOut)(nil),         // 13: ToggleLikeOut
-	(*CreatedMaterial)(nil),       // 14: createdMaterial
+	(*CreateMaterial)(nil),        // 14: createMaterial
 	(*timestamppb.Timestamp)(nil), // 15: google.protobuf.Timestamp
 	(*emptypb.Empty)(nil),         // 16: google.protobuf.Empty
 }
@@ -986,7 +986,7 @@ var file_api_materials_proto_depIdxs = []int32{
 	4,  // 6: GetAllMaterialsOut.material_list:type_name -> Material
 	4,  // 7: EditMaterialOut.material:type_name -> Material
 	4,  // 8: PublishMaterialOut.material:type_name -> Material
-	4,  // 9: createdMaterial.material:type_name -> Material
+	4,  // 9: createMaterial.material:type_name -> Material
 	0,  // 10: MaterialsService.SaveDraftMaterial:input_type -> SaveDraftMaterialIn
 	2,  // 11: MaterialsService.GetMaterial:input_type -> GetMaterialIn
 	16, // 12: MaterialsService.GetAllMaterials:input_type -> google.protobuf.Empty

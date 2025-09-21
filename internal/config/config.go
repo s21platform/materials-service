@@ -45,7 +45,7 @@ type Logger struct {
 type Kafka struct {
 	Host            string `env:"KAFKA_HOST"`
 	Port            string `env:"KAFKA_PORT"`
-	MaterialCreated string `env:"MATERIAL_SET_MATERIAL_CREATED"`
+	MaterialCreated string `env:"MATERIALS_CREATED_MATERIAL"`
 }
 
 func MustLoad() *Config {

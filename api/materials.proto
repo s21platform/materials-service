@@ -96,6 +96,6 @@ message ToggleLikeOut {
 }
 
 // kafka contracts
-message createdMaterial {
+message createMaterial {
   Material material = 1;
 }

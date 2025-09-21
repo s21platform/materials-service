@@ -137,7 +137,7 @@ func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	createMaterial := &proto.CreatedMaterial{
+	createMaterial := &proto.CreateMaterial{
 		Material: &proto.Material{
 			Uuid:            publishedMaterial.UUID,
 			OwnerUuid:       publishedMaterial.OwnerUUID,

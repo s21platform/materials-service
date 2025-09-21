@@ -18,7 +18,7 @@
     - [SaveDraftMaterialOut](#-SaveDraftMaterialOut)
     - [ToggleLikeIn](#-ToggleLikeIn)
     - [ToggleLikeOut](#-ToggleLikeOut)
-    - [createdMaterial](#-createdMaterial)
+    - [createMaterial](#-createMaterial)
   
     - [MaterialsService](#-MaterialsService)
   
@@ -266,9 +266,9 @@
 
 
 
-<a name="-createdMaterial"></a>
+<a name="-createMaterial"></a>
 
-### createdMaterial
+### createMaterial
 kafka contracts
 
 
