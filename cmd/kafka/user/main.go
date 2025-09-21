@@ -28,7 +28,7 @@ func main() {
 		cfg.Kafka.Host,
 		cfg.Kafka.Port,
 		cfg.Kafka.UserNicknameTopic,
-		cfg.Kafka.UserNicknameConsumerGroupID,
+		cfg.Kafka.UserNicknameConsumerGroup,
 	)
 	consumer, err := kafkalib.NewConsumer(consumerConfig, metrics)
 	if err != nil {
