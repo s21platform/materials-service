@@ -255,3 +255,40 @@ func (mr *MockDBRepoMockRecorder) WithTx(ctx, cb interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithTx", reflect.TypeOf((*MockDBRepo)(nil).WithTx), ctx, cb)
 }
+
+// MockKafkaProducer is a mock of KafkaProducer interface.
+type MockKafkaProducer struct {
+	ctrl     *gomock.Controller
+	recorder *MockKafkaProducerMockRecorder
+}
+
+// MockKafkaProducerMockRecorder is the mock recorder for MockKafkaProducer.
+type MockKafkaProducerMockRecorder struct {
+	mock *MockKafkaProducer
+}
+
+// NewMockKafkaProducer creates a new mock instance.
+func NewMockKafkaProducer(ctrl *gomock.Controller) *MockKafkaProducer {
+	mock := &MockKafkaProducer{ctrl: ctrl}
+	mock.recorder = &MockKafkaProducerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockKafkaProducer) EXPECT() *MockKafkaProducerMockRecorder {
+	return m.recorder
+}
+
+// ProduceMessage mocks base method.
+func (m *MockKafkaProducer) ProduceMessage(ctx context.Context, message, key interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProduceMessage", ctx, message, key)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ProduceMessage indicates an expected call of ProduceMessage.
+func (mr *MockKafkaProducerMockRecorder) ProduceMessage(ctx, message, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProduceMessage", reflect.TypeOf((*MockKafkaProducer)(nil).ProduceMessage), ctx, message, key)
+}

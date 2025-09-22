@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -29,12 +30,13 @@ func TestServer_SaveDraftMaterial(t *testing.T) {
 
 	mockRepo := NewMockDBRepo(ctrl)
 	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+	mockDeleteKafka := NewMockKafkaProducer(ctrl)
 
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
 	validUUID := uuid.New().String()
 	ctxWithUUID := context.WithValue(ctx, config.KeyUUID, validUUID)
-	s := New(mockRepo)
+	s := New(mockRepo, mockDeleteKafka)
 
 	t.Run("success", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("SaveDraftMaterial")
@@ -114,6 +116,7 @@ func TestServer_GetMaterial(t *testing.T) {
 
 	mockRepo := NewMockDBRepo(ctrl)
 	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+	mockDeleteKafka := NewMockKafkaProducer(ctrl)
 
 	userUUID := uuid.New().String()
 	materialUUID := uuid.New().String()
@@ -127,7 +130,7 @@ func TestServer_GetMaterial(t *testing.T) {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
 
-	s := New(mockRepo)
+	s := New(mockRepo, mockDeleteKafka)
 
 	t.Run("success", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("GetMaterial")
@@ -193,6 +196,7 @@ func TestServer_GetAllMaterials(t *testing.T) {
 
 	mockRepo := NewMockDBRepo(ctrl)
 	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+	mockDeleteKafka := NewMockKafkaProducer(ctrl)
 
 	createdAt := time.Now()
 	editedAt := time.Now()
@@ -206,7 +210,7 @@ func TestServer_GetAllMaterials(t *testing.T) {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
 
-	s := New(mockRepo)
+	s := New(mockRepo, mockDeleteKafka)
 
 	t.Run("success", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("GetAllMaterials")
@@ -291,6 +295,7 @@ func TestServer_EditMaterial(t *testing.T) {
 
 	mockRepo := NewMockDBRepo(ctrl)
 	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+	mockDeleteKafka := NewMockKafkaProducer(ctrl)
 
 	userUUID := uuid.New().String()
 	materialUUID := uuid.New().String()
@@ -305,7 +310,7 @@ func TestServer_EditMaterial(t *testing.T) {
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
 	ctx = context.WithValue(ctx, config.KeyUUID, userUUID)
 
-	s := New(mockRepo)
+	s := New(mockRepo, mockDeleteKafka)
 
 	t.Run("success", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("EditMaterial")
@@ -455,6 +460,7 @@ func TestServer_DeleteMaterial(t *testing.T) {
 
 	mockRepo := NewMockDBRepo(ctrl)
 	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+	mockDeleteKafka := NewMockKafkaProducer(ctrl)
 
 	userUUID := uuid.New().String()
 	materialUUID := uuid.New().String()
@@ -463,12 +469,19 @@ func TestServer_DeleteMaterial(t *testing.T) {
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
 	ctx = context.WithValue(ctx, config.KeyUUID, userUUID)
 
-	s := New(mockRepo)
+	s := New(mockRepo, mockDeleteKafka)
 
 	t.Run("success", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("DeleteMaterial")
 		mockRepo.EXPECT().GetMaterialOwnerUUID(ctx, materialUUID).Return(userUUID, nil)
 		mockRepo.EXPECT().DeleteMaterial(ctx, materialUUID).Return(int64(1), nil)
+		mockDeleteKafka.EXPECT().ProduceMessage(
+			ctx, mock.MatchedBy(func(msg interface{}) bool {
+				deletedMsg, ok := msg.(*materials.MaterialDeletedMessage)
+				return ok && deletedMsg.Uuid == materialUUID && deletedMsg.OwnerUuid == userUUID
+			}),
+			materialUUID,
+		).Return(nil)
 
 		in := &materials.DeleteMaterialIn{Uuid: materialUUID}
 		out, err := s.DeleteMaterial(ctx, in)
@@ -568,6 +581,7 @@ func TestServer_PublishMaterial(t *testing.T) {
 
 	mockRepo := NewMockDBRepo(ctrl)
 	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+	mockDeleteKafka := NewMockKafkaProducer(ctrl)
 
 	userUUID := uuid.New().String()
 	materialUUID := uuid.New().String()
@@ -581,7 +595,7 @@ func TestServer_PublishMaterial(t *testing.T) {
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
 	ctx = context.WithValue(ctx, config.KeyUUID, userUUID)
 
-	s := New(mockRepo)
+	s := New(mockRepo, mockDeleteKafka)
 
 	t.Run("success", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("PublishMaterial")
@@ -723,6 +737,7 @@ func TestServer_ArchivedMaterial(t *testing.T) {
 
 	mockRepo := NewMockDBRepo(ctrl)
 	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+	mockDeleteKafka := NewMockKafkaProducer(ctrl)
 
 	userUUID := uuid.New().String()
 	materialUUID := uuid.New().String()
@@ -731,7 +746,7 @@ func TestServer_ArchivedMaterial(t *testing.T) {
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
 	ctx = context.WithValue(ctx, config.KeyUUID, userUUID)
 
-	s := New(mockRepo)
+	s := New(mockRepo, mockDeleteKafka)
 
 	t.Run("success", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("ArchivedMaterial")
@@ -836,11 +851,12 @@ func TestService_ToggleLike(t *testing.T) {
 
 	mockRepo := NewMockDBRepo(ctrl)
 	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+	mockDeleteKafka := NewMockKafkaProducer(ctrl)
 
 	userUUID := uuid.New().String()
 	materialUUID := uuid.New().String()
 
-	s := New(mockRepo)
+	s := New(mockRepo, mockDeleteKafka)
 
 	t.Run("add_like_successfully", func(t *testing.T) {
 		ctx := context.WithValue(baseCtx, config.KeyLogger, mockLogger)
