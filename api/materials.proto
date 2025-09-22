@@ -94,3 +94,11 @@ message ToggleLikeOut {
   bool is_liked = 1;     // Состояние лайка
   int32 likes_count = 2; // Количество лайков
 }
+
+// kafka contracts
+message EditMaterialMessage {
+  string uuid = 1;
+  string owner_uuid = 2;
+  string title = 3;
+  google.protobuf.Timestamp edited_at = 4;
+}

@@ -24,3 +24,7 @@ type DBRepo interface {
 	UpdateLikesCount(ctx context.Context, materialUUID string, likesCount int32) error
 	WithTx(ctx context.Context, cb func(ctx context.Context) error) (err error)
 }
+
+type KafkaProducer interface {
+	ProduceMessage(ctx context.Context, message interface{}, key interface{}) error
+}
