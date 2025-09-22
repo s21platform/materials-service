@@ -116,8 +116,8 @@ func (s *Service) EditMaterial(ctx context.Context, in *materials.EditMaterialIn
 	}
 
 	if err = s.editKafkaProducer.ProduceMessage(ctx, msg, in.Uuid); err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to produce message to materials service: %v", err))
-		return nil, status.Errorf(codes.Internal, "failed to produce message to chat service: %v", err)
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to produce message: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to produce message: %v", err)
 	}
 
 	return &materials.EditMaterialOut{

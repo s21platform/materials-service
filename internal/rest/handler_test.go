@@ -14,7 +14,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/s21platform/materials-service/internal/pkg/tx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -22,6 +21,7 @@ import (
 	"github.com/s21platform/materials-service/internal/config"
 	api "github.com/s21platform/materials-service/internal/generated"
 	"github.com/s21platform/materials-service/internal/model"
+	"github.com/s21platform/materials-service/internal/pkg/tx"
 )
 
 func createTxContext(ctx context.Context, mockRepo *MockDBRepo) context.Context {
