@@ -45,7 +45,6 @@ type Logger struct {
 type Kafka struct {
 	Host                                    string `env:"KAFKA_HOST"`
 	Port                                    string `env:"KAFKA_PORT"`
-	MaterialDeleted                         string `env:"MATERIALS_DELETE_MATERIAL"`
 	AvatarTopic                             string `env:"MATERIALS_UPDATE_AVATAR_LINK"`
 	MaterialsAvatarUpdateKafkaConsumerGroup string `env:"MATERIALS_AVATAR_UPDATE_KAFKA_CONSUMER_GROUP"`
 }
