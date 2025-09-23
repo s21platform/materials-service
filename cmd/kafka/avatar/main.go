@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	
+
 	kafka_lib "github.com/s21platform/kafka-lib"
 	logger_lib "github.com/s21platform/logger-lib"
-	"github.com/s21platform/metrics-lib/pkg"
 
+	"github.com/s21platform/metrics-lib/pkg"
 	"github.com/s21platform/materials-service/internal/config"
 	"github.com/s21platform/materials-service/internal/databus/avatar"
 	"github.com/s21platform/materials-service/internal/repository/postgres"
