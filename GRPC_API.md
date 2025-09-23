@@ -5,6 +5,7 @@
 
 - [api/materials.proto](#api_materials-proto)
     - [ArchivedMaterialIn](#-ArchivedMaterialIn)
+    - [CreatedMaterial](#-CreatedMaterial)
     - [DeleteMaterialIn](#-DeleteMaterialIn)
     - [EditMaterialIn](#-EditMaterialIn)
     - [EditMaterialOut](#-EditMaterialOut)
@@ -18,7 +19,6 @@
     - [SaveDraftMaterialOut](#-SaveDraftMaterialOut)
     - [ToggleLikeIn](#-ToggleLikeIn)
     - [ToggleLikeOut](#-ToggleLikeOut)
-    - [createMaterial](#-createMaterial)
   
     - [MaterialsService](#-MaterialsService)
   
@@ -42,6 +42,21 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | uuid | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="-CreatedMaterial"></a>
+
+### CreatedMaterial
+kafka contracts
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| material | [Material](#Material) |  |  |
 
 
 
@@ -260,21 +275,6 @@
 | ----- | ---- | ----- | ----------- |
 | is_liked | [bool](#bool) |  | Состояние лайка |
 | likes_count | [int32](#int32) |  | Количество лайков |
-
-
-
-
-
-
-<a name="-createMaterial"></a>
-
-### createMaterial
-kafka contracts
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| material | [Material](#Material) |  |  |
 
 
 
