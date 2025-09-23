@@ -24,19 +24,19 @@ func main() {
 		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to connect graphite:")
 	}
 
-	consumerConfig := kafkalib.DefaultConsumerConfig(
+	newUserConsumerConfig := kafkalib.DefaultConsumerConfig(
 		cfg.Kafka.Host,
 		cfg.Kafka.Port,
 		cfg.Kafka.UserTopic,
 		cfg.Kafka.UserCreatedConsumerGroup,
 	)
-	consumer, err := kafkalib.NewConsumer(consumerConfig, metrics)
+	userConsumer, err := kafkalib.NewConsumer(newUserConsumerConfig, metrics)
 	if err != nil {
 		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to create consumer")
 	}
 
 	userHandler := user.New(dbRepo)
-	consumer.RegisterHandler(ctx, userHandler.Handler)
+	userConsumer.RegisterHandler(ctx, userHandler.Handler)
 
 	<-ctx.Done()
 }

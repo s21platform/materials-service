@@ -35,6 +35,7 @@ func (h *Handler) Handler(ctx context.Context, in []byte) error {
 
 	ctx = logger_lib.WithUserUuid(ctx, msg.UserUuid)
 
+	//TODO: добавить параметры avatarLink, name, surname в метод репозитория CreateUser.
 	err = h.repository.CreateUser(ctx, msg.UserUuid, msg.UserNickname, "", "", "")
 	if err != nil {
 		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to create user")
