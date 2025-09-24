@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	logger_lib "github.com/s21platform/logger-lib"
-
 	"google.golang.org/grpc"
+
+	logger_lib "github.com/s21platform/logger-lib"
 )
 
 func LoggerGRPC(logger *logger_lib.Logger) func(context.Context, interface{}, *grpc.UnaryServerInfo, grpc.UnaryHandler) (interface{}, error) {
