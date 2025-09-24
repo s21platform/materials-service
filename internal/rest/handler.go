@@ -25,19 +25,18 @@ func New(repo DBRepo) *Handler {
 }
 
 func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request) {
-	logger := logger_lib.FromContext(r.Context(), config.KeyLogger)
-	logger.AddFuncName("SaveDraftMaterial")
+	ctx := r.Context()
 
 	var req api.SaveDraftMaterialIn
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		logger.Error(fmt.Sprintf("failed to decode request: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to decode request")
 		h.writeError(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	userUUID, ok := r.Context().Value(config.KeyUUID).(string)
 	if !ok || userUUID == "" {
-		logger.Error("failed to get user UUID")
+		logger_lib.Error(ctx, "failed to get user UUID")
 		h.writeError(w, "user UUID is required", http.StatusUnauthorized)
 		return
 	}
@@ -50,9 +49,9 @@ func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request) {
 		ReadTimeMinutes: *req.ReadTimeMinutes,
 	}
 
-	respUUID, err := h.repository.SaveDraftMaterial(r.Context(), userUUID, saveReq)
+	respUUID, err := h.repository.SaveDraftMaterial(ctx, userUUID, saveReq)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to save draft material: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to save draft material")
 		h.writeError(w, fmt.Sprintf("failed to save draft material: %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -65,58 +64,59 @@ func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request) {
-	logger := logger_lib.FromContext(r.Context(), config.KeyLogger)
-	logger.AddFuncName("PublishMaterial")
+	ctx := r.Context()
 
 	var req api.PublishMaterialIn
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		logger.Error(fmt.Sprintf("failed to decode request: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to decode request")
 		h.writeError(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	if req.Uuid == "" {
-		logger.Error("material uuid is required")
+		logger_lib.Error(ctx, "material uuid is required")
 		h.writeError(w, "material uuid is required", http.StatusBadRequest)
 		return
 	}
 
 	userUUID, ok := r.Context().Value(config.KeyUUID).(string)
 	if !ok || userUUID == "" {
-		logger.Error("failed to get user UUID")
+		logger_lib.Error(ctx, "failed to get user UUID")
 		h.writeError(w, "user UUID is required", http.StatusUnauthorized)
 		return
 	}
 
-	materialOwnerUUID, err := h.repository.GetMaterialOwnerUUID(r.Context(), req.Uuid)
+	ctx = logger_lib.WithUserUuid(ctx, userUUID)
+
+	materialOwnerUUID, err := h.repository.GetMaterialOwnerUUID(ctx, req.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to get owner uuid: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to get owner uuid")
 		h.writeError(w, fmt.Sprintf("failed to get owner uuid: %v", err), http.StatusInternalServerError)
 		return
 	}
 
 	if materialOwnerUUID != userUUID {
-		logger.Error("failed to publish: user is not owner")
+		logger_lib.Error(ctx, "failed to publish: user is not owner")
 		h.writeError(w, "failed to publish: user is not owner", http.StatusForbidden)
 		return
 	}
 
-	exists, err := h.repository.MaterialExists(r.Context(), req.Uuid)
+	exists, err := h.repository.MaterialExists(ctx, req.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to check material existence: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to check material existence")
 		h.writeError(w, fmt.Sprintf("failed to check material existence: %v", err), http.StatusInternalServerError)
 		return
 	}
 
 	if !exists {
-		logger.Error("material does not exist")
+		logger_lib.Error(ctx, "material does not exist")
 		h.writeError(w, "material does not exist", http.StatusPreconditionFailed)
 		return
 	}
 
-	publishedMaterial, err := h.repository.PublishMaterial(r.Context(), req.Uuid)
+	publishedMaterial, err := h.repository.PublishMaterial(ctx, req.Uuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to publish material: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to publish material")
 		h.writeError(w, fmt.Sprintf("failed to publish material: %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -138,32 +138,33 @@ func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
-	logger := logger_lib.FromContext(r.Context(), config.KeyLogger)
-	logger.AddFuncName("ToggleLike")
+	ctx := r.Context()
 
 	var req api.ToggleLikeIn
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		logger.Error(fmt.Sprintf("failed to decode request: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to decode request")
 		h.writeError(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	if req.MaterialUuid == "" {
-		logger.Error("material uuid is required")
+		logger_lib.Error(ctx, "material uuid is required")
 		h.writeError(w, "material uuid is required", http.StatusBadRequest)
 		return
 	}
 
 	userUUID, ok := r.Context().Value(config.KeyUUID).(string)
 	if !ok || userUUID == "" {
-		logger.Error("failed to get user UUID")
+		logger_lib.Error(ctx, "failed to get user UUID")
 		h.writeError(w, "user UUID is required", http.StatusUnauthorized)
 		return
 	}
 
+	ctx = logger_lib.WithUserUuid(ctx, userUUID)
+
 	var isLiked bool
 	var likesCount int32
-	err := tx.TxExecute(r.Context(), func(ctx context.Context) error {
+	err := tx.TxExecute(ctx, func(ctx context.Context) error {
 		var err error
 		isLiked, err = h.repository.CheckLike(ctx, req.MaterialUuid, userUUID)
 		if err != nil {
@@ -195,7 +196,7 @@ func (h *Handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
 		return nil
 	})
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to toggle like: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to toggle like")
 		h.writeError(w, fmt.Sprintf("failed to toggle like: %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -214,8 +215,7 @@ func (h *Handler) writeJSON(w http.ResponseWriter, data interface{}, statusCode 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	if err := json.NewEncoder(w).Encode(data); err != nil {
-		logger := logger_lib.FromContext(context.Background(), config.KeyLogger)
-		logger.Error(fmt.Sprintf("failed to encode response: %v", err))
+		logger_lib.Error(logger_lib.WithError(context.Background(), err), "failed to encode response")
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 	}
 }
@@ -228,8 +228,7 @@ func (h *Handler) writeError(w http.ResponseWriter, message string, statusCode i
 		Message: message,
 	})
 	if err != nil {
-		logger := logger_lib.FromContext(context.Background(), config.KeyLogger)
-		logger.Error(fmt.Sprintf("failed to encode error response: %v", err))
+		logger_lib.Error(logger_lib.WithError(context.Background(), err), "failed to encode error response")
 		http.Error(w, "failed to encode error response", http.StatusInternalServerError)
 	}
 }

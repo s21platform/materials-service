@@ -683,6 +683,146 @@ func (x *PublishMaterialOut) GetMaterial() *Material {
 	return nil
 }
 
+type ArchivedMaterialIn struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ArchivedMaterialIn) Reset() {
+	*x = ArchivedMaterialIn{}
+	mi := &file_api_materials_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ArchivedMaterialIn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ArchivedMaterialIn) ProtoMessage() {}
+
+func (x *ArchivedMaterialIn) ProtoReflect() protoreflect.Message {
+	mi := &file_api_materials_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ArchivedMaterialIn.ProtoReflect.Descriptor instead.
+func (*ArchivedMaterialIn) Descriptor() ([]byte, []int) {
+	return file_api_materials_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ArchivedMaterialIn) GetUuid() string {
+	if x != nil {
+		return x.Uuid
+	}
+	return ""
+}
+
+type ToggleLikeIn struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MaterialUuid  string                 `protobuf:"bytes,1,opt,name=material_uuid,json=materialUuid,proto3" json:"material_uuid,omitempty"` // UUID материала
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ToggleLikeIn) Reset() {
+	*x = ToggleLikeIn{}
+	mi := &file_api_materials_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ToggleLikeIn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ToggleLikeIn) ProtoMessage() {}
+
+func (x *ToggleLikeIn) ProtoReflect() protoreflect.Message {
+	mi := &file_api_materials_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ToggleLikeIn.ProtoReflect.Descriptor instead.
+func (*ToggleLikeIn) Descriptor() ([]byte, []int) {
+	return file_api_materials_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ToggleLikeIn) GetMaterialUuid() string {
+	if x != nil {
+		return x.MaterialUuid
+	}
+	return ""
+}
+
+type ToggleLikeOut struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	IsLiked       bool                   `protobuf:"varint,1,opt,name=is_liked,json=isLiked,proto3" json:"is_liked,omitempty"`          // Состояние лайка
+	LikesCount    int32                  `protobuf:"varint,2,opt,name=likes_count,json=likesCount,proto3" json:"likes_count,omitempty"` // Количество лайков
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ToggleLikeOut) Reset() {
+	*x = ToggleLikeOut{}
+	mi := &file_api_materials_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ToggleLikeOut) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ToggleLikeOut) ProtoMessage() {}
+
+func (x *ToggleLikeOut) ProtoReflect() protoreflect.Message {
+	mi := &file_api_materials_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ToggleLikeOut.ProtoReflect.Descriptor instead.
+func (*ToggleLikeOut) Descriptor() ([]byte, []int) {
+	return file_api_materials_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ToggleLikeOut) GetIsLiked() bool {
+	if x != nil {
+		return x.IsLiked
+	}
+	return false
+}
+
+func (x *ToggleLikeOut) GetLikesCount() int32 {
+	if x != nil {
+		return x.LikesCount
+	}
+	return 0
+}
+
 type MaterialDeletedMessage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
@@ -694,7 +834,7 @@ type MaterialDeletedMessage struct {
 
 func (x *MaterialDeletedMessage) Reset() {
 	*x = MaterialDeletedMessage{}
-	mi := &file_api_materials_proto_msgTypes[11]
+	mi := &file_api_materials_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -706,7 +846,7 @@ func (x *MaterialDeletedMessage) String() string {
 func (*MaterialDeletedMessage) ProtoMessage() {}
 
 func (x *MaterialDeletedMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_materials_proto_msgTypes[11]
+	mi := &file_api_materials_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -719,7 +859,7 @@ func (x *MaterialDeletedMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MaterialDeletedMessage.ProtoReflect.Descriptor instead.
 func (*MaterialDeletedMessage) Descriptor() ([]byte, []int) {
-	return file_api_materials_proto_rawDescGZIP(), []int{11}
+	return file_api_materials_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *MaterialDeletedMessage) GetUuid() string {
@@ -741,146 +881,6 @@ func (x *MaterialDeletedMessage) GetDeletedAt() *timestamppb.Timestamp {
 		return x.DeletedAt
 	}
 	return nil
-}
-
-type ArchivedMaterialIn struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ArchivedMaterialIn) Reset() {
-	*x = ArchivedMaterialIn{}
-	mi := &file_api_materials_proto_msgTypes[12]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ArchivedMaterialIn) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ArchivedMaterialIn) ProtoMessage() {}
-
-func (x *ArchivedMaterialIn) ProtoReflect() protoreflect.Message {
-	mi := &file_api_materials_proto_msgTypes[12]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ArchivedMaterialIn.ProtoReflect.Descriptor instead.
-func (*ArchivedMaterialIn) Descriptor() ([]byte, []int) {
-	return file_api_materials_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *ArchivedMaterialIn) GetUuid() string {
-	if x != nil {
-		return x.Uuid
-	}
-	return ""
-}
-
-type ToggleLikeIn struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	MaterialUuid  string                 `protobuf:"bytes,1,opt,name=material_uuid,json=materialUuid,proto3" json:"material_uuid,omitempty"` // UUID материала
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ToggleLikeIn) Reset() {
-	*x = ToggleLikeIn{}
-	mi := &file_api_materials_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ToggleLikeIn) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ToggleLikeIn) ProtoMessage() {}
-
-func (x *ToggleLikeIn) ProtoReflect() protoreflect.Message {
-	mi := &file_api_materials_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ToggleLikeIn.ProtoReflect.Descriptor instead.
-func (*ToggleLikeIn) Descriptor() ([]byte, []int) {
-	return file_api_materials_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *ToggleLikeIn) GetMaterialUuid() string {
-	if x != nil {
-		return x.MaterialUuid
-	}
-	return ""
-}
-
-type ToggleLikeOut struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	IsLiked       bool                   `protobuf:"varint,1,opt,name=is_liked,json=isLiked,proto3" json:"is_liked,omitempty"`          // Состояние лайка
-	LikesCount    int32                  `protobuf:"varint,2,opt,name=likes_count,json=likesCount,proto3" json:"likes_count,omitempty"` // Количество лайков
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ToggleLikeOut) Reset() {
-	*x = ToggleLikeOut{}
-	mi := &file_api_materials_proto_msgTypes[14]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ToggleLikeOut) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ToggleLikeOut) ProtoMessage() {}
-
-func (x *ToggleLikeOut) ProtoReflect() protoreflect.Message {
-	mi := &file_api_materials_proto_msgTypes[14]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ToggleLikeOut.ProtoReflect.Descriptor instead.
-func (*ToggleLikeOut) Descriptor() ([]byte, []int) {
-	return file_api_materials_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *ToggleLikeOut) GetIsLiked() bool {
-	if x != nil {
-		return x.IsLiked
-	}
-	return false
-}
-
-func (x *ToggleLikeOut) GetLikesCount() int32 {
-	if x != nil {
-		return x.LikesCount
-	}
-	return 0
 }
 
 var File_api_materials_proto protoreflect.FileDescriptor
@@ -978,26 +978,26 @@ var file_api_materials_proto_rawDesc = string([]byte{
 	0x74, 0x65, 0x72, 0x69, 0x61, 0x6c, 0x4f, 0x75, 0x74, 0x12, 0x25, 0x0a, 0x08, 0x6d, 0x61, 0x74,
 	0x65, 0x72, 0x69, 0x61, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x4d, 0x61,
 	0x74, 0x65, 0x72, 0x69, 0x61, 0x6c, 0x52, 0x08, 0x6d, 0x61, 0x74, 0x65, 0x72, 0x69, 0x61, 0x6c,
-	0x22, 0x86, 0x01, 0x0a, 0x16, 0x4d, 0x61, 0x74, 0x65, 0x72, 0x69, 0x61, 0x6c, 0x44, 0x65, 0x6c,
-	0x65, 0x74, 0x65, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x75,
-	0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x75, 0x69, 0x64, 0x12,
-	0x1d, 0x0a, 0x0a, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x5f, 0x75, 0x75, 0x69, 0x64, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x09, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x55, 0x75, 0x69, 0x64, 0x12, 0x39,
-	0x0a, 0x0a, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x04, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09,
-	0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x64, 0x41, 0x74, 0x22, 0x28, 0x0a, 0x12, 0x41, 0x72, 0x63,
-	0x68, 0x69, 0x76, 0x65, 0x64, 0x4d, 0x61, 0x74, 0x65, 0x72, 0x69, 0x61, 0x6c, 0x49, 0x6e, 0x12,
-	0x12, 0x0a, 0x04, 0x75, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75,
-	0x75, 0x69, 0x64, 0x22, 0x33, 0x0a, 0x0c, 0x54, 0x6f, 0x67, 0x67, 0x6c, 0x65, 0x4c, 0x69, 0x6b,
-	0x65, 0x49, 0x6e, 0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x61, 0x74, 0x65, 0x72, 0x69, 0x61, 0x6c, 0x5f,
-	0x75, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x61, 0x74, 0x65,
-	0x72, 0x69, 0x61, 0x6c, 0x55, 0x75, 0x69, 0x64, 0x22, 0x4b, 0x0a, 0x0d, 0x54, 0x6f, 0x67, 0x67,
-	0x6c, 0x65, 0x4c, 0x69, 0x6b, 0x65, 0x4f, 0x75, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x69, 0x73, 0x5f,
-	0x6c, 0x69, 0x6b, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x69, 0x73, 0x4c,
-	0x69, 0x6b, 0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x6c, 0x69, 0x6b, 0x65, 0x73, 0x5f, 0x63, 0x6f,
-	0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0a, 0x6c, 0x69, 0x6b, 0x65, 0x73,
-	0x43, 0x6f, 0x75, 0x6e, 0x74, 0x32, 0xee, 0x03, 0x0a, 0x10, 0x4d, 0x61, 0x74, 0x65, 0x72, 0x69,
+	0x22, 0x28, 0x0a, 0x12, 0x41, 0x72, 0x63, 0x68, 0x69, 0x76, 0x65, 0x64, 0x4d, 0x61, 0x74, 0x65,
+	0x72, 0x69, 0x61, 0x6c, 0x49, 0x6e, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x75, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x75, 0x69, 0x64, 0x22, 0x33, 0x0a, 0x0c, 0x54, 0x6f,
+	0x67, 0x67, 0x6c, 0x65, 0x4c, 0x69, 0x6b, 0x65, 0x49, 0x6e, 0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x61,
+	0x74, 0x65, 0x72, 0x69, 0x61, 0x6c, 0x5f, 0x75, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x0c, 0x6d, 0x61, 0x74, 0x65, 0x72, 0x69, 0x61, 0x6c, 0x55, 0x75, 0x69, 0x64, 0x22,
+	0x4b, 0x0a, 0x0d, 0x54, 0x6f, 0x67, 0x67, 0x6c, 0x65, 0x4c, 0x69, 0x6b, 0x65, 0x4f, 0x75, 0x74,
+	0x12, 0x19, 0x0a, 0x08, 0x69, 0x73, 0x5f, 0x6c, 0x69, 0x6b, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x08, 0x52, 0x07, 0x69, 0x73, 0x4c, 0x69, 0x6b, 0x65, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x6c,
+	0x69, 0x6b, 0x65, 0x73, 0x5f, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05,
+	0x52, 0x0a, 0x6c, 0x69, 0x6b, 0x65, 0x73, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x86, 0x01, 0x0a,
+	0x16, 0x4d, 0x61, 0x74, 0x65, 0x72, 0x69, 0x61, 0x6c, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x64,
+	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x75, 0x75, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x75, 0x75, 0x69, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x6f,
+	0x77, 0x6e, 0x65, 0x72, 0x5f, 0x75, 0x75, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x09, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x55, 0x75, 0x69, 0x64, 0x12, 0x39, 0x0a, 0x0a, 0x64, 0x65,
+	0x6c, 0x65, 0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a,
+	0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
+	0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x64, 0x65, 0x6c, 0x65,
+	0x74, 0x65, 0x64, 0x41, 0x74, 0x32, 0xee, 0x03, 0x0a, 0x10, 0x4d, 0x61, 0x74, 0x65, 0x72, 0x69,
 	0x61, 0x6c, 0x73, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x42, 0x0a, 0x11, 0x53, 0x61,
 	0x76, 0x65, 0x44, 0x72, 0x61, 0x66, 0x74, 0x4d, 0x61, 0x74, 0x65, 0x72, 0x69, 0x61, 0x6c, 0x12,
 	0x14, 0x2e, 0x53, 0x61, 0x76, 0x65, 0x44, 0x72, 0x61, 0x66, 0x74, 0x4d, 0x61, 0x74, 0x65, 0x72,
@@ -1057,10 +1057,10 @@ var file_api_materials_proto_goTypes = []any{
 	(*DeleteMaterialIn)(nil),       // 8: DeleteMaterialIn
 	(*PublishMaterialIn)(nil),      // 9: PublishMaterialIn
 	(*PublishMaterialOut)(nil),     // 10: PublishMaterialOut
-	(*MaterialDeletedMessage)(nil), // 11: MaterialDeletedMessage
-	(*ArchivedMaterialIn)(nil),     // 12: ArchivedMaterialIn
-	(*ToggleLikeIn)(nil),           // 13: ToggleLikeIn
-	(*ToggleLikeOut)(nil),          // 14: ToggleLikeOut
+	(*ArchivedMaterialIn)(nil),     // 11: ArchivedMaterialIn
+	(*ToggleLikeIn)(nil),           // 12: ToggleLikeIn
+	(*ToggleLikeOut)(nil),          // 13: ToggleLikeOut
+	(*MaterialDeletedMessage)(nil), // 14: MaterialDeletedMessage
 	(*timestamppb.Timestamp)(nil),  // 15: google.protobuf.Timestamp
 	(*emptypb.Empty)(nil),          // 16: google.protobuf.Empty
 }
@@ -1081,8 +1081,8 @@ var file_api_materials_proto_depIdxs = []int32{
 	6,  // 13: MaterialsService.EditMaterial:input_type -> EditMaterialIn
 	9,  // 14: MaterialsService.PublishMaterial:input_type -> PublishMaterialIn
 	8,  // 15: MaterialsService.DeleteMaterial:input_type -> DeleteMaterialIn
-	12, // 16: MaterialsService.ArchivedMaterial:input_type -> ArchivedMaterialIn
-	13, // 17: MaterialsService.ToggleLike:input_type -> ToggleLikeIn
+	11, // 16: MaterialsService.ArchivedMaterial:input_type -> ArchivedMaterialIn
+	12, // 17: MaterialsService.ToggleLike:input_type -> ToggleLikeIn
 	1,  // 18: MaterialsService.SaveDraftMaterial:output_type -> SaveDraftMaterialOut
 	3,  // 19: MaterialsService.GetMaterial:output_type -> GetMaterialOut
 	5,  // 20: MaterialsService.GetAllMaterials:output_type -> GetAllMaterialsOut
@@ -1090,7 +1090,7 @@ var file_api_materials_proto_depIdxs = []int32{
 	10, // 22: MaterialsService.PublishMaterial:output_type -> PublishMaterialOut
 	16, // 23: MaterialsService.DeleteMaterial:output_type -> google.protobuf.Empty
 	16, // 24: MaterialsService.ArchivedMaterial:output_type -> google.protobuf.Empty
-	14, // 25: MaterialsService.ToggleLike:output_type -> ToggleLikeOut
+	13, // 25: MaterialsService.ToggleLike:output_type -> ToggleLikeOut
 	18, // [18:26] is the sub-list for method output_type
 	10, // [10:18] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name
