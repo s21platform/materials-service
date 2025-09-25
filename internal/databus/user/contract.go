@@ -1,7 +1,11 @@
 package user
 
-import "context"
+import (
+	"context"
+
+	"github.com/s21platform/materials-service/internal/model"
+)
 
 type DBRepo interface {
-	CreateUser(ctx context.Context, userUUID, nickname, avatarLink, name, surname string) error
+	CreateUser(ctx context.Context, user model.User) error
 }
