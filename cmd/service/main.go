@@ -45,7 +45,7 @@ func main() {
 	)
 	materials.RegisterMaterialsServiceServer(grpcServer, materialsService)
 
-	createProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.MaterialCreated)
+	createProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.MaterialCreatedTopic)
 
 	createKafkaProducer := kafkalib.NewProducer(createProducerConfig)
 
