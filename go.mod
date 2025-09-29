@@ -10,6 +10,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.10.9
+	github.com/s21platform/avatar-service v0.0.0-20250413162426-a937ac435e67
 	github.com/s21platform/kafka-lib v1.0.2
 	github.com/s21platform/logger-lib v1.0.2
 	github.com/s21platform/metrics-lib v0.0.9
