@@ -398,3 +398,21 @@ func (r *Repository) UpdateUserNickname(ctx context.Context, userUUID, newNickna
 
 	return nil
 }
+
+func (r *Repository) AvatarLinkUpdate(ctx context.Context, userUUID, avatarLink string) error {
+	query, args, err := sq.Update("users").
+		Where(sq.Eq{"uuid": userUUID}).
+		Set("avatar_link", avatarLink).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to update avatar link: %v", err)
+	}
+
+	return nil
+}

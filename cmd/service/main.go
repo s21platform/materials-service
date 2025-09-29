@@ -25,6 +25,7 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
 	cfg := config.MustLoad()
 	logger := logger_lib.New(cfg.Logger.Host, cfg.Logger.Port, cfg.Service.Name, cfg.Platform.Env)
 
@@ -73,6 +74,7 @@ func main() {
 
 	g.Go(func() error {
 		if err := grpcServer.Serve(grpcListener); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
+			logger_lib.Error(logger_lib.WithError(ctx, err), "gRPC server error")
 			return fmt.Errorf("gRPC server error: %v", err)
 		}
 		return nil
@@ -80,6 +82,7 @@ func main() {
 
 	g.Go(func() error {
 		if err := httpServer.Serve(httpListener); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger_lib.Error(logger_lib.WithError(ctx, err), "HTTP server error")
 			return fmt.Errorf("HTTP server error: %v", err)
 		}
 		return nil
@@ -87,12 +90,13 @@ func main() {
 
 	g.Go(func() error {
 		if err := m.Serve(); err != nil {
+			logger_lib.Error(logger_lib.WithError(ctx, err), "cannot start service")
 			return fmt.Errorf("cannot start service: %v", err)
 		}
 		return nil
 	})
 
 	if err := g.Wait(); err != nil {
-		logger_lib.Error(context.Background(), fmt.Sprintf("server error: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), "server error")
 	}
 }
