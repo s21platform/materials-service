@@ -6,6 +6,7 @@ import (
 
 	logger_lib "github.com/s21platform/logger-lib"
 
+	"github.com/s21platform/materials-service/internal/model"
 	"github.com/s21platform/user-service/pkg/user"
 )
 
@@ -27,6 +28,7 @@ func convertMessage(bMessage []byte, target interface{}) error {
 
 func (h *Handler) Handler(ctx context.Context, in []byte) error {
 	var msg user.UserNicknameUpdated
+	var msg2 user.UserCreatedMessage
 	err := convertMessage(in, &msg)
 	if err != nil {
 		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to convert message:")
@@ -38,6 +40,21 @@ func (h *Handler) Handler(ctx context.Context, in []byte) error {
 	err = h.repository.UpdateUserNickname(ctx, msg.UserUuid, msg.Nickname)
 	if err != nil {
 		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to update user nickname")
+		return err
+	}
+
+	u := model.User{
+		Uuid:       msg.UserUuid,
+		Nickname:   msg.UserNickname,
+		AvatarLink: "",
+		Name:       "",
+		Surname:    "",
+	}
+
+	//TODO: добавить параметры avatarLink, name, surname в метод репозитория CreateUser.
+	err = h.repository.CreateUser(ctx, u)
+	if err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to create user")
 		return err
 	}
 

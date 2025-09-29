@@ -29,14 +29,18 @@ func main() {
 		cfg.Kafka.Port,
 		cfg.Kafka.UserNicknameTopic,
 		cfg.Kafka.UserNicknameConsumerGroup,
+		cfg.Kafka.UserTopic,
+		cfg.Kafka.UserCreatedConsumerGroup,
 	)
 	nicknameConsumer, err := kafkalib.NewConsumer(nicknameConsumerConfig, metrics)
+	userConsumer, err := kafkalib.NewConsumer(newUserConsumerConfig, metrics)
 	if err != nil {
 		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to create consumer:")
 	}
 
 	userHandler := user.New(dbRepo)
 	nicknameConsumer.RegisterHandler(ctx, userHandler.Handler)
+	userConsumer.RegisterHandler(ctx, userHandler.Handler)
 
 	<-ctx.Done()
 }
