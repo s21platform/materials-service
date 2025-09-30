@@ -26,9 +26,9 @@ func convertMessage(bMessage []byte, target interface{}) error {
 	return nil
 }
 
-func (h *Handler) Handler(ctx context.Context, in []byte) error {
+func (h *Handler) UpdateNickname(ctx context.Context, in []byte) error {
 	var msg user.UserNicknameUpdated
-	var msg2 user.UserCreatedMessage
+
 	err := convertMessage(in, &msg)
 	if err != nil {
 		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to convert message:")
@@ -42,6 +42,20 @@ func (h *Handler) Handler(ctx context.Context, in []byte) error {
 		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to update user nickname")
 		return err
 	}
+
+	return nil
+}
+
+func (h *Handler) UserCreated(ctx context.Context, in []byte) error {
+	var msg user.UserCreatedMessage
+
+	err := convertMessage(in, &msg)
+	if err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to convert message:")
+		return err
+	}
+
+	ctx = logger_lib.WithUserUuid(ctx, msg.UserUuid)
 
 	u := model.User{
 		Uuid:       msg.UserUuid,
