@@ -53,7 +53,7 @@
 <a name="-CreatedMaterial"></a>
 
 ### CreatedMaterial
-kafka contracts
+
 
 
 | Field | Type | Label | Description |
@@ -103,7 +103,7 @@ kafka contracts
 <a name="-EditMaterialMessage"></a>
 
 ### EditMaterialMessage
-kafka contracts
+
 
 
 | Field | Type | Label | Description |

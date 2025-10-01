@@ -95,13 +95,14 @@ message ToggleLikeOut {
   int32 likes_count = 2; // Количество лайков
 }
 
+// kafka contracts
+
 message MaterialDeletedMessage {
   string uuid = 1;
   string owner_uuid = 2;
   google.protobuf.Timestamp deleted_at = 4;
 }
 
-// kafka contracts
 message CreatedMaterial {
   Material material = 1;
 }

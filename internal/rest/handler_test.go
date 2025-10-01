@@ -444,6 +444,47 @@ func TestHandler_PublishMaterial(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 	})
 
+	t.Run("material_owner_mismatch", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return(uuid.New().String(), nil)
+
+		requestBody := api.PublishMaterialIn{
+			Uuid: materialUUID,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/publish-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.PublishMaterial(w, req)
+
+		assert.Equal(t, http.StatusForbidden, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Contains(t, errorResp.Message, "failed to publish: user is not owner")
+	})
+
 	t.Run("material_exists_error", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()

@@ -883,7 +883,6 @@ func (x *MaterialDeletedMessage) GetDeletedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-// kafka contracts
 type CreatedMaterial struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Material      *Material              `protobuf:"bytes,1,opt,name=material,proto3" json:"material,omitempty"`
@@ -924,6 +923,74 @@ func (*CreatedMaterial) Descriptor() ([]byte, []int) {
 func (x *CreatedMaterial) GetMaterial() *Material {
 	if x != nil {
 		return x.Material
+	}
+	return nil
+}
+
+type EditMaterialMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
+	OwnerUuid     string                 `protobuf:"bytes,2,opt,name=owner_uuid,json=ownerUuid,proto3" json:"owner_uuid,omitempty"`
+	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	EditedAt      *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=edited_at,json=editedAt,proto3" json:"edited_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EditMaterialMessage) Reset() {
+	*x = EditMaterialMessage{}
+	mi := &file_api_materials_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EditMaterialMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EditMaterialMessage) ProtoMessage() {}
+
+func (x *EditMaterialMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_api_materials_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EditMaterialMessage.ProtoReflect.Descriptor instead.
+func (*EditMaterialMessage) Descriptor() ([]byte, []int) {
+	return file_api_materials_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *EditMaterialMessage) GetUuid() string {
+	if x != nil {
+		return x.Uuid
+	}
+	return ""
+}
+
+func (x *EditMaterialMessage) GetOwnerUuid() string {
+	if x != nil {
+		return x.OwnerUuid
+	}
+	return ""
+}
+
+func (x *EditMaterialMessage) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *EditMaterialMessage) GetEditedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.EditedAt
 	}
 	return nil
 }
@@ -998,7 +1065,13 @@ const file_api_materials_proto_rawDesc = "" +
 	"\n" +
 	"deleted_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\"8\n" +
 	"\x0fCreatedMaterial\x12%\n" +
-	"\bmaterial\x18\x01 \x01(\v2\t.MaterialR\bmaterial2\xee\x03\n" +
+	"\bmaterial\x18\x01 \x01(\v2\t.MaterialR\bmaterial\"\x97\x01\n" +
+	"\x13EditMaterialMessage\x12\x12\n" +
+	"\x04uuid\x18\x01 \x01(\tR\x04uuid\x12\x1d\n" +
+	"\n" +
+	"owner_uuid\x18\x02 \x01(\tR\townerUuid\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x127\n" +
+	"\tedited_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\beditedAt2\xee\x03\n" +
 	"\x10MaterialsService\x12B\n" +
 	"\x11SaveDraftMaterial\x12\x14.SaveDraftMaterialIn\x1a\x15.SaveDraftMaterialOut\"\x00\x120\n" +
 	"\vGetMaterial\x12\x0e.GetMaterialIn\x1a\x0f.GetMaterialOut\"\x00\x12@\n" +
@@ -1022,7 +1095,7 @@ func file_api_materials_proto_rawDescGZIP() []byte {
 	return file_api_materials_proto_rawDescData
 }
 
-var file_api_materials_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_api_materials_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_api_materials_proto_goTypes = []any{
 	(*SaveDraftMaterialIn)(nil),    // 0: SaveDraftMaterialIn
 	(*SaveDraftMaterialOut)(nil),   // 1: SaveDraftMaterialOut
@@ -1040,42 +1113,44 @@ var file_api_materials_proto_goTypes = []any{
 	(*ToggleLikeOut)(nil),          // 13: ToggleLikeOut
 	(*MaterialDeletedMessage)(nil), // 14: MaterialDeletedMessage
 	(*CreatedMaterial)(nil),        // 15: CreatedMaterial
-	(*timestamppb.Timestamp)(nil),  // 16: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),          // 17: google.protobuf.Empty
+	(*EditMaterialMessage)(nil),    // 16: EditMaterialMessage
+	(*timestamppb.Timestamp)(nil),  // 17: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),          // 18: google.protobuf.Empty
 }
 var file_api_materials_proto_depIdxs = []int32{
 	4,  // 0: GetMaterialOut.material:type_name -> Material
-	16, // 1: Material.created_at:type_name -> google.protobuf.Timestamp
-	16, // 2: Material.edited_at:type_name -> google.protobuf.Timestamp
-	16, // 3: Material.published_at:type_name -> google.protobuf.Timestamp
-	16, // 4: Material.archived_at:type_name -> google.protobuf.Timestamp
-	16, // 5: Material.deleted_at:type_name -> google.protobuf.Timestamp
+	17, // 1: Material.created_at:type_name -> google.protobuf.Timestamp
+	17, // 2: Material.edited_at:type_name -> google.protobuf.Timestamp
+	17, // 3: Material.published_at:type_name -> google.protobuf.Timestamp
+	17, // 4: Material.archived_at:type_name -> google.protobuf.Timestamp
+	17, // 5: Material.deleted_at:type_name -> google.protobuf.Timestamp
 	4,  // 6: GetAllMaterialsOut.material_list:type_name -> Material
 	4,  // 7: EditMaterialOut.material:type_name -> Material
 	4,  // 8: PublishMaterialOut.material:type_name -> Material
-	16, // 9: MaterialDeletedMessage.deleted_at:type_name -> google.protobuf.Timestamp
+	17, // 9: MaterialDeletedMessage.deleted_at:type_name -> google.protobuf.Timestamp
 	4,  // 10: CreatedMaterial.material:type_name -> Material
-	0,  // 11: MaterialsService.SaveDraftMaterial:input_type -> SaveDraftMaterialIn
-	2,  // 12: MaterialsService.GetMaterial:input_type -> GetMaterialIn
-	17, // 13: MaterialsService.GetAllMaterials:input_type -> google.protobuf.Empty
-	6,  // 14: MaterialsService.EditMaterial:input_type -> EditMaterialIn
-	9,  // 15: MaterialsService.PublishMaterial:input_type -> PublishMaterialIn
-	8,  // 16: MaterialsService.DeleteMaterial:input_type -> DeleteMaterialIn
-	11, // 17: MaterialsService.ArchivedMaterial:input_type -> ArchivedMaterialIn
-	12, // 18: MaterialsService.ToggleLike:input_type -> ToggleLikeIn
-	1,  // 19: MaterialsService.SaveDraftMaterial:output_type -> SaveDraftMaterialOut
-	3,  // 20: MaterialsService.GetMaterial:output_type -> GetMaterialOut
-	5,  // 21: MaterialsService.GetAllMaterials:output_type -> GetAllMaterialsOut
-	7,  // 22: MaterialsService.EditMaterial:output_type -> EditMaterialOut
-	10, // 23: MaterialsService.PublishMaterial:output_type -> PublishMaterialOut
-	17, // 24: MaterialsService.DeleteMaterial:output_type -> google.protobuf.Empty
-	17, // 25: MaterialsService.ArchivedMaterial:output_type -> google.protobuf.Empty
-	13, // 26: MaterialsService.ToggleLike:output_type -> ToggleLikeOut
-	19, // [19:27] is the sub-list for method output_type
-	11, // [11:19] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	17, // 11: EditMaterialMessage.edited_at:type_name -> google.protobuf.Timestamp
+	0,  // 12: MaterialsService.SaveDraftMaterial:input_type -> SaveDraftMaterialIn
+	2,  // 13: MaterialsService.GetMaterial:input_type -> GetMaterialIn
+	18, // 14: MaterialsService.GetAllMaterials:input_type -> google.protobuf.Empty
+	6,  // 15: MaterialsService.EditMaterial:input_type -> EditMaterialIn
+	9,  // 16: MaterialsService.PublishMaterial:input_type -> PublishMaterialIn
+	8,  // 17: MaterialsService.DeleteMaterial:input_type -> DeleteMaterialIn
+	11, // 18: MaterialsService.ArchivedMaterial:input_type -> ArchivedMaterialIn
+	12, // 19: MaterialsService.ToggleLike:input_type -> ToggleLikeIn
+	1,  // 20: MaterialsService.SaveDraftMaterial:output_type -> SaveDraftMaterialOut
+	3,  // 21: MaterialsService.GetMaterial:output_type -> GetMaterialOut
+	5,  // 22: MaterialsService.GetAllMaterials:output_type -> GetAllMaterialsOut
+	7,  // 23: MaterialsService.EditMaterial:output_type -> EditMaterialOut
+	10, // 24: MaterialsService.PublishMaterial:output_type -> PublishMaterialOut
+	18, // 25: MaterialsService.DeleteMaterial:output_type -> google.protobuf.Empty
+	18, // 26: MaterialsService.ArchivedMaterial:output_type -> google.protobuf.Empty
+	13, // 27: MaterialsService.ToggleLike:output_type -> ToggleLikeOut
+	20, // [20:28] is the sub-list for method output_type
+	12, // [12:20] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_api_materials_proto_init() }
@@ -1089,7 +1164,7 @@ func file_api_materials_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_materials_proto_rawDesc), len(file_api_materials_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   16,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
