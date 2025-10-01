@@ -381,6 +381,24 @@ func (r *Repository) UpdateLikesCount(ctx context.Context, materialUUID string, 
 	return nil
 }
 
+func (r *Repository) UpdateUserNickname(ctx context.Context, userUUID, newNickname string) error {
+	query, args, err := sq.Update("users").
+		Set("nickname", newNickname).
+		Where(sq.Eq{"uuid": userUUID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to update user nickname: %v", err)
+	}
+
+	return nil
+}
+
 func (r *Repository) AvatarLinkUpdate(ctx context.Context, userUUID, avatarLink string) error {
 	query, args, err := sq.Update("users").
 		Where(sq.Eq{"uuid": userUUID}).
@@ -394,6 +412,24 @@ func (r *Repository) AvatarLinkUpdate(ctx context.Context, userUUID, avatarLink 
 	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("failed to update avatar link: %v", err)
+	}
+
+	return nil
+}
+
+func (r *Repository) CreateUser(ctx context.Context, user model.User) error {
+	query, args, err := sq.Insert("users").
+		Columns("uuid", "nickname", "avatar_link", "name", "surname").
+		Values(user.Uuid, user.Nickname, user.AvatarLink, user.Name, user.Surname).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build sql query: %w", err)
+	}
+
+	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to insert user: %w", err)
 	}
 
 	return nil

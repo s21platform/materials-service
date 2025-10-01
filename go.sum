@@ -128,6 +128,8 @@ github.com/s21platform/logger-lib v1.0.2 h1:VumtVi5dgeMTAVqV3AdC6cldKXxyJ2LmkOAq
 github.com/s21platform/logger-lib v1.0.2/go.mod h1:GzLPrzQWhXxlLS7bE7/3AQP1q1u1ZmVb4GYoPaR15Pg=
 github.com/s21platform/metrics-lib v0.0.9 h1:nFz4W+xps2nlxpOyGW/JLjZf2sTN/YXomumuC9nXwQ0=
 github.com/s21platform/metrics-lib v0.0.9/go.mod h1:Z1Aiy5uuyEmM//rQmhqkVh0JR8l5sVwe83TQegdNFxQ=
+github.com/s21platform/user-service v0.0.10 h1:ekHHgHI9JRcyBYdIsMj+kovMrEBzVnXrK5tFDDfcVx8=
+github.com/s21platform/user-service v0.0.10/go.mod h1:qF9Ap+TWVtsOHQKDww8dUg6FSRtVwVIr1XL94Hu1Knc=
 github.com/segmentio/kafka-go v0.4.47 h1:IqziR4pA3vrZq7YdRxaT3w1/5fvIH5qpCwstUanQQB0=
 github.com/segmentio/kafka-go v0.4.47/go.mod h1:HjF6XbOKh0Pjlkr5GVZxt6CsjjwnmhVOfURM5KMd8qg=
 github.com/sergi/go-diff v1.1.0 h1:we8PVUC3FE2uYfodKH/nBHMSetSfHDR6scGdBi+erh0=

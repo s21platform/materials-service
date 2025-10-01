@@ -14,6 +14,7 @@ require (
 	github.com/s21platform/kafka-lib v1.0.2
 	github.com/s21platform/logger-lib v1.0.2
 	github.com/s21platform/metrics-lib v0.0.9
+	github.com/s21platform/user-service v0.0.10
 	github.com/soheilhy/cmux v0.1.5
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/sync v0.16.0

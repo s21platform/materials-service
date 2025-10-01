@@ -5,8 +5,10 @@
 
 - [api/materials.proto](#api_materials-proto)
     - [ArchivedMaterialIn](#-ArchivedMaterialIn)
+    - [CreatedMaterial](#-CreatedMaterial)
     - [DeleteMaterialIn](#-DeleteMaterialIn)
     - [EditMaterialIn](#-EditMaterialIn)
+    - [EditMaterialMessage](#-EditMaterialMessage)
     - [EditMaterialOut](#-EditMaterialOut)
     - [GetAllMaterialsOut](#-GetAllMaterialsOut)
     - [GetMaterialIn](#-GetMaterialIn)
@@ -48,6 +50,21 @@
 
 
 
+<a name="-CreatedMaterial"></a>
+
+### CreatedMaterial
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| material | [Material](#Material) |  |  |
+
+
+
+
+
+
 <a name="-DeleteMaterialIn"></a>
 
 ### DeleteMaterialIn
@@ -77,6 +94,24 @@
 | description | [string](#string) |  | Описание материала |
 | content | [string](#string) |  | Содержание материала |
 | read_time_minutes | [int32](#int32) |  | Время чтения в минутах |
+
+
+
+
+
+
+<a name="-EditMaterialMessage"></a>
+
+### EditMaterialMessage
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+| owner_uuid | [string](#string) |  |  |
+| title | [string](#string) |  |  |
+| edited_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
 
 
 

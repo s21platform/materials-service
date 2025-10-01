@@ -12,24 +12,27 @@ import (
 	api "github.com/s21platform/materials-service/internal/generated"
 	"github.com/s21platform/materials-service/internal/model"
 	"github.com/s21platform/materials-service/internal/pkg/tx"
+	proto "github.com/s21platform/materials-service/pkg/materials"
 )
 
 type Handler struct {
-	repository DBRepo
+	repository          DBRepo
+	createKafkaProducer KafkaProducer
 }
 
-func New(repo DBRepo) *Handler {
+func New(repo DBRepo, createKafkaProducer KafkaProducer) *Handler {
 	return &Handler{
-		repository: repo,
+		repository:          repo,
+		createKafkaProducer: createKafkaProducer,
 	}
 }
 
 func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	ctx := logger_lib.WithField(r.Context(), "func_name", "SaveDraftMaterial")
 
 	var req api.SaveDraftMaterialIn
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to decode request")
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to decode request: %v", err))
 		h.writeError(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -43,15 +46,15 @@ func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request) {
 
 	saveReq := &model.SaveDraftMaterial{
 		Title:           req.Title,
-		Content:         *req.Content,
-		Description:     *req.Description,
-		CoverImageURL:   *req.CoverImageUrl,
-		ReadTimeMinutes: *req.ReadTimeMinutes,
+		Content:         req.Content,
+		Description:     req.Description,
+		CoverImageURL:   req.CoverImageUrl,
+		ReadTimeMinutes: req.ReadTimeMinutes,
 	}
 
-	respUUID, err := h.repository.SaveDraftMaterial(ctx, userUUID, saveReq)
+	respUUID, err := h.repository.SaveDraftMaterial(r.Context(), userUUID, saveReq)
 	if err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to save draft material")
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to save draft material: %v", err))
 		h.writeError(w, fmt.Sprintf("failed to save draft material: %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -64,11 +67,11 @@ func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	ctx := logger_lib.WithField(r.Context(), "func_name", "PublishMaterial")
 
 	var req api.PublishMaterialIn
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to decode request")
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to decode request: %v", err))
 		h.writeError(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -86,11 +89,9 @@ func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx = logger_lib.WithUserUuid(ctx, userUUID)
-
-	materialOwnerUUID, err := h.repository.GetMaterialOwnerUUID(ctx, req.Uuid)
+	materialOwnerUUID, err := h.repository.GetMaterialOwnerUUID(r.Context(), req.Uuid)
 	if err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to get owner uuid")
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to get owner uuid: %v", err))
 		h.writeError(w, fmt.Sprintf("failed to get owner uuid: %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -101,9 +102,9 @@ func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	exists, err := h.repository.MaterialExists(ctx, req.Uuid)
+	exists, err := h.repository.MaterialExists(r.Context(), req.Uuid)
 	if err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to check material existence")
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to check material existence: %v", err))
 		h.writeError(w, fmt.Sprintf("failed to check material existence: %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -114,9 +115,9 @@ func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	publishedMaterial, err := h.repository.PublishMaterial(ctx, req.Uuid)
+	publishedMaterial, err := h.repository.PublishMaterial(r.Context(), req.Uuid)
 	if err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to publish material")
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to publish material: %v", err))
 		h.writeError(w, fmt.Sprintf("failed to publish material: %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -126,23 +127,41 @@ func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request) {
 			Uuid:            publishedMaterial.UUID,
 			OwnerUuid:       &publishedMaterial.OwnerUUID,
 			Title:           publishedMaterial.Title,
-			Content:         publishedMaterial.Content,
-			Description:     &publishedMaterial.Description,
-			CoverImageUrl:   &publishedMaterial.CoverImageURL,
-			ReadTimeMinutes: &publishedMaterial.ReadTimeMinutes,
-			Status:          &publishedMaterial.Status,
+			Content:         *publishedMaterial.Content,
+			Description:     publishedMaterial.Description,
+			CoverImageUrl:   publishedMaterial.CoverImageURL,
+			ReadTimeMinutes: publishedMaterial.ReadTimeMinutes,
+			Status:          publishedMaterial.Status,
 		},
+	}
+
+	createMaterial := &proto.CreatedMaterial{
+		Material: &proto.Material{
+			Uuid:            publishedMaterial.UUID,
+			OwnerUuid:       publishedMaterial.OwnerUUID,
+			Title:           publishedMaterial.Title,
+			Content:         *publishedMaterial.Content,
+			Description:     publishedMaterial.Description,
+			CoverImageUrl:   publishedMaterial.CoverImageURL,
+			ReadTimeMinutes: publishedMaterial.ReadTimeMinutes,
+			Status:          publishedMaterial.Status,
+		},
+	}
+
+	err = h.createKafkaProducer.ProduceMessage(r.Context(), createMaterial, materialOwnerUUID)
+	if err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to produce message")
 	}
 
 	h.writeJSON(w, response, http.StatusOK)
 }
 
 func (h *Handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	ctx := logger_lib.WithField(r.Context(), "func_name", "ToggleLike")
 
 	var req api.ToggleLikeIn
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to decode request")
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to decode request: %v", err))
 		h.writeError(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -160,11 +179,9 @@ func (h *Handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx = logger_lib.WithUserUuid(ctx, userUUID)
-
 	var isLiked bool
 	var likesCount int32
-	err := tx.TxExecute(ctx, func(ctx context.Context) error {
+	err := tx.TxExecute(r.Context(), func(ctx context.Context) error {
 		var err error
 		isLiked, err = h.repository.CheckLike(ctx, req.MaterialUuid, userUUID)
 		if err != nil {
@@ -196,7 +213,7 @@ func (h *Handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
 		return nil
 	})
 	if err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to toggle like")
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to toggle like: %v", err))
 		h.writeError(w, fmt.Sprintf("failed to toggle like: %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -215,7 +232,7 @@ func (h *Handler) writeJSON(w http.ResponseWriter, data interface{}, statusCode 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	if err := json.NewEncoder(w).Encode(data); err != nil {
-		logger_lib.Error(logger_lib.WithError(context.Background(), err), "failed to encode response")
+		logger_lib.Error(context.Background(), fmt.Sprintf("failed to encode response: %v", err))
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 	}
 }
@@ -228,7 +245,7 @@ func (h *Handler) writeError(w http.ResponseWriter, message string, statusCode i
 		Message: message,
 	})
 	if err != nil {
-		logger_lib.Error(logger_lib.WithError(context.Background(), err), "failed to encode error response")
+		logger_lib.Error(context.Background(), fmt.Sprintf("failed to encode error response: %v", err))
 		http.Error(w, "failed to encode error response", http.StatusInternalServerError)
 	}
 }

@@ -12,6 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
+	kafkalib "github.com/s21platform/kafka-lib"
 	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/materials-service/internal/config"
@@ -33,7 +34,12 @@ func main() {
 	dbRepo := postgres.New(cfg)
 	defer dbRepo.Close()
 
-	materialsService := service.New(dbRepo)
+	editProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.EditMaterialTopic)
+
+	editKafkaProducer := kafkalib.NewProducer(editProducerConfig)
+
+	materialsService := service.New(dbRepo, editKafkaProducer)
+
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			infra.AuthInterceptorGRPC,
@@ -43,7 +49,11 @@ func main() {
 	)
 	materials.RegisterMaterialsServiceServer(grpcServer, materialsService)
 
-	handler := rest.New(dbRepo)
+	createProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.MaterialCreatedTopic)
+
+	createKafkaProducer := kafkalib.NewProducer(createProducerConfig)
+
+	handler := rest.New(dbRepo, createKafkaProducer)
 	router := chi.NewRouter()
 
 	router.Use(func(next http.Handler) http.Handler {
@@ -63,7 +73,7 @@ func main() {
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Service.Port))
 	if err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to start TCP listener")
+		logger_lib.Error(context.Background(), fmt.Sprintf("failed to start TCP listener: %v", err))
 	}
 
 	m := cmux.New(listener)
