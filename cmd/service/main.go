@@ -34,7 +34,11 @@ func main() {
 	dbRepo := postgres.New(cfg)
 	defer dbRepo.Close()
 
-	materialsService := service.New(dbRepo)
+	editProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.EditMaterialTopic)
+
+	editKafkaProducer := kafkalib.NewProducer(editProducerConfig)
+
+	materialsService := service.New(dbRepo, editKafkaProducer)
 
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(

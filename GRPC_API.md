@@ -8,6 +8,7 @@
     - [CreatedMaterial](#-CreatedMaterial)
     - [DeleteMaterialIn](#-DeleteMaterialIn)
     - [EditMaterialIn](#-EditMaterialIn)
+    - [EditMaterialMessage](#-EditMaterialMessage)
     - [EditMaterialOut](#-EditMaterialOut)
     - [GetAllMaterialsOut](#-GetAllMaterialsOut)
     - [GetMaterialIn](#-GetMaterialIn)
@@ -93,6 +94,24 @@ kafka contracts
 | description | [string](#string) |  | Описание материала |
 | content | [string](#string) |  | Содержание материала |
 | read_time_minutes | [int32](#int32) |  | Время чтения в минутах |
+
+
+
+
+
+
+<a name="-EditMaterialMessage"></a>
+
+### EditMaterialMessage
+kafka contracts
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+| owner_uuid | [string](#string) |  |  |
+| title | [string](#string) |  |  |
+| edited_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
 
 
 

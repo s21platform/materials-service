@@ -2,7 +2,6 @@ openapi: 3.0.3
 info:
   title: Materials Service
   version: 1.0.0
-
 paths:
   /api/materials/save-draft-material:
     post:
@@ -39,7 +38,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
   /api/materials/publish-material:
     post:
       summary: Publish a material
@@ -87,7 +85,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
   /api/materials:
     put:
       summary: Toggle like on a material
@@ -123,7 +120,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
 components:
   schemas:
     SaveDraftMaterialIn:
@@ -153,7 +149,6 @@ components:
       properties:
         uuid:
           type: string
-
     PublishMaterialIn:
       type: object
       required:
@@ -170,7 +165,6 @@ components:
       properties:
         material:
           $ref: '#/components/schemas/Material'
-
     Material:
       type: object
       required:
@@ -199,7 +193,6 @@ components:
           format: int32
         status:
           type: string
-
     ToggleLikeIn:
       type: object
       required:
@@ -208,7 +201,6 @@ components:
         material_uuid:
           type: string
           description: UUID of the material to toggle like on
-
     ToggleLikeOut:
       type: object
       required:
@@ -222,7 +214,6 @@ components:
           type: integer
           format: int32
           description: Updated count of likes on the material
-
     Error:
       type: object
       required:
@@ -235,7 +226,6 @@ components:
         message:
           type: string
           example: "title is required"
-
   securitySchemes:
     BearerAuth:
       type: http

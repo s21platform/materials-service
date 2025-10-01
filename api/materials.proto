@@ -105,3 +105,10 @@ message MaterialDeletedMessage {
 message CreatedMaterial {
   Material material = 1;
 }
+
+message EditMaterialMessage {
+  string uuid = 1;
+  string owner_uuid = 2;
+  string title = 3;
+  google.protobuf.Timestamp edited_at = 4;
+}
