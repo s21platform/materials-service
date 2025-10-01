@@ -12,6 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
+	kafkalib "github.com/s21platform/kafka-lib"
 	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/materials-service/internal/config"
@@ -27,12 +28,14 @@ import (
 func main() {
 	ctx := context.Background()
 	cfg := config.MustLoad()
+
 	logger := logger_lib.New(cfg.Logger.Host, cfg.Logger.Port, cfg.Service.Name, cfg.Platform.Env)
 
 	dbRepo := postgres.New(cfg)
 	defer dbRepo.Close()
 
 	materialsService := service.New(dbRepo)
+
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			infra.AuthInterceptorGRPC,
@@ -42,7 +45,11 @@ func main() {
 	)
 	materials.RegisterMaterialsServiceServer(grpcServer, materialsService)
 
-	handler := rest.New(dbRepo)
+	createProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.MaterialCreatedTopic)
+
+	createKafkaProducer := kafkalib.NewProducer(createProducerConfig)
+
+	handler := rest.New(dbRepo, createKafkaProducer)
 	router := chi.NewRouter()
 
 	router.Use(func(next http.Handler) http.Handler {
@@ -70,7 +77,7 @@ func main() {
 	grpcListener := m.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
 	httpListener := m.Match(cmux.HTTP1Fast())
 
-	g, _ := errgroup.WithContext(context.Background())
+	g, ctx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
 		if err := grpcServer.Serve(grpcListener); err != nil && !errors.Is(err, grpc.ErrServerStopped) {

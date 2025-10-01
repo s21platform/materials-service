@@ -12,15 +12,18 @@ import (
 	api "github.com/s21platform/materials-service/internal/generated"
 	"github.com/s21platform/materials-service/internal/model"
 	"github.com/s21platform/materials-service/internal/pkg/tx"
+	proto "github.com/s21platform/materials-service/pkg/materials"
 )
 
 type Handler struct {
-	repository DBRepo
+	repository          DBRepo
+	createKafkaProducer KafkaProducer
 }
 
-func New(repo DBRepo) *Handler {
+func New(repo DBRepo, createKafkaProducer KafkaProducer) *Handler {
 	return &Handler{
-		repository: repo,
+		repository:          repo,
+		createKafkaProducer: createKafkaProducer,
 	}
 }
 
@@ -43,10 +46,10 @@ func (h *Handler) SaveDraftMaterial(w http.ResponseWriter, r *http.Request) {
 
 	saveReq := &model.SaveDraftMaterial{
 		Title:           req.Title,
-		Content:         *req.Content,
-		Description:     *req.Description,
-		CoverImageURL:   *req.CoverImageUrl,
-		ReadTimeMinutes: *req.ReadTimeMinutes,
+		Content:         req.Content,
+		Description:     req.Description,
+		CoverImageURL:   req.CoverImageUrl,
+		ReadTimeMinutes: req.ReadTimeMinutes,
 	}
 
 	respUUID, err := h.repository.SaveDraftMaterial(r.Context(), userUUID, saveReq)
@@ -124,12 +127,30 @@ func (h *Handler) PublishMaterial(w http.ResponseWriter, r *http.Request) {
 			Uuid:            publishedMaterial.UUID,
 			OwnerUuid:       &publishedMaterial.OwnerUUID,
 			Title:           publishedMaterial.Title,
-			Content:         publishedMaterial.Content,
-			Description:     &publishedMaterial.Description,
-			CoverImageUrl:   &publishedMaterial.CoverImageURL,
-			ReadTimeMinutes: &publishedMaterial.ReadTimeMinutes,
-			Status:          &publishedMaterial.Status,
+			Content:         *publishedMaterial.Content,
+			Description:     publishedMaterial.Description,
+			CoverImageUrl:   publishedMaterial.CoverImageURL,
+			ReadTimeMinutes: publishedMaterial.ReadTimeMinutes,
+			Status:          publishedMaterial.Status,
 		},
+	}
+
+	createMaterial := &proto.CreatedMaterial{
+		Material: &proto.Material{
+			Uuid:            publishedMaterial.UUID,
+			OwnerUuid:       publishedMaterial.OwnerUUID,
+			Title:           publishedMaterial.Title,
+			Content:         *publishedMaterial.Content,
+			Description:     publishedMaterial.Description,
+			CoverImageUrl:   publishedMaterial.CoverImageURL,
+			ReadTimeMinutes: publishedMaterial.ReadTimeMinutes,
+			Status:          publishedMaterial.Status,
+		},
+	}
+
+	err = h.createKafkaProducer.ProduceMessage(r.Context(), createMaterial, materialOwnerUUID)
+	if err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to produce message")
 	}
 
 	h.writeJSON(w, response, http.StatusOK)

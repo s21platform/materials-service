@@ -100,3 +100,8 @@ message MaterialDeletedMessage {
   string owner_uuid = 2;
   google.protobuf.Timestamp deleted_at = 4;
 }
+
+// kafka contracts
+message CreatedMaterial {
+  Material material = 1;
+}

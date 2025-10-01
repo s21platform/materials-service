@@ -5,6 +5,7 @@
 
 - [api/materials.proto](#api_materials-proto)
     - [ArchivedMaterialIn](#-ArchivedMaterialIn)
+    - [CreatedMaterial](#-CreatedMaterial)
     - [DeleteMaterialIn](#-DeleteMaterialIn)
     - [EditMaterialIn](#-EditMaterialIn)
     - [EditMaterialOut](#-EditMaterialOut)
@@ -42,6 +43,21 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | uuid | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="-CreatedMaterial"></a>
+
+### CreatedMaterial
+kafka contracts
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| material | [Material](#Material) |  |  |
 
 
 

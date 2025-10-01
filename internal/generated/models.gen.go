@@ -11,12 +11,12 @@ type Error struct {
 
 // Material defines model for Material.
 type Material struct {
-	Content         *string `json:"content,omitempty"`
-	CoverImageUrl   *string `json:"cover_image_url,omitempty"`
-	Description     *string `json:"description,omitempty"`
+	Content         string  `json:"content"`
+	CoverImageUrl   string  `json:"cover_image_url"`
+	Description     string  `json:"description"`
 	OwnerUuid       *string `json:"owner_uuid,omitempty"`
-	ReadTimeMinutes *int32  `json:"read_time_minutes,omitempty"`
-	Status          *string `json:"status,omitempty"`
+	ReadTimeMinutes int32   `json:"read_time_minutes"`
+	Status          string  `json:"status"`
 	Title           string  `json:"title"`
 	Uuid            string  `json:"uuid"`
 }
@@ -34,11 +34,11 @@ type PublishMaterialOut struct {
 
 // SaveDraftMaterialIn defines model for SaveDraftMaterialIn.
 type SaveDraftMaterialIn struct {
-	Content         *string `json:"content,omitempty"`
-	CoverImageUrl   *string `json:"cover_image_url,omitempty"`
-	Description     *string `json:"description,omitempty"`
-	ReadTimeMinutes *int32  `json:"read_time_minutes,omitempty"`
-	Title           string  `json:"title"`
+	Content         string `json:"content"`
+	CoverImageUrl   string `json:"cover_image_url"`
+	Description     string `json:"description"`
+	ReadTimeMinutes int32  `json:"read_time_minutes"`
+	Title           string `json:"title"`
 }
 
 // SaveDraftMaterialOut defines model for SaveDraftMaterialOut.
