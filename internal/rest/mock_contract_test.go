@@ -64,6 +64,21 @@ func (mr *MockDBRepoMockRecorder) CheckLike(ctx, materialUUID, userUUID interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckLike", reflect.TypeOf((*MockDBRepo)(nil).CheckLike), ctx, materialUUID, userUUID)
 }
 
+// EditMaterial mocks base method.
+func (m *MockDBRepo) EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EditMaterial", ctx, material)
+	ret0, _ := ret[0].(*model.Material)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EditMaterial indicates an expected call of EditMaterial.
+func (mr *MockDBRepoMockRecorder) EditMaterial(ctx, material interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EditMaterial", reflect.TypeOf((*MockDBRepo)(nil).EditMaterial), ctx, material)
+}
+
 // GetLikesCount mocks base method.
 func (m *MockDBRepo) GetLikesCount(ctx context.Context, materialUUID string) (int32, error) {
 	m.ctrl.T.Helper()

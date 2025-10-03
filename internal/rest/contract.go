@@ -18,6 +18,7 @@ type DBRepo interface {
 	GetLikesCount(ctx context.Context, materialUUID string) (int32, error)
 	UpdateLikesCount(ctx context.Context, materialUUID string, likesCount int32) error
 	WithTx(ctx context.Context, cb func(ctx context.Context) error) (err error)
+	EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error)
 }
 
 type KafkaProducer interface {
