@@ -79,6 +79,21 @@ func (mr *MockDBRepoMockRecorder) EditMaterial(ctx, material interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EditMaterial", reflect.TypeOf((*MockDBRepo)(nil).EditMaterial), ctx, material)
 }
 
+// GetAllMaterials mocks base method.
+func (m *MockDBRepo) GetAllMaterials(ctx context.Context, offset, limit int) (*model.PaginatedMaterialList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllMaterials", ctx, offset, limit)
+	ret0, _ := ret[0].(*model.PaginatedMaterialList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllMaterials indicates an expected call of GetAllMaterials.
+func (mr *MockDBRepoMockRecorder) GetAllMaterials(ctx, offset, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllMaterials", reflect.TypeOf((*MockDBRepo)(nil).GetAllMaterials), ctx, offset, limit)
+}
+
 // GetLikesCount mocks base method.
 func (m *MockDBRepo) GetLikesCount(ctx context.Context, materialUUID string) (int32, error) {
 	m.ctrl.T.Helper()

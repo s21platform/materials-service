@@ -99,10 +99,24 @@ func (r *Repository) GetMaterial(ctx context.Context, uuid string) (*model.Mater
 	return &material, nil
 }
 
-func (r *Repository) GetAllMaterials(ctx context.Context) (*model.MaterialList, error) {
-	var materials model.MaterialList
+func (r *Repository) GetAllMaterials(ctx context.Context, offset, limit int) (*model.PaginatedMaterialList, error) {
+	var total int
+	countQuery, countArgs, err := sq.
+		Select("COUNT(*)").
+		From("materials").
+		Where(sq.Expr("deleted_at IS NULL")).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build count query: %w", err)
+	}
+	err = r.Chk(ctx).GetContext(ctx, &total, countQuery, countArgs...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get total count: %w", err)
+	}
 
-	query, args, err := sq.
+	var materials model.MaterialList
+	selectQuery, selectArgs, err := sq.
 		Select(
 			"uuid",
 			"owner_uuid",
@@ -120,19 +134,25 @@ func (r *Repository) GetAllMaterials(ctx context.Context) (*model.MaterialList, 
 			"likes_count",
 		).
 		From("materials").
+		Where(sq.Expr("deleted_at IS NULL")).
 		OrderBy("created_at DESC").
+		Limit(uint64(limit)).
+		Offset(uint64(offset)).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("failed to build query: %w", err)
+		return nil, fmt.Errorf("failed to build select query: %w", err)
 	}
 
-	err = r.Chk(ctx).SelectContext(ctx, &materials, query, args...)
+	err = r.Chk(ctx).SelectContext(ctx, &materials, selectQuery, selectArgs...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch materials: %w", err)
+		return nil, fmt.Errorf("failed to fetch paginated materials: %w", err)
 	}
 
-	return &materials, nil
+	return &model.PaginatedMaterialList{
+		Materials: &materials,
+		Total:     total,
+	}, nil
 }
 
 func (r *Repository) EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error) {

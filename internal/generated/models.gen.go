@@ -25,6 +25,14 @@ type Error struct {
 	Message string `json:"message"`
 }
 
+// GetAllMaterialsOut defines model for GetAllMaterialsOut.
+type GetAllMaterialsOut struct {
+	MaterialList []Material `json:"material_list"`
+
+	// TotalCount Total number of materials (for pagination)
+	TotalCount int32 `json:"total_count"`
+}
+
 // Material defines model for Material.
 type Material struct {
 	Content         string  `json:"content"`
@@ -75,6 +83,15 @@ type ToggleLikeOut struct {
 
 	// LikesCount Updated count of likes on the material
 	LikesCount int32 `json:"likes_count"`
+}
+
+// GetAllMaterialsParams defines parameters for GetAllMaterials.
+type GetAllMaterialsParams struct {
+	// Page Page number (starting from 1)
+	Page *int `form:"page,omitempty" json:"page,omitempty"`
+
+	// Limit Number of materials per page (max 100)
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ToggleLikeJSONRequestBody defines body for ToggleLike for application/json ContentType.

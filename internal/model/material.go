@@ -32,7 +32,6 @@ func (m *Material) FromDTO() *materials.Material {
 		Uuid:            m.UUID,
 		OwnerUuid:       m.OwnerUUID,
 		Title:           m.Title,
-		CoverImageUrl:   m.CoverImageURL,
 		Description:     m.Description,
 		ReadTimeMinutes: m.ReadTimeMinutes,
 		Status:          m.Status,
@@ -94,4 +93,9 @@ func (a *MaterialList) ListFromDTO() []*materials.Material {
 	}
 
 	return result
+}
+
+type PaginatedMaterialList struct {
+	Materials *MaterialList
+	Total     int
 }
