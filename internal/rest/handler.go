@@ -227,7 +227,7 @@ func (h *Handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
 
 	likeMsg := &proto.ToggleLikeMessage{
 		MaterialUuid: req.MaterialUuid,
-		IsLiked:      isLiked,
+		IsLiked:      !isLiked,
 		LikesCount:   likesCount,
 	}
 
