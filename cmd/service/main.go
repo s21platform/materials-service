@@ -53,7 +53,11 @@ func main() {
 
 	createKafkaProducer := kafkalib.NewProducer(createProducerConfig)
 
-	handler := rest.New(dbRepo, createKafkaProducer)
+	likeProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.LikeMaterialTopic)
+
+	likeKafkaProducer := kafkalib.NewProducer(likeProducerConfig)
+
+	handler := rest.New(dbRepo, createKafkaProducer, likeKafkaProducer)
 	router := chi.NewRouter()
 
 	router.Use(func(next http.Handler) http.Handler {

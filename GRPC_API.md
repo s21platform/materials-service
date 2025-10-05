@@ -20,6 +20,7 @@
     - [SaveDraftMaterialIn](#-SaveDraftMaterialIn)
     - [SaveDraftMaterialOut](#-SaveDraftMaterialOut)
     - [ToggleLikeIn](#-ToggleLikeIn)
+    - [ToggleLikeMessage](#-ToggleLikeMessage)
     - [ToggleLikeOut](#-ToggleLikeOut)
   
     - [MaterialsService](#-MaterialsService)
@@ -296,6 +297,23 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | material_uuid | [string](#string) |  | UUID материала |
+
+
+
+
+
+
+<a name="-ToggleLikeMessage"></a>
+
+### ToggleLikeMessage
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| material_uuid | [string](#string) |  |  |
+| is_liked | [bool](#bool) |  |  |
+| likes_count | [int32](#int32) |  |  |
 
 
 

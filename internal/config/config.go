@@ -53,6 +53,7 @@ type Kafka struct {
 	MaterialsAvatarUpdateKafkaConsumerGroup string `env:"MATERIALS_AVATAR_UPDATE_KAFKA_CONSUMER_GROUP"`
 	MaterialCreatedTopic                    string `env:"MATERIALS_CREATED_MATERIAL"`
 	EditMaterialTopic                       string `env:"MATERIALS_SET_MATERIAL_EDITED"`
+	LikeMaterialTopic                       string `env:"MATERIALS_SET_MATERIAL_LIKED"`
 }
 
 func MustLoad() *Config {

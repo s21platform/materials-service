@@ -113,3 +113,9 @@ message EditMaterialMessage {
   string title = 3;
   google.protobuf.Timestamp edited_at = 4;
 }
+
+message ToggleLikeMessage {
+  string material_uuid = 1;
+  bool is_liked = 2;
+  int32 likes_count = 3;
+}
