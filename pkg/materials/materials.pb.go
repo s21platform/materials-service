@@ -927,6 +927,66 @@ func (x *CreatedMaterial) GetMaterial() *Material {
 	return nil
 }
 
+type ToggleLikeMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MaterialUuid  string                 `protobuf:"bytes,1,opt,name=material_uuid,json=materialUuid,proto3" json:"material_uuid,omitempty"`
+	IsLiked       bool                   `protobuf:"varint,2,opt,name=is_liked,json=isLiked,proto3" json:"is_liked,omitempty"`
+	LikesCount    int32                  `protobuf:"varint,3,opt,name=likes_count,json=likesCount,proto3" json:"likes_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ToggleLikeMessage) Reset() {
+	*x = ToggleLikeMessage{}
+	mi := &file_api_materials_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ToggleLikeMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ToggleLikeMessage) ProtoMessage() {}
+
+func (x *ToggleLikeMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_api_materials_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ToggleLikeMessage.ProtoReflect.Descriptor instead.
+func (*ToggleLikeMessage) Descriptor() ([]byte, []int) {
+	return file_api_materials_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *ToggleLikeMessage) GetMaterialUuid() string {
+	if x != nil {
+		return x.MaterialUuid
+	}
+	return ""
+}
+
+func (x *ToggleLikeMessage) GetIsLiked() bool {
+	if x != nil {
+		return x.IsLiked
+	}
+	return false
+}
+
+func (x *ToggleLikeMessage) GetLikesCount() int32 {
+	if x != nil {
+		return x.LikesCount
+	}
+	return 0
+}
+
 type EditMaterialMessage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
@@ -939,7 +999,7 @@ type EditMaterialMessage struct {
 
 func (x *EditMaterialMessage) Reset() {
 	*x = EditMaterialMessage{}
-	mi := &file_api_materials_proto_msgTypes[16]
+	mi := &file_api_materials_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -951,7 +1011,7 @@ func (x *EditMaterialMessage) String() string {
 func (*EditMaterialMessage) ProtoMessage() {}
 
 func (x *EditMaterialMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_materials_proto_msgTypes[16]
+	mi := &file_api_materials_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -964,7 +1024,7 @@ func (x *EditMaterialMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EditMaterialMessage.ProtoReflect.Descriptor instead.
 func (*EditMaterialMessage) Descriptor() ([]byte, []int) {
-	return file_api_materials_proto_rawDescGZIP(), []int{16}
+	return file_api_materials_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *EditMaterialMessage) GetUuid() string {
@@ -993,66 +1053,6 @@ func (x *EditMaterialMessage) GetEditedAt() *timestamppb.Timestamp {
 		return x.EditedAt
 	}
 	return nil
-}
-
-type ToggleLikeMessage struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	MaterialUuid  string                 `protobuf:"bytes,1,opt,name=material_uuid,json=materialUuid,proto3" json:"material_uuid,omitempty"`
-	IsLiked       bool                   `protobuf:"varint,2,opt,name=is_liked,json=isLiked,proto3" json:"is_liked,omitempty"`
-	LikesCount    int32                  `protobuf:"varint,3,opt,name=likes_count,json=likesCount,proto3" json:"likes_count,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ToggleLikeMessage) Reset() {
-	*x = ToggleLikeMessage{}
-	mi := &file_api_materials_proto_msgTypes[17]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ToggleLikeMessage) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ToggleLikeMessage) ProtoMessage() {}
-
-func (x *ToggleLikeMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_materials_proto_msgTypes[17]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ToggleLikeMessage.ProtoReflect.Descriptor instead.
-func (*ToggleLikeMessage) Descriptor() ([]byte, []int) {
-	return file_api_materials_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *ToggleLikeMessage) GetMaterialUuid() string {
-	if x != nil {
-		return x.MaterialUuid
-	}
-	return ""
-}
-
-func (x *ToggleLikeMessage) GetIsLiked() bool {
-	if x != nil {
-		return x.IsLiked
-	}
-	return false
-}
-
-func (x *ToggleLikeMessage) GetLikesCount() int32 {
-	if x != nil {
-		return x.LikesCount
-	}
-	return 0
 }
 
 var File_api_materials_proto protoreflect.FileDescriptor
@@ -1125,18 +1125,18 @@ const file_api_materials_proto_rawDesc = "" +
 	"\n" +
 	"deleted_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\"8\n" +
 	"\x0fCreatedMaterial\x12%\n" +
-	"\bmaterial\x18\x01 \x01(\v2\t.MaterialR\bmaterial\"\x97\x01\n" +
+	"\bmaterial\x18\x01 \x01(\v2\t.MaterialR\bmaterial\"t\n" +
+	"\x11ToggleLikeMessage\x12#\n" +
+	"\rmaterial_uuid\x18\x01 \x01(\tR\fmaterialUuid\x12\x19\n" +
+	"\bis_liked\x18\x02 \x01(\bR\aisLiked\x12\x1f\n" +
+	"\vlikes_count\x18\x03 \x01(\x05R\n" +
+	"likesCount\"\x97\x01\n" +
 	"\x13EditMaterialMessage\x12\x12\n" +
 	"\x04uuid\x18\x01 \x01(\tR\x04uuid\x12\x1d\n" +
 	"\n" +
 	"owner_uuid\x18\x02 \x01(\tR\townerUuid\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x127\n" +
-	"\tedited_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\beditedAt\"t\n" +
-	"\x11ToggleLikeMessage\x12#\n" +
-	"\rmaterial_uuid\x18\x01 \x01(\tR\fmaterialUuid\x12\x19\n" +
-	"\bis_liked\x18\x02 \x01(\bR\aisLiked\x12\x1f\n" +
-	"\vlikes_count\x18\x03 \x01(\x05R\n" +
-	"likesCount2\xee\x03\n" +
+	"\tedited_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\beditedAt2\xee\x03\n" +
 	"\x10MaterialsService\x12B\n" +
 	"\x11SaveDraftMaterial\x12\x14.SaveDraftMaterialIn\x1a\x15.SaveDraftMaterialOut\"\x00\x120\n" +
 	"\vGetMaterial\x12\x0e.GetMaterialIn\x1a\x0f.GetMaterialOut\"\x00\x12@\n" +
@@ -1178,8 +1178,8 @@ var file_api_materials_proto_goTypes = []any{
 	(*ToggleLikeOut)(nil),          // 13: ToggleLikeOut
 	(*MaterialDeletedMessage)(nil), // 14: MaterialDeletedMessage
 	(*CreatedMaterial)(nil),        // 15: CreatedMaterial
-	(*EditMaterialMessage)(nil),    // 16: EditMaterialMessage
-	(*ToggleLikeMessage)(nil),      // 17: ToggleLikeMessage
+	(*ToggleLikeMessage)(nil),      // 16: ToggleLikeMessage
+	(*EditMaterialMessage)(nil),    // 17: EditMaterialMessage
 	(*timestamppb.Timestamp)(nil),  // 18: google.protobuf.Timestamp
 	(*emptypb.Empty)(nil),          // 19: google.protobuf.Empty
 }

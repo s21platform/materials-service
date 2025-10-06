@@ -21,16 +21,16 @@ import (
 type Handler struct {
 	repository          DBRepo
 	createKafkaProducer KafkaProducer
-	editKafkaProducer   KafkaProducer
 	likeKafkaProducer   KafkaProducer
+	editKafkaProducer   KafkaProducer
 }
 
-func New(repo DBRepo, createKafkaProducer, editKafkaProducer, likeKafkaProducer KafkaProducer) *Handler {
+func New(repo DBRepo, createKafkaProducer, likeKafkaProducer, editKafkaProducer KafkaProducer) *Handler {
 	return &Handler{
 		repository:          repo,
 		createKafkaProducer: createKafkaProducer,
-		editKafkaProducer:   editKafkaProducer,
 		likeKafkaProducer:   likeKafkaProducer,
+		editKafkaProducer:   editKafkaProducer,
 	}
 }
 
