@@ -50,11 +50,9 @@ func main() {
 	materials.RegisterMaterialsServiceServer(grpcServer, materialsService)
 
 	createProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.MaterialCreatedTopic)
+	likeProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.ToggleLikeMaterialTopic)
 
 	createKafkaProducer := kafkalib.NewProducer(createProducerConfig)
-
-	likeProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.LikeMaterialTopic)
-
 	likeKafkaProducer := kafkalib.NewProducer(likeProducerConfig)
 
 	handler := rest.New(dbRepo, createKafkaProducer, likeKafkaProducer)

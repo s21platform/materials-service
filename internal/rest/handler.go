@@ -21,7 +21,7 @@ type Handler struct {
 	likeKafkaProducer   KafkaProducer
 }
 
-func New(repo DBRepo, createKafkaProducer KafkaProducer, likeKafkaProducer KafkaProducer) *Handler {
+func New(repo DBRepo, createKafkaProducer, likeKafkaProducer KafkaProducer) *Handler {
 	return &Handler{
 		repository:          repo,
 		createKafkaProducer: createKafkaProducer,
@@ -220,11 +220,6 @@ func (h *Handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := api.ToggleLikeOut{
-		IsLiked:    !isLiked,
-		LikesCount: likesCount,
-	}
-
 	likeMsg := &proto.ToggleLikeMessage{
 		MaterialUuid: req.MaterialUuid,
 		IsLiked:      !isLiked,
@@ -234,6 +229,11 @@ func (h *Handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
 	err = h.likeKafkaProducer.ProduceMessage(r.Context(), likeMsg, req.MaterialUuid)
 	if err != nil {
 		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to produce message")
+	}
+
+	response := api.ToggleLikeOut{
+		IsLiked:    !isLiked,
+		LikesCount: likesCount,
 	}
 
 	h.writeJSON(w, response, http.StatusOK)
