@@ -17,6 +17,7 @@ import (
 	"github.com/s21platform/materials-service/internal/pkg/tx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	logger_lib "github.com/s21platform/logger-lib"
 	"github.com/s21platform/materials-service/internal/config"
@@ -1408,6 +1409,259 @@ func TestHandler_EditMaterial(t *testing.T) {
 		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
 		require.NoError(t, err)
 		assert.Contains(t, errorResp.Message, "failed to edit material")
+	})
+}
+
+func TestHandler_GetAllMaterials(t *testing.T) {
+	t.Parallel()
+
+	mockMaterials := model.MaterialList{
+		{
+			UUID:            uuid.New().String(),
+			OwnerUUID:       uuid.New().String(),
+			Title:           "Material 1",
+			Content:         stringPtr("Content 1"),
+			Description:     "Desc 1",
+			CoverImageURL:   "url1",
+			ReadTimeMinutes: 5,
+			Status:          "published",
+			CreatedAt:       timestamppb.Now().AsTime(),
+		},
+		{
+			UUID:            uuid.New().String(),
+			OwnerUUID:       uuid.New().String(),
+			Title:           "Material 2",
+			Content:         stringPtr("Content 2"),
+			Description:     "Desc 2",
+			CoverImageURL:   "url2",
+			ReadTimeMinutes: 10,
+			Status:          "published",
+			CreatedAt:       timestamppb.Now().AsTime(),
+		},
+	}
+
+	t.Run("success_default_params", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 0, 10).Return(&model.PaginatedMaterialList{
+			Materials: &mockMaterials,
+			Total:     len(mockMaterials),
+		}, nil)
+
+		req := httptest.NewRequest(http.MethodGet, "/api/materials/get-all-materials", nil)
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		req = req.WithContext(reqCtx)
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.GetAllMaterials(w, req, api.GetAllMaterialsParams{})
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response api.GetAllMaterialsOut
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Equal(t, int32(len(mockMaterials)), response.TotalCount)
+		assert.Len(t, response.MaterialList, len(mockMaterials))
+		for i, m := range response.MaterialList {
+			assert.Equal(t, mockMaterials[i].UUID, m.Uuid)
+			assert.Equal(t, mockMaterials[i].Title, m.Title)
+			assert.Equal(t, *mockMaterials[i].Content, m.Content)
+			assert.Equal(t, mockMaterials[i].Description, m.Description)
+			assert.Equal(t, mockMaterials[i].CoverImageURL, m.CoverImageUrl)
+			assert.Equal(t, mockMaterials[i].ReadTimeMinutes, m.ReadTimeMinutes)
+			assert.Equal(t, mockMaterials[i].Status, m.Status)
+		}
+	})
+
+	t.Run("success_custom_params", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 10, 5).Return(&model.PaginatedMaterialList{
+			Materials: &mockMaterials,
+			Total:     len(mockMaterials),
+		}, nil)
+
+		req := httptest.NewRequest(http.MethodGet, "/api/materials/get-all-materials?page=3&limit=5", nil)
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		req = req.WithContext(reqCtx)
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.GetAllMaterials(w, req, api.GetAllMaterialsParams{})
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response api.GetAllMaterialsOut
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Equal(t, int32(len(mockMaterials)), response.TotalCount)
+		assert.Len(t, response.MaterialList, len(mockMaterials))
+	})
+
+	t.Run("invalid_page_param", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 0, 10).Return(&model.PaginatedMaterialList{
+			Materials: &mockMaterials,
+			Total:     len(mockMaterials),
+		}, nil)
+
+		req := httptest.NewRequest(http.MethodGet, "/api/materials/get-all-materials?page=0&limit=10", nil)
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		req = req.WithContext(reqCtx)
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.GetAllMaterials(w, req, api.GetAllMaterialsParams{})
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response api.GetAllMaterialsOut
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Equal(t, int32(len(mockMaterials)), response.TotalCount)
+	})
+
+	t.Run("invalid_limit_param_low", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 0, 10).Return(&model.PaginatedMaterialList{
+			Materials: &mockMaterials,
+			Total:     len(mockMaterials),
+		}, nil)
+
+		req := httptest.NewRequest(http.MethodGet, "/api/materials/get-all-materials?page=1&limit=0", nil)
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		req = req.WithContext(reqCtx)
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.GetAllMaterials(w, req, api.GetAllMaterialsParams{})
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response api.GetAllMaterialsOut
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Equal(t, int32(len(mockMaterials)), response.TotalCount)
+	})
+
+	t.Run("invalid_limit_param_high", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 0, 10).Return(&model.PaginatedMaterialList{
+			Materials: &mockMaterials,
+			Total:     len(mockMaterials),
+		}, nil)
+
+		req := httptest.NewRequest(http.MethodGet, "/api/materials/get-all-materials?page=1&limit=101", nil)
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		req = req.WithContext(reqCtx)
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.GetAllMaterials(w, req, api.GetAllMaterialsParams{})
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response api.GetAllMaterialsOut
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Equal(t, int32(len(mockMaterials)), response.TotalCount)
+	})
+
+	t.Run("repository_error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 0, 10).Return(nil, fmt.Errorf("db error"))
+
+		req := httptest.NewRequest(http.MethodGet, "/api/materials/get-all-materials", nil)
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		req = req.WithContext(reqCtx)
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.GetAllMaterials(w, req, api.GetAllMaterialsParams{})
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Contains(t, errorResp.Message, "failed to get paginated materials")
 	})
 }
 
