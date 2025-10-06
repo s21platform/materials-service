@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/s21platform/metrics-lib/pkg"
 	"github.com/soheilhy/cmux"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -34,12 +35,19 @@ func main() {
 	dbRepo := postgres.New(cfg)
 	defer dbRepo.Close()
 
+	metrics, err := pkg.NewMetrics(cfg.Metrics.Host, cfg.Metrics.Port, cfg.Service.Name, cfg.Platform.Env)
+	if err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to create metrics object: %v", err))
+	}
+	defer metrics.Disconnect()
+
 	materialsService := service.New(dbRepo)
 
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			infra.AuthInterceptorGRPC,
 			infra.LoggerGRPC(logger),
+			infra.MetricsInterceptor(metrics),
 			tx.TxMiddleWareGRPC(dbRepo),
 		),
 	)
