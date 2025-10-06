@@ -946,6 +946,595 @@ func TestHandler_ToggleLike(t *testing.T) {
 	})
 }
 
+func TestHandler_EditMaterial(t *testing.T) {
+	t.Parallel()
+
+	userUUID := uuid.New().String()
+	materialUUID := uuid.New().String()
+
+	title := "Edited Title"
+	content := "Edited Content"
+	description := "Edited Description"
+	coverImageURL := "http://example.com/edited_cover.jpg"
+	readTimeMinutes := int32(10)
+	status := "draft"
+
+	t.Run("success", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockKafka := NewMockKafkaProducer(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			editKafkaProducer: mockKafka,
+		}
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return(userUUID, nil)
+		mockRepo.EXPECT().MaterialExists(gomock.Any(), materialUUID).Return(true, nil)
+
+		editReq := &model.EditMaterial{
+			UUID:            materialUUID,
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageURL:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		editedMaterial := &model.Material{
+			UUID:            materialUUID,
+			OwnerUUID:       userUUID,
+			Title:           title,
+			Content:         stringPtr(content),
+			Description:     description,
+			CoverImageURL:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+			Status:          status,
+		}
+
+		mockRepo.EXPECT().EditMaterial(gomock.Any(), editReq).Return(editedMaterial, nil)
+
+		mockKafka.EXPECT().ProduceMessage(gomock.Any(), gomock.Any(), materialUUID).Return(nil)
+
+		requestBody := api.EditMaterialIn{
+			Uuid:            materialUUID,
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageUrl:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/edit-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.EditMaterial(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response api.EditMaterialOut
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Equal(t, materialUUID, response.Material.Uuid)
+		assert.Equal(t, title, response.Material.Title)
+		assert.Equal(t, content, response.Material.Content)
+	})
+
+	t.Run("success_with_kafka_error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockKafka := NewMockKafkaProducer(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			editKafkaProducer: mockKafka,
+		}
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return(userUUID, nil)
+		mockRepo.EXPECT().MaterialExists(gomock.Any(), materialUUID).Return(true, nil)
+
+		editReq := &model.EditMaterial{
+			UUID:            materialUUID,
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageURL:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		editedMaterial := &model.Material{
+			UUID:            materialUUID,
+			OwnerUUID:       userUUID,
+			Title:           title,
+			Content:         stringPtr(content),
+			Description:     description,
+			CoverImageURL:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+			Status:          status,
+		}
+
+		mockRepo.EXPECT().EditMaterial(gomock.Any(), editReq).Return(editedMaterial, nil)
+
+		mockKafka.EXPECT().ProduceMessage(gomock.Any(), gomock.Any(), materialUUID).Return(fmt.Errorf("kafka error"))
+
+		requestBody := api.EditMaterialIn{
+			Uuid:            materialUUID,
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageUrl:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/edit-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.EditMaterial(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response api.EditMaterialOut
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Equal(t, materialUUID, response.Material.Uuid)
+	})
+
+	t.Run("invalid_json", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockKafka := NewMockKafkaProducer(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			editKafkaProducer: mockKafka,
+		}
+
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/edit-material", strings.NewReader("invalid json"))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.EditMaterial(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Equal(t, "invalid request body", errorResp.Message)
+	})
+
+	t.Run("missing_material_uuid", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockKafka := NewMockKafkaProducer(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			editKafkaProducer: mockKafka,
+		}
+
+		requestBody := api.EditMaterialIn{
+			Uuid:            "",
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageUrl:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/edit-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.EditMaterial(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Equal(t, "material uuid is required", errorResp.Message)
+	})
+
+	t.Run("missing_title", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockKafka := NewMockKafkaProducer(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			editKafkaProducer: mockKafka,
+		}
+
+		requestBody := api.EditMaterialIn{
+			Uuid:            materialUUID,
+			Title:           " ",
+			Content:         content,
+			Description:     description,
+			CoverImageUrl:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/edit-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.EditMaterial(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Equal(t, "title is required", errorResp.Message)
+	})
+
+	t.Run("missing_user_uuid", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockKafka := NewMockKafkaProducer(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			editKafkaProducer: mockKafka,
+		}
+
+		requestBody := api.EditMaterialIn{
+			Uuid:            materialUUID,
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageUrl:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/edit-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.EditMaterial(w, req)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Equal(t, "user UUID is required", errorResp.Message)
+	})
+
+	t.Run("error_getting_owner_uuid", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockKafka := NewMockKafkaProducer(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			editKafkaProducer: mockKafka,
+		}
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return("", fmt.Errorf("db error"))
+
+		requestBody := api.EditMaterialIn{
+			Uuid:            materialUUID,
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageUrl:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/edit-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.EditMaterial(w, req)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Contains(t, errorResp.Message, "failed to get owner uuid")
+	})
+
+	t.Run("user_not_owner", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockKafka := NewMockKafkaProducer(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			editKafkaProducer: mockKafka,
+		}
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return(uuid.New().String(), nil)
+
+		requestBody := api.EditMaterialIn{
+			Uuid:            materialUUID,
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageUrl:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/edit-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.EditMaterial(w, req)
+
+		assert.Equal(t, http.StatusForbidden, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Equal(t, "failed to edit: user is not owner", errorResp.Message)
+	})
+
+	t.Run("error_checking_existence", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockKafka := NewMockKafkaProducer(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			editKafkaProducer: mockKafka,
+		}
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return(userUUID, nil)
+		mockRepo.EXPECT().MaterialExists(gomock.Any(), materialUUID).Return(false, fmt.Errorf("db error"))
+
+		requestBody := api.EditMaterialIn{
+			Uuid:            materialUUID,
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageUrl:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/edit-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.EditMaterial(w, req)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Contains(t, errorResp.Message, "failed to check material existence")
+	})
+
+	t.Run("material_does_not_exist", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockKafka := NewMockKafkaProducer(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			editKafkaProducer: mockKafka,
+		}
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return(userUUID, nil)
+		mockRepo.EXPECT().MaterialExists(gomock.Any(), materialUUID).Return(false, nil)
+
+		requestBody := api.EditMaterialIn{
+			Uuid:            materialUUID,
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageUrl:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/edit-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.EditMaterial(w, req)
+
+		assert.Equal(t, http.StatusPreconditionFailed, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Equal(t, "material does not exist", errorResp.Message)
+	})
+
+	t.Run("repository_error_on_edit", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockKafka := NewMockKafkaProducer(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			editKafkaProducer: mockKafka,
+		}
+
+		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return(userUUID, nil)
+		mockRepo.EXPECT().MaterialExists(gomock.Any(), materialUUID).Return(true, nil)
+
+		editReq := &model.EditMaterial{
+			UUID:            materialUUID,
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageURL:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		mockRepo.EXPECT().EditMaterial(gomock.Any(), editReq).Return(nil, fmt.Errorf("db error"))
+
+		requestBody := api.EditMaterialIn{
+			Uuid:            materialUUID,
+			Title:           title,
+			Content:         content,
+			Description:     description,
+			CoverImageUrl:   coverImageURL,
+			ReadTimeMinutes: readTimeMinutes,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/edit-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.EditMaterial(w, req)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Contains(t, errorResp.Message, "failed to edit material")
+	})
+}
+
 func stringPtr(s string) *string {
 	return &s
 }

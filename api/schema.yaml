@@ -120,6 +120,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /api/materials/edit-material:
+    post:
+      summary: Edit a material
+      operationId: EditMaterial
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditMaterialIn'
+      responses:
+        '200':
+          description: Material edited successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditMaterialOut'
+        '400':
+          description: Invalid input, missing required material UUID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthenticated, user UUID not provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Permission denied, user is not the owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Material does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   schemas:
     SaveDraftMaterialIn:
@@ -214,6 +261,37 @@ components:
           type: integer
           format: int32
           description: Updated count of likes on the material
+    EditMaterialIn:
+      required:
+        - uuid
+        - title
+        - cover_image_url
+        - description
+        - content
+        - read_time_minutes
+      properties:
+        uuid:
+          type: string
+        owner_uuid:
+          type: string
+        title:
+          type: string
+        cover_image_url:
+          type: string
+        description:
+          type: string
+        content:
+          type: string
+        read_time_minutes:
+          type: integer
+          format: int32
+    EditMaterialOut:
+      type: object
+      required:
+        - material
+      properties:
+        material:
+          $ref: '#/components/schemas/Material'
     Error:
       type: object
       required:

@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
+	"time"
 
 	logger_lib "github.com/s21platform/logger-lib"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/s21platform/materials-service/internal/config"
 	api "github.com/s21platform/materials-service/internal/generated"
@@ -18,13 +21,15 @@ import (
 type Handler struct {
 	repository          DBRepo
 	createKafkaProducer KafkaProducer
+	editKafkaProducer   KafkaProducer
 	likeKafkaProducer   KafkaProducer
 }
 
-func New(repo DBRepo, createKafkaProducer, likeKafkaProducer KafkaProducer) *Handler {
+func New(repo DBRepo, createKafkaProducer, editKafkaProducer, likeKafkaProducer KafkaProducer) *Handler {
 	return &Handler{
 		repository:          repo,
 		createKafkaProducer: createKafkaProducer,
+		editKafkaProducer:   editKafkaProducer,
 		likeKafkaProducer:   likeKafkaProducer,
 	}
 }
@@ -234,6 +239,105 @@ func (h *Handler) ToggleLike(w http.ResponseWriter, r *http.Request) {
 	response := api.ToggleLikeOut{
 		IsLiked:    !isLiked,
 		LikesCount: likesCount,
+	}
+
+	h.writeJSON(w, response, http.StatusOK)
+}
+
+func (h *Handler) EditMaterial(w http.ResponseWriter, r *http.Request) {
+	ctx := logger_lib.WithField(r.Context(), "func_name", "EditMaterial")
+
+	var req api.EditMaterialIn
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to decode request: %v", err))
+		h.writeError(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.Uuid == "" {
+		logger_lib.Error(ctx, "material uuid is required")
+		h.writeError(w, "material uuid is required", http.StatusBadRequest)
+		return
+	}
+
+	if strings.TrimSpace(req.Title) == "" {
+		logger_lib.Error(ctx, "title is required")
+		h.writeError(w, "title is required", http.StatusBadRequest)
+		return
+	}
+
+	userUUID, ok := r.Context().Value(config.KeyUUID).(string)
+	if !ok || userUUID == "" {
+		logger_lib.Error(ctx, "failed to get user UUID")
+		h.writeError(w, "user UUID is required", http.StatusUnauthorized)
+		return
+	}
+
+	materialOwnerUUID, err := h.repository.GetMaterialOwnerUUID(r.Context(), req.Uuid)
+	if err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to get owner uuid: %v", err))
+		h.writeError(w, fmt.Sprintf("failed to get owner uuid: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	if materialOwnerUUID != userUUID {
+		logger_lib.Error(ctx, "failed to edit: user is not owner")
+		h.writeError(w, "failed to edit: user is not owner", http.StatusForbidden)
+		return
+	}
+
+	exists, err := h.repository.MaterialExists(r.Context(), req.Uuid)
+	if err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to check material existence: %v", err))
+		h.writeError(w, fmt.Sprintf("failed to check material existence: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	if !exists {
+		logger_lib.Error(ctx, "material does not exist")
+		h.writeError(w, "material does not exist", http.StatusPreconditionFailed)
+		return
+	}
+
+	editReq := &model.EditMaterial{
+		UUID:            req.Uuid,
+		Title:           req.Title,
+		Content:         req.Content,
+		Description:     req.Description,
+		CoverImageURL:   req.CoverImageUrl,
+		ReadTimeMinutes: req.ReadTimeMinutes,
+	}
+
+	editedMaterial, err := h.repository.EditMaterial(r.Context(), editReq)
+	if err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to edit material: %v", err))
+		h.writeError(w, fmt.Sprintf("failed to edit material: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	response := api.EditMaterialOut{
+		Material: api.Material{
+			Uuid:            editedMaterial.UUID,
+			OwnerUuid:       &editedMaterial.OwnerUUID,
+			Title:           editedMaterial.Title,
+			Content:         *editedMaterial.Content,
+			Description:     editedMaterial.Description,
+			CoverImageUrl:   editedMaterial.CoverImageURL,
+			ReadTimeMinutes: editedMaterial.ReadTimeMinutes,
+			Status:          editedMaterial.Status,
+		},
+	}
+
+	editMsg := &proto.EditMaterialMessage{
+		Uuid:      req.Uuid,
+		OwnerUuid: materialOwnerUUID,
+		Title:     req.Title,
+		EditedAt:  timestamppb.New(time.Now()),
+	}
+
+	err = h.editKafkaProducer.ProduceMessage(r.Context(), editMsg, req.Uuid)
+	if err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to produce message")
 	}
 
 	h.writeJSON(w, response, http.StatusOK)

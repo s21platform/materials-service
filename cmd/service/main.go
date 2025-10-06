@@ -34,11 +34,7 @@ func main() {
 	dbRepo := postgres.New(cfg)
 	defer dbRepo.Close()
 
-	editProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.EditMaterialTopic)
-
-	editKafkaProducer := kafkalib.NewProducer(editProducerConfig)
-
-	materialsService := service.New(dbRepo, editKafkaProducer)
+	materialsService := service.New(dbRepo)
 
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
@@ -51,11 +47,13 @@ func main() {
 
 	createProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.MaterialCreatedTopic)
 	likeProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.ToggleLikeMaterialTopic)
+	editProducerConfig := kafkalib.DefaultProducerConfig(cfg.Kafka.Host, cfg.Kafka.Port, cfg.Kafka.EditMaterialTopic)
 
 	createKafkaProducer := kafkalib.NewProducer(createProducerConfig)
 	likeKafkaProducer := kafkalib.NewProducer(likeProducerConfig)
+	editKafkaProducer := kafkalib.NewProducer(editProducerConfig)
 
-	handler := rest.New(dbRepo, createKafkaProducer, likeKafkaProducer)
+	handler := rest.New(dbRepo, createKafkaProducer, likeKafkaProducer, editKafkaProducer)
 	router := chi.NewRouter()
 
 	router.Use(func(next http.Handler) http.Handler {

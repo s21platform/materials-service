@@ -15,6 +15,9 @@ type ServerInterface interface {
 	// Toggle like on a material
 	// (PUT /api/materials)
 	ToggleLike(w http.ResponseWriter, r *http.Request)
+	// Edit a material
+	// (POST /api/materials/edit-material)
+	EditMaterial(w http.ResponseWriter, r *http.Request)
 	// Publish a material
 	// (POST /api/materials/publish-material)
 	PublishMaterial(w http.ResponseWriter, r *http.Request)
@@ -30,6 +33,12 @@ type Unimplemented struct{}
 // Toggle like on a material
 // (PUT /api/materials)
 func (_ Unimplemented) ToggleLike(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Edit a material
+// (POST /api/materials/edit-material)
+func (_ Unimplemented) EditMaterial(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -60,6 +69,21 @@ func (siw *ServerInterfaceWrapper) ToggleLike(w http.ResponseWriter, r *http.Req
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.ToggleLike(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// EditMaterial operation middleware
+func (siw *ServerInterfaceWrapper) EditMaterial(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.EditMaterial(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -214,6 +238,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 
 	r.Group(func(r chi.Router) {
 		r.Put(options.BaseURL+"/api/materials", wrapper.ToggleLike)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/materials/edit-material", wrapper.EditMaterial)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/materials/publish-material", wrapper.PublishMaterial)

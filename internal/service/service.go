@@ -4,14 +4,11 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
+	logger_lib "github.com/s21platform/logger-lib"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
-	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/materials-service/internal/config"
 	"github.com/s21platform/materials-service/internal/model"
@@ -21,14 +18,12 @@ import (
 
 type Service struct {
 	materials.UnimplementedMaterialsServiceServer
-	repository        DBRepo
-	editKafkaProducer KafkaProducer
+	repository DBRepo
 }
 
-func New(repo DBRepo, editKafkaProducer KafkaProducer) *Service {
+func New(repo DBRepo) *Service {
 	return &Service{
-		repository:        repo,
-		editKafkaProducer: editKafkaProducer,
+		repository: repo,
 	}
 }
 
@@ -108,17 +103,17 @@ func (s *Service) EditMaterial(ctx context.Context, in *materials.EditMaterialIn
 		return nil, status.Errorf(codes.Internal, "failed to edit material: %v", err)
 	}
 
-	msg := &materials.EditMaterialMessage{
-		Uuid:      in.Uuid,
-		OwnerUuid: materialOwnerUUID,
-		Title:     in.Title,
-		EditedAt:  timestamppb.New(time.Now()),
-	}
+	//msg := &materials.EditMaterialMessage{
+	//	Uuid:      in.Uuid,
+	//	OwnerUuid: materialOwnerUUID,
+	//	Title:     in.Title,
+	//	EditedAt:  timestamppb.New(time.Now()),
+	//}
 
-	if err = s.editKafkaProducer.ProduceMessage(ctx, msg, in.Uuid); err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to produce message: %v", err))
-		return nil, status.Errorf(codes.Internal, "failed to produce message: %v", err)
-	}
+	//if err = s.editKafkaProducer.ProduceMessage(ctx, msg, in.Uuid); err != nil {
+	//	logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to produce message: %v", err))
+	//	return nil, status.Errorf(codes.Internal, "failed to produce message: %v", err)
+	//}
 
 	return &materials.EditMaterialOut{
 		Material: editedMaterial.FromDTO(),
