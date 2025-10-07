@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/s21platform/metrics-lib/pkg"
@@ -82,6 +83,7 @@ func main() {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Service.Port))
 	if err != nil {
 		logger_lib.Error(context.Background(), fmt.Sprintf("failed to start TCP listener: %v", err))
+		os.Exit(1)
 	}
 
 	m := cmux.New(listener)
