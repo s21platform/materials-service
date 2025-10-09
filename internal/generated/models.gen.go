@@ -28,9 +28,6 @@ type Error struct {
 // GetAllMaterialsOut defines model for GetAllMaterialsOut.
 type GetAllMaterialsOut struct {
 	MaterialList []Material `json:"material_list"`
-
-	// TotalCount Total number of materials (for pagination)
-	TotalCount int32 `json:"total_count"`
 }
 
 // Material defines model for Material.
@@ -90,7 +87,7 @@ type GetAllMaterialsParams struct {
 	// Page Page number (starting from 1)
 	Page *int `form:"page,omitempty" json:"page,omitempty"`
 
-	// Limit Number of materials per page (max 100)
+	// Limit Number of materials per page (max 10)
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 

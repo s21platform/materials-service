@@ -97,5 +97,4 @@ func (a *MaterialList) ListFromDTO() []*materials.Material {
 
 type PaginatedMaterialList struct {
 	Materials *MaterialList
-	Total     int
 }

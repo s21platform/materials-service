@@ -14,15 +14,14 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/s21platform/materials-service/internal/pkg/tx"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	logger_lib "github.com/s21platform/logger-lib"
 	"github.com/s21platform/materials-service/internal/config"
 	api "github.com/s21platform/materials-service/internal/generated"
 	"github.com/s21platform/materials-service/internal/model"
+	"github.com/s21platform/materials-service/internal/pkg/tx"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func createTxContext(ctx context.Context, mockRepo *MockDBRepo) context.Context {
@@ -1451,10 +1450,7 @@ func TestHandler_GetAllMaterials(t *testing.T) {
 			repository: mockRepo,
 		}
 
-		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 0, 10).Return(&model.PaginatedMaterialList{
-			Materials: &mockMaterials,
-			Total:     len(mockMaterials),
-		}, nil)
+		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 0, 10).Return(&mockMaterials, nil)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/materials/get-all-materials", nil)
 
@@ -1473,16 +1469,15 @@ func TestHandler_GetAllMaterials(t *testing.T) {
 		var response api.GetAllMaterialsOut
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		require.NoError(t, err)
-		assert.Equal(t, int32(len(mockMaterials)), response.TotalCount)
 		assert.Len(t, response.MaterialList, len(mockMaterials))
 		for i, m := range response.MaterialList {
 			assert.Equal(t, mockMaterials[i].UUID, m.Uuid)
 			assert.Equal(t, mockMaterials[i].Title, m.Title)
-			assert.Equal(t, *mockMaterials[i].Content, m.Content)
 			assert.Equal(t, mockMaterials[i].Description, m.Description)
 			assert.Equal(t, mockMaterials[i].CoverImageURL, m.CoverImageUrl)
 			assert.Equal(t, mockMaterials[i].ReadTimeMinutes, m.ReadTimeMinutes)
 			assert.Equal(t, mockMaterials[i].Status, m.Status)
+			assert.Equal(t, mockMaterials[i].OwnerUUID, *m.OwnerUuid)
 		}
 	})
 
@@ -1497,10 +1492,7 @@ func TestHandler_GetAllMaterials(t *testing.T) {
 			repository: mockRepo,
 		}
 
-		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 10, 5).Return(&model.PaginatedMaterialList{
-			Materials: &mockMaterials,
-			Total:     len(mockMaterials),
-		}, nil)
+		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 10, 5).Return(&mockMaterials, nil)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/materials/get-all-materials?page=3&limit=5", nil)
 
@@ -1519,7 +1511,6 @@ func TestHandler_GetAllMaterials(t *testing.T) {
 		var response api.GetAllMaterialsOut
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		require.NoError(t, err)
-		assert.Equal(t, int32(len(mockMaterials)), response.TotalCount)
 		assert.Len(t, response.MaterialList, len(mockMaterials))
 	})
 
@@ -1534,10 +1525,7 @@ func TestHandler_GetAllMaterials(t *testing.T) {
 			repository: mockRepo,
 		}
 
-		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 0, 10).Return(&model.PaginatedMaterialList{
-			Materials: &mockMaterials,
-			Total:     len(mockMaterials),
-		}, nil)
+		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 0, 10).Return(&mockMaterials, nil)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/materials/get-all-materials?page=0&limit=10", nil)
 
@@ -1556,7 +1544,7 @@ func TestHandler_GetAllMaterials(t *testing.T) {
 		var response api.GetAllMaterialsOut
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		require.NoError(t, err)
-		assert.Equal(t, int32(len(mockMaterials)), response.TotalCount)
+		assert.Len(t, response.MaterialList, len(mockMaterials))
 	})
 
 	t.Run("invalid_limit_param_low", func(t *testing.T) {
@@ -1570,10 +1558,7 @@ func TestHandler_GetAllMaterials(t *testing.T) {
 			repository: mockRepo,
 		}
 
-		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 0, 10).Return(&model.PaginatedMaterialList{
-			Materials: &mockMaterials,
-			Total:     len(mockMaterials),
-		}, nil)
+		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 0, 10).Return(&mockMaterials, nil)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/materials/get-all-materials?page=1&limit=0", nil)
 
@@ -1592,7 +1577,7 @@ func TestHandler_GetAllMaterials(t *testing.T) {
 		var response api.GetAllMaterialsOut
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		require.NoError(t, err)
-		assert.Equal(t, int32(len(mockMaterials)), response.TotalCount)
+		assert.Len(t, response.MaterialList, len(mockMaterials))
 	})
 
 	t.Run("invalid_limit_param_high", func(t *testing.T) {
@@ -1606,10 +1591,7 @@ func TestHandler_GetAllMaterials(t *testing.T) {
 			repository: mockRepo,
 		}
 
-		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 0, 10).Return(&model.PaginatedMaterialList{
-			Materials: &mockMaterials,
-			Total:     len(mockMaterials),
-		}, nil)
+		mockRepo.EXPECT().GetAllMaterials(gomock.Any(), 0, 10).Return(&mockMaterials, nil)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/materials/get-all-materials?page=1&limit=101", nil)
 
@@ -1628,7 +1610,7 @@ func TestHandler_GetAllMaterials(t *testing.T) {
 		var response api.GetAllMaterialsOut
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		require.NoError(t, err)
-		assert.Equal(t, int32(len(mockMaterials)), response.TotalCount)
+		assert.Len(t, response.MaterialList, len(mockMaterials))
 	})
 
 	t.Run("repository_error", func(t *testing.T) {

@@ -134,7 +134,7 @@ paths:
             minimum: 1
         - name: limit
           in: query
-          description: Number of materials per page (max 100)
+          description: Number of materials per page (max 10)
           required: false
           schema:
             type: integer
@@ -336,16 +336,11 @@ components:
       type: object
       required:
         - material_list
-        - total_count
       properties:
         material_list:
           type: array
           items:
             $ref: '#/components/schemas/Material'
-        total_count:
-          type: integer
-          format: int32
-          description: Total number of materials (for pagination)
     Error:
       type: object
       required:

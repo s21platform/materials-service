@@ -99,22 +99,7 @@ func (r *Repository) GetMaterial(ctx context.Context, uuid string) (*model.Mater
 	return &material, nil
 }
 
-func (r *Repository) GetAllMaterials(ctx context.Context, offset, limit int) (*model.PaginatedMaterialList, error) {
-	var total int
-	countQuery, countArgs, err := sq.
-		Select("COUNT(*)").
-		From("materials").
-		Where(sq.Expr("deleted_at IS NULL")).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("failed to build count query: %w", err)
-	}
-	err = r.Chk(ctx).GetContext(ctx, &total, countQuery, countArgs...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get total count: %w", err)
-	}
-
+func (r *Repository) GetAllMaterials(ctx context.Context, offset, limit int) (*model.MaterialList, error) {
 	var materials model.MaterialList
 	selectQuery, selectArgs, err := sq.
 		Select(
@@ -123,7 +108,6 @@ func (r *Repository) GetAllMaterials(ctx context.Context, offset, limit int) (*m
 			"title",
 			"cover_image_url",
 			"description",
-			"content",
 			"read_time_minutes",
 			"status",
 			"created_at",
@@ -149,10 +133,7 @@ func (r *Repository) GetAllMaterials(ctx context.Context, offset, limit int) (*m
 		return nil, fmt.Errorf("failed to fetch paginated materials: %w", err)
 	}
 
-	return &model.PaginatedMaterialList{
-		Materials: &materials,
-		Total:     total,
-	}, nil
+	return &materials, nil
 }
 
 func (r *Repository) EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error) {

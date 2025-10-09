@@ -364,7 +364,6 @@ func (h *Handler) GetAllMaterials(w http.ResponseWriter, r *http.Request, params
 					Uuid:            m.UUID,
 					OwnerUuid:       &m.OwnerUUID,
 					Title:           m.Title,
-					Content:         *m.Content,
 					Description:     m.Description,
 					CoverImageUrl:   m.CoverImageURL,
 					ReadTimeMinutes: m.ReadTimeMinutes,
@@ -372,8 +371,7 @@ func (h *Handler) GetAllMaterials(w http.ResponseWriter, r *http.Request, params
 				})
 			}
 			return apiList
-		}(paginatedMaterials.Materials),
-		TotalCount: int32(paginatedMaterials.Total),
+		}(paginatedMaterials),
 	}
 
 	h.writeJSON(w, response, http.StatusOK)

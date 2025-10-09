@@ -80,10 +80,10 @@ func (mr *MockDBRepoMockRecorder) EditMaterial(ctx, material interface{}) *gomoc
 }
 
 // GetAllMaterials mocks base method.
-func (m *MockDBRepo) GetAllMaterials(ctx context.Context, offset, limit int) (*model.PaginatedMaterialList, error) {
+func (m *MockDBRepo) GetAllMaterials(ctx context.Context, offset, limit int) (*model.MaterialList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllMaterials", ctx, offset, limit)
-	ret0, _ := ret[0].(*model.PaginatedMaterialList)
+	ret0, _ := ret[0].(*model.MaterialList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
