@@ -107,6 +107,12 @@ message CreatedMaterial {
   Material material = 1;
 }
 
+message ToggleLikeMessage {
+  string material_uuid = 1;
+  bool is_liked = 2;
+  int32 likes_count = 3;
+}
+
 message EditMaterialMessage {
   string uuid = 1;
   string owner_uuid = 2;

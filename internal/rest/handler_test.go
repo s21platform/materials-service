@@ -23,6 +23,7 @@ import (
 	api "github.com/s21platform/materials-service/internal/generated"
 	"github.com/s21platform/materials-service/internal/model"
 	"github.com/s21platform/materials-service/internal/pkg/tx"
+	proto "github.com/s21platform/materials-service/pkg/materials"
 )
 
 func createTxContext(ctx context.Context, mockRepo *MockDBRepo) context.Context {
@@ -566,7 +567,12 @@ func TestHandler_ToggleLike(t *testing.T) {
 
 		mockRepo := NewMockDBRepo(ctrl)
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-		handler := &Handler{repository: mockRepo}
+		mockLikeKafka := NewMockKafkaProducer(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			likeKafkaProducer: mockLikeKafka,
+		}
 
 		mockRepo.EXPECT().
 			WithTx(gomock.Any(), gomock.Any()).
@@ -578,6 +584,73 @@ func TestHandler_ToggleLike(t *testing.T) {
 		mockRepo.EXPECT().AddLike(gomock.Any(), materialUUID, userUUID).Return(nil)
 		mockRepo.EXPECT().GetLikesCount(gomock.Any(), materialUUID).Return(int32(10), nil)
 		mockRepo.EXPECT().UpdateLikesCount(gomock.Any(), materialUUID, int32(10)).Return(nil)
+
+		likeMsg := &proto.ToggleLikeMessage{
+			MaterialUuid: materialUUID,
+			IsLiked:      true,
+			LikesCount:   10,
+		}
+		mockLikeKafka.EXPECT().
+			ProduceMessage(gomock.Any(), likeMsg, materialUUID).
+			Return(nil)
+
+		requestBody := api.ToggleLikeIn{MaterialUuid: materialUUID}
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/toggle-like", bytes.NewReader(bodyBytes))
+
+		reqCtx := createTxContext(req.Context(), mockRepo)
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.ToggleLike(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response api.ToggleLikeOut
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.True(t, response.IsLiked)
+		assert.Equal(t, int32(10), response.LikesCount)
+	})
+
+	t.Run("success_add_like_with_kafka_error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+		mockLikeKafka := NewMockKafkaProducer(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			likeKafkaProducer: mockLikeKafka,
+		}
+
+		mockRepo.EXPECT().
+			WithTx(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(ctx context.Context, cb func(ctx context.Context) error) error {
+				return cb(ctx)
+			})
+
+		mockRepo.EXPECT().CheckLike(gomock.Any(), materialUUID, userUUID).Return(false, nil)
+		mockRepo.EXPECT().AddLike(gomock.Any(), materialUUID, userUUID).Return(nil)
+		mockRepo.EXPECT().GetLikesCount(gomock.Any(), materialUUID).Return(int32(10), nil)
+		mockRepo.EXPECT().UpdateLikesCount(gomock.Any(), materialUUID, int32(10)).Return(nil)
+
+		likeMsg := &proto.ToggleLikeMessage{
+			MaterialUuid: materialUUID,
+			IsLiked:      true,
+			LikesCount:   10,
+		}
+		mockLikeKafka.EXPECT().
+			ProduceMessage(gomock.Any(), likeMsg, materialUUID).
+			Return(fmt.Errorf("kafka error"))
 
 		requestBody := api.ToggleLikeIn{MaterialUuid: materialUUID}
 		bodyBytes, _ := json.Marshal(requestBody)
@@ -610,7 +683,12 @@ func TestHandler_ToggleLike(t *testing.T) {
 
 		mockRepo := NewMockDBRepo(ctrl)
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-		handler := &Handler{repository: mockRepo}
+		mockLikeKafka := NewMockKafkaProducer(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			likeKafkaProducer: mockLikeKafka,
+		}
 
 		mockRepo.EXPECT().
 			WithTx(gomock.Any(), gomock.Any()).
@@ -622,6 +700,73 @@ func TestHandler_ToggleLike(t *testing.T) {
 		mockRepo.EXPECT().RemoveLike(gomock.Any(), materialUUID, userUUID).Return(nil)
 		mockRepo.EXPECT().GetLikesCount(gomock.Any(), materialUUID).Return(int32(9), nil)
 		mockRepo.EXPECT().UpdateLikesCount(gomock.Any(), materialUUID, int32(9)).Return(nil)
+
+		likeMsg := &proto.ToggleLikeMessage{
+			MaterialUuid: materialUUID,
+			IsLiked:      false,
+			LikesCount:   9,
+		}
+		mockLikeKafka.EXPECT().
+			ProduceMessage(gomock.Any(), likeMsg, materialUUID).
+			Return(nil)
+
+		requestBody := api.ToggleLikeIn{MaterialUuid: materialUUID}
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/toggle-like", bytes.NewReader(bodyBytes))
+
+		reqCtx := createTxContext(req.Context(), mockRepo)
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.ToggleLike(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response api.ToggleLikeOut
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.False(t, response.IsLiked)
+		assert.Equal(t, int32(9), response.LikesCount)
+	})
+
+	t.Run("success_remove_like_with_kafka_error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+		mockLikeKafka := NewMockKafkaProducer(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			likeKafkaProducer: mockLikeKafka,
+		}
+
+		mockRepo.EXPECT().
+			WithTx(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(ctx context.Context, cb func(ctx context.Context) error) error {
+				return cb(ctx)
+			})
+
+		mockRepo.EXPECT().CheckLike(gomock.Any(), materialUUID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().RemoveLike(gomock.Any(), materialUUID, userUUID).Return(nil)
+		mockRepo.EXPECT().GetLikesCount(gomock.Any(), materialUUID).Return(int32(9), nil)
+		mockRepo.EXPECT().UpdateLikesCount(gomock.Any(), materialUUID, int32(9)).Return(nil)
+
+		likeMsg := &proto.ToggleLikeMessage{
+			MaterialUuid: materialUUID,
+			IsLiked:      false,
+			LikesCount:   9,
+		}
+		mockLikeKafka.EXPECT().
+			ProduceMessage(gomock.Any(), likeMsg, materialUUID).
+			Return(fmt.Errorf("kafka error"))
 
 		requestBody := api.ToggleLikeIn{MaterialUuid: materialUUID}
 		bodyBytes, _ := json.Marshal(requestBody)
@@ -654,7 +799,12 @@ func TestHandler_ToggleLike(t *testing.T) {
 
 		mockRepo := NewMockDBRepo(ctrl)
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-		handler := &Handler{repository: mockRepo}
+		mockLikeKafka := NewMockKafkaProducer(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			likeKafkaProducer: mockLikeKafka,
+		}
 
 		req := httptest.NewRequest(http.MethodPost, "/api/materials/toggle-like", strings.NewReader("invalid json"))
 
@@ -678,54 +828,18 @@ func TestHandler_ToggleLike(t *testing.T) {
 		assert.Contains(t, errorResp.Message, "invalid request body")
 	})
 
-	t.Run("material_owner_mismatch", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockRepo := NewMockDBRepo(ctrl)
-		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-
-		handler := &Handler{
-			repository: mockRepo,
-		}
-
-		mockRepo.EXPECT().GetMaterialOwnerUUID(gomock.Any(), materialUUID).Return(uuid.New().String(), nil)
-
-		requestBody := api.PublishMaterialIn{
-			Uuid: materialUUID,
-		}
-
-		bodyBytes, _ := json.Marshal(requestBody)
-		req := httptest.NewRequest(http.MethodPost, "/api/materials/publish-material", bytes.NewReader(bodyBytes))
-
-		reqCtx := req.Context()
-		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
-		reqCtx = context.WithValue(reqCtx, config.KeyUUID, userUUID)
-		req = req.WithContext(reqCtx)
-
-		req.Header.Set("Content-Type", "application/json")
-
-		rctx := chi.NewRouteContext()
-		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
-
-		w := httptest.NewRecorder()
-		handler.PublishMaterial(w, req)
-
-		assert.Equal(t, http.StatusForbidden, w.Code)
-
-		var errorResp api.Error
-		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
-		require.NoError(t, err)
-		assert.Contains(t, errorResp.Message, "failed to publish: user is not owner")
-	})
-
 	t.Run("missing_material_uuid", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		mockRepo := NewMockDBRepo(ctrl)
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-		handler := &Handler{repository: mockRepo}
+		mockLikeKafka := NewMockKafkaProducer(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			likeKafkaProducer: mockLikeKafka,
+		}
 
 		requestBody := api.ToggleLikeIn{MaterialUuid: ""}
 		bodyBytes, _ := json.Marshal(requestBody)
@@ -757,7 +871,12 @@ func TestHandler_ToggleLike(t *testing.T) {
 
 		mockRepo := NewMockDBRepo(ctrl)
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-		handler := &Handler{repository: mockRepo}
+		mockLikeKafka := NewMockKafkaProducer(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			likeKafkaProducer: mockLikeKafka,
+		}
 
 		requestBody := api.ToggleLikeIn{MaterialUuid: materialUUID}
 		bodyBytes, _ := json.Marshal(requestBody)
@@ -788,7 +907,12 @@ func TestHandler_ToggleLike(t *testing.T) {
 
 		mockRepo := NewMockDBRepo(ctrl)
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-		handler := &Handler{repository: mockRepo}
+		mockLikeKafka := NewMockKafkaProducer(ctrl)
+
+		handler := &Handler{
+			repository:        mockRepo,
+			likeKafkaProducer: mockLikeKafka,
+		}
 
 		mockRepo.EXPECT().
 			WithTx(gomock.Any(), gomock.Any()).
