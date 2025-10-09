@@ -14,14 +14,15 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	logger_lib "github.com/s21platform/logger-lib"
 	"github.com/s21platform/materials-service/internal/config"
 	api "github.com/s21platform/materials-service/internal/generated"
 	"github.com/s21platform/materials-service/internal/model"
 	"github.com/s21platform/materials-service/internal/pkg/tx"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func createTxContext(ctx context.Context, mockRepo *MockDBRepo) context.Context {
