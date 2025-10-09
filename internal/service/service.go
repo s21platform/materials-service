@@ -103,34 +103,8 @@ func (s *Service) EditMaterial(ctx context.Context, in *materials.EditMaterialIn
 		return nil, status.Errorf(codes.Internal, "failed to edit material: %v", err)
 	}
 
-	//msg := &materials.EditMaterialMessage{
-	//	Uuid:      in.Uuid,
-	//	OwnerUuid: materialOwnerUUID,
-	//	Title:     in.Title,
-	//	EditedAt:  timestamppb.New(time.Now()),
-	//}
-
-	//if err = s.editKafkaProducer.ProduceMessage(ctx, msg, in.Uuid); err != nil {
-	//	logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to produce message: %v", err))
-	//	return nil, status.Errorf(codes.Internal, "failed to produce message: %v", err)
-	//}
-
 	return &materials.EditMaterialOut{
 		Material: editedMaterial.FromDTO(),
-	}, nil
-}
-
-func (s *Service) GetAllMaterials(ctx context.Context, _ *emptypb.Empty) (*materials.GetAllMaterialsOut, error) {
-	ctx = logger_lib.WithField(ctx, "func_name", "GetAllMaterials")
-
-	materialsList, err := s.repository.GetAllMaterials(ctx)
-	if err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to get all materials: %v", err))
-		return nil, status.Errorf(codes.Internal, "failed to get all materials: %v", err)
-	}
-
-	return &materials.GetAllMaterialsOut{
-		MaterialList: materialsList.ListFromDTO(),
 	}, nil
 }
 

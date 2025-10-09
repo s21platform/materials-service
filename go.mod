@@ -10,6 +10,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.10.9
+	github.com/oapi-codegen/runtime v1.1.2
 	github.com/s21platform/avatar-service v0.0.0-20250413162426-a937ac435e67
 	github.com/s21platform/kafka-lib v1.0.2
 	github.com/s21platform/logger-lib v1.0.2
@@ -25,6 +26,7 @@ require (
 require (
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/alexcesaro/statsd v2.0.0+incompatible // indirect
+	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dprotaso/go-yit v0.0.0-20220510233725-9ba8df137936 // indirect
 	github.com/getkin/kin-openapi v0.132.0 // indirect

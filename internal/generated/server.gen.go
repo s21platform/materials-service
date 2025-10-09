@@ -8,10 +8,14 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oapi-codegen/runtime"
 )
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Get all materials
+	// (GET /api/materials)
+	GetAllMaterials(w http.ResponseWriter, r *http.Request, params GetAllMaterialsParams)
 	// Toggle like on a material
 	// (PUT /api/materials)
 	ToggleLike(w http.ResponseWriter, r *http.Request)
@@ -29,6 +33,12 @@ type ServerInterface interface {
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
 
 type Unimplemented struct{}
+
+// Get all materials
+// (GET /api/materials)
+func (_ Unimplemented) GetAllMaterials(w http.ResponseWriter, r *http.Request, params GetAllMaterialsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
 
 // Toggle like on a material
 // (PUT /api/materials)
@@ -62,6 +72,42 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// GetAllMaterials operation middleware
+func (siw *ServerInterfaceWrapper) GetAllMaterials(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAllMaterialsParams
+
+	// ------------- Optional query parameter "page" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page", r.URL.Query(), &params.Page)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAllMaterials(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
 
 // ToggleLike operation middleware
 func (siw *ServerInterfaceWrapper) ToggleLike(w http.ResponseWriter, r *http.Request) {
@@ -236,6 +282,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/materials", wrapper.GetAllMaterials)
+	})
 	r.Group(func(r chi.Router) {
 		r.Put(options.BaseURL+"/api/materials", wrapper.ToggleLike)
 	})

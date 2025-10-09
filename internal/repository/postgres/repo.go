@@ -99,17 +99,15 @@ func (r *Repository) GetMaterial(ctx context.Context, uuid string) (*model.Mater
 	return &material, nil
 }
 
-func (r *Repository) GetAllMaterials(ctx context.Context) (*model.MaterialList, error) {
+func (r *Repository) GetAllMaterials(ctx context.Context, offset, limit int) (*model.MaterialList, error) {
 	var materials model.MaterialList
-
-	query, args, err := sq.
+	selectQuery, selectArgs, err := sq.
 		Select(
 			"uuid",
 			"owner_uuid",
 			"title",
 			"cover_image_url",
 			"description",
-			"content",
 			"read_time_minutes",
 			"status",
 			"created_at",
@@ -120,16 +118,19 @@ func (r *Repository) GetAllMaterials(ctx context.Context) (*model.MaterialList, 
 			"likes_count",
 		).
 		From("materials").
+		Where(sq.Expr("deleted_at IS NULL")).
 		OrderBy("created_at DESC").
+		Limit(uint64(limit)).
+		Offset(uint64(offset)).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("failed to build query: %w", err)
+		return nil, fmt.Errorf("failed to build select query: %w", err)
 	}
 
-	err = r.Chk(ctx).SelectContext(ctx, &materials, query, args...)
+	err = r.Chk(ctx).SelectContext(ctx, &materials, selectQuery, selectArgs...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch materials: %w", err)
+		return nil, fmt.Errorf("failed to fetch paginated materials: %w", err)
 	}
 
 	return &materials, nil
