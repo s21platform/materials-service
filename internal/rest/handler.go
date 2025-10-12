@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -338,6 +339,52 @@ func (h *Handler) EditMaterial(w http.ResponseWriter, r *http.Request) {
 	err = h.editKafkaProducer.ProduceMessage(r.Context(), editMsg, req.Uuid)
 	if err != nil {
 		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to produce message")
+	}
+
+	h.writeJSON(w, response, http.StatusOK)
+}
+
+func (h *Handler) GetAllMaterials(w http.ResponseWriter, r *http.Request, params api.GetAllMaterialsParams) {
+	ctx := logger_lib.WithField(r.Context(), "func_name", "GetAllMaterials")
+
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		logger_lib.Warn(ctx, "invalid page parameter, using default 1")
+		page = 1
+	}
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 || limit > 100 {
+		logger_lib.Warn(ctx, "invalid limit parameter, using default 10")
+		limit = 10
+	}
+	offset := (page - 1) * limit
+
+	paginatedMaterials, err := h.repository.GetAllMaterials(r.Context(), offset, limit)
+	if err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to get paginated materials: %v", err))
+		h.writeError(w, fmt.Sprintf("failed to get paginated materials: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	response := api.GetAllMaterialsOut{
+		MaterialList: func(materialsList *model.MaterialList) []api.Material {
+			var apiList []api.Material
+			for _, m := range *materialsList {
+				apiList = append(apiList, api.Material{
+					Uuid:            m.UUID,
+					OwnerUuid:       &m.OwnerUUID,
+					Title:           m.Title,
+					Description:     m.Description,
+					CoverImageUrl:   m.CoverImageURL,
+					ReadTimeMinutes: m.ReadTimeMinutes,
+					Status:          m.Status,
+				})
+			}
+			return apiList
+		}(paginatedMaterials),
 	}
 
 	h.writeJSON(w, response, http.StatusOK)

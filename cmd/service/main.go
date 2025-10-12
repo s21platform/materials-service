@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/soheilhy/cmux"
@@ -14,6 +15,7 @@ import (
 
 	kafkalib "github.com/s21platform/kafka-lib"
 	logger_lib "github.com/s21platform/logger-lib"
+	"github.com/s21platform/metrics-lib/pkg"
 
 	"github.com/s21platform/materials-service/internal/config"
 	api "github.com/s21platform/materials-service/internal/generated"
@@ -34,12 +36,19 @@ func main() {
 	dbRepo := postgres.New(cfg)
 	defer dbRepo.Close()
 
+	metrics, err := pkg.NewMetrics(cfg.Metrics.Host, cfg.Metrics.Port, cfg.Service.Name, cfg.Platform.Env)
+	if err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to create metrics object: %v", err))
+	}
+	defer metrics.Disconnect()
+
 	materialsService := service.New(dbRepo)
 
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			infra.AuthInterceptorGRPC,
 			infra.LoggerGRPC(logger),
+			infra.MetricsInterceptor(metrics),
 			tx.TxMiddleWareGRPC(dbRepo),
 		),
 	)
@@ -74,6 +83,7 @@ func main() {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Service.Port))
 	if err != nil {
 		logger_lib.Error(context.Background(), fmt.Sprintf("failed to start TCP listener: %v", err))
+		os.Exit(1)
 	}
 
 	m := cmux.New(listener)
