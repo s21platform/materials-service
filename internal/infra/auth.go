@@ -36,7 +36,7 @@ func AuthInterceptorGRPC(
 
 func AuthInterceptorHTTP(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userID := r.Header.Get("X-User-ID")
+		userID := r.Header.Get("X-User-Uuid")
 		userID = strings.TrimSpace(userID)
 
 		if userID == "" {
