@@ -109,6 +109,21 @@ func (mr *MockDBRepoMockRecorder) GetLikesCount(ctx, materialUUID interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLikesCount", reflect.TypeOf((*MockDBRepo)(nil).GetLikesCount), ctx, materialUUID)
 }
 
+// GetMaterial mocks base method.
+func (m *MockDBRepo) GetMaterial(ctx context.Context, materialUUID string) (*model.Material, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMaterial", ctx, materialUUID)
+	ret0, _ := ret[0].(*model.Material)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMaterial indicates an expected call of GetMaterial.
+func (mr *MockDBRepoMockRecorder) GetMaterial(ctx, materialUUID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMaterial", reflect.TypeOf((*MockDBRepo)(nil).GetMaterial), ctx, materialUUID)
+}
+
 // GetMaterialOwnerUUID mocks base method.
 func (m *MockDBRepo) GetMaterialOwnerUUID(ctx context.Context, materialUUID string) (string, error) {
 	m.ctrl.T.Helper()
