@@ -207,6 +207,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /api/materials/get-material:
+    post:
+      summary: Get a material by UUID
+      operationId: GetMaterial
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetMaterialIn'
+      responses:
+        '200':
+          description: Material retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetMaterialOut'
+        '400':
+          description: Invalid input, missing required material UUID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Material not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   schemas:
     SaveDraftMaterialIn:
@@ -341,6 +376,21 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Material'
+    GetMaterialIn:
+      type: object
+      required:
+        - material_uuid
+      properties:
+        material_uuid:
+          type: string
+          description: UUID of the material to retrieve
+    GetMaterialOut:
+      type: object
+      required:
+        - material
+      properties:
+        material:
+          $ref: '#/components/schemas/Material'
     Error:
       type: object
       required:

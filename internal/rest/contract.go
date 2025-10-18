@@ -20,6 +20,7 @@ type DBRepo interface {
 	WithTx(ctx context.Context, cb func(ctx context.Context) error) (err error)
 	EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error)
 	GetAllMaterials(ctx context.Context, offset, limit int) (*model.MaterialList, error)
+	GetMaterial(ctx context.Context, materialUUID string) (*model.Material, error)
 }
 
 type KafkaProducer interface {
