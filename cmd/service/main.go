@@ -48,7 +48,7 @@ func main() {
 		grpc.ChainUnaryInterceptor(
 			infra.AuthInterceptorGRPC,
 			infra.LoggerGRPC(logger),
-			infra.MetricsInterceptor(metrics),
+			infra.MetricsInterceptorGRPC(metrics),
 			tx.TxMiddleWareGRPC(dbRepo),
 		),
 	)
@@ -70,6 +70,9 @@ func main() {
 	})
 	router.Use(func(next http.Handler) http.Handler {
 		return infra.LoggerHTTP(next, logger)
+	})
+	router.Use(func(next http.Handler) http.Handler {
+		return infra.MetricsInterceptorHTTP(next, metrics)
 	})
 	router.Use(func(next http.Handler) http.Handler {
 		return tx.TxMiddlewareHTTP(dbRepo)(next)
