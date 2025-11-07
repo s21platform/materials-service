@@ -395,7 +395,7 @@ func (h *Handler) GetMaterial(w http.ResponseWriter, r *http.Request) {
 
 	var req api.GetMaterialIn
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to decode request: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to decode request")
 		h.writeError(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -408,7 +408,7 @@ func (h *Handler) GetMaterial(w http.ResponseWriter, r *http.Request) {
 
 	material, err := h.repository.GetMaterial(r.Context(), req.MaterialUuid)
 	if err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to get material: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to get material")
 		if strings.Contains(err.Error(), "material doesn't exist") {
 			h.writeError(w, "material does not exist", http.StatusNotFound)
 		} else {
