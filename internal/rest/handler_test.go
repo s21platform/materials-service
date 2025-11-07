@@ -1772,6 +1772,221 @@ func TestHandler_GetAllMaterials(t *testing.T) {
 	})
 }
 
+func TestHandler_GetMaterial(t *testing.T) {
+	t.Parallel()
+
+	materialUUID := uuid.New().String()
+	mockMaterial := &model.Material{
+		UUID:            materialUUID,
+		OwnerUUID:       uuid.New().String(),
+		Title:           "Test Title",
+		Content:         stringPtr("Test Content"),
+		Description:     "Test Description",
+		CoverImageURL:   "http://example.com/cover.jpg",
+		ReadTimeMinutes: 5,
+		Status:          "published",
+		CreatedAt:       timestamppb.Now().AsTime(),
+	}
+
+	t.Run("success", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		mockRepo.EXPECT().GetMaterial(gomock.Any(), materialUUID).Return(mockMaterial, nil)
+
+		requestBody := api.GetMaterialIn{
+			MaterialUuid: materialUUID,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/get-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.GetMaterial(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response api.GetMaterialOut
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Equal(t, mockMaterial.UUID, response.Material.Uuid)
+		assert.Equal(t, mockMaterial.Title, response.Material.Title)
+		assert.Equal(t, *mockMaterial.Content, response.Material.Content)
+		assert.Equal(t, mockMaterial.Description, response.Material.Description)
+		assert.Equal(t, mockMaterial.CoverImageURL, response.Material.CoverImageUrl)
+		assert.Equal(t, mockMaterial.ReadTimeMinutes, response.Material.ReadTimeMinutes)
+		assert.Equal(t, mockMaterial.Status, response.Material.Status)
+		assert.Equal(t, mockMaterial.OwnerUUID, *response.Material.OwnerUuid)
+	})
+
+	t.Run("invalid_json", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/get-material", bytes.NewReader([]byte("invalid json")))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.GetMaterial(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Contains(t, errorResp.Message, "invalid request body")
+	})
+
+	t.Run("missing_material_uuid", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		requestBody := api.GetMaterialIn{
+			MaterialUuid: "",
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/get-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.GetMaterial(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Contains(t, errorResp.Message, "material uuid is required")
+	})
+
+	t.Run("repository_error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		mockRepo.EXPECT().GetMaterial(gomock.Any(), materialUUID).Return(nil, fmt.Errorf("db error"))
+
+		requestBody := api.GetMaterialIn{
+			MaterialUuid: materialUUID,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/get-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.GetMaterial(w, req)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Contains(t, errorResp.Message, "failed to get material")
+	})
+
+	t.Run("material_not_found", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockRepo,
+		}
+
+		mockRepo.EXPECT().GetMaterial(gomock.Any(), materialUUID).Return(nil, fmt.Errorf("material doesn't exist"))
+
+		requestBody := api.GetMaterialIn{
+			MaterialUuid: materialUUID,
+		}
+
+		bodyBytes, _ := json.Marshal(requestBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/get-material", bytes.NewReader(bodyBytes))
+
+		reqCtx := req.Context()
+		reqCtx = context.WithValue(reqCtx, config.KeyLogger, mockLogger)
+		req = req.WithContext(reqCtx)
+
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		handler.GetMaterial(w, req)
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+
+		var errorResp api.Error
+		err := json.Unmarshal(w.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Contains(t, errorResp.Message, "material does not exist")
+	})
+}
+
 func stringPtr(s string) *string {
 	return &s
 }

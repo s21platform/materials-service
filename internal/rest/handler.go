@@ -390,6 +390,49 @@ func (h *Handler) GetAllMaterials(w http.ResponseWriter, r *http.Request, params
 	h.writeJSON(w, response, http.StatusOK)
 }
 
+func (h *Handler) GetMaterial(w http.ResponseWriter, r *http.Request) {
+	ctx := logger_lib.WithField(r.Context(), "func_name", "GetMaterial")
+
+	var req api.GetMaterialIn
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to decode request")
+		h.writeError(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.MaterialUuid == "" {
+		logger_lib.Error(ctx, "material uuid is required")
+		h.writeError(w, "material uuid is required", http.StatusBadRequest)
+		return
+	}
+
+	material, err := h.repository.GetMaterial(r.Context(), req.MaterialUuid)
+	if err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to get material")
+		if strings.Contains(err.Error(), "material doesn't exist") {
+			h.writeError(w, "material does not exist", http.StatusNotFound)
+		} else {
+			h.writeError(w, fmt.Sprintf("failed to get material: %v", err), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	response := api.GetMaterialOut{
+		Material: api.Material{
+			Uuid:            material.UUID,
+			OwnerUuid:       &material.OwnerUUID,
+			Title:           material.Title,
+			Content:         *material.Content,
+			Description:     material.Description,
+			CoverImageUrl:   material.CoverImageURL,
+			ReadTimeMinutes: material.ReadTimeMinutes,
+			Status:          material.Status,
+		},
+	}
+
+	h.writeJSON(w, response, http.StatusOK)
+}
+
 // ----------------------------- helpers -----------------------------
 
 func (h *Handler) writeJSON(w http.ResponseWriter, data interface{}, statusCode int) {
