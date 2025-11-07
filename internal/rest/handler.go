@@ -2,8 +2,10 @@ package rest
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,19 +21,25 @@ import (
 	proto "github.com/s21platform/materials-service/pkg/materials"
 )
 
+const (
+	redisPrefix = "material:"
+)
+
 type Handler struct {
 	repository          DBRepo
 	createKafkaProducer KafkaProducer
 	likeKafkaProducer   KafkaProducer
 	editKafkaProducer   KafkaProducer
+	redis               RedisRepo
 }
 
-func New(repo DBRepo, createKafkaProducer, likeKafkaProducer, editKafkaProducer KafkaProducer) *Handler {
+func New(repo DBRepo, createKafkaProducer, likeKafkaProducer, editKafkaProducer KafkaProducer, redis RedisRepo) *Handler {
 	return &Handler{
 		repository:          repo,
 		createKafkaProducer: createKafkaProducer,
 		likeKafkaProducer:   likeKafkaProducer,
 		editKafkaProducer:   editKafkaProducer,
+		redis:               redis,
 	}
 }
 
@@ -393,9 +401,12 @@ func (h *Handler) GetAllMaterials(w http.ResponseWriter, r *http.Request, params
 func (h *Handler) GetMaterial(w http.ResponseWriter, r *http.Request) {
 	ctx := logger_lib.WithField(r.Context(), "func_name", "GetMaterial")
 
-	var req api.GetMaterialIn
+	var req struct {
+		MaterialUuid string `json:"material_uuid"`
+	}
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to decode request: %v", err))
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to decode request")
 		h.writeError(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -406,16 +417,42 @@ func (h *Handler) GetMaterial(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	material, err := h.repository.GetMaterial(r.Context(), req.MaterialUuid)
+	cachedMaterial, err := h.redis.GetMaterial(ctx, redisPrefix+req.MaterialUuid)
+	if err == nil {
+		response := api.GetMaterialOut{
+			Material: api.Material{
+				Uuid:            cachedMaterial.UUID,
+				OwnerUuid:       &cachedMaterial.OwnerUUID,
+				Title:           cachedMaterial.Title,
+				Content:         *cachedMaterial.Content,
+				Description:     cachedMaterial.Description,
+				CoverImageUrl:   cachedMaterial.CoverImageURL,
+				ReadTimeMinutes: cachedMaterial.ReadTimeMinutes,
+				Status:          cachedMaterial.Status,
+			},
+		}
+		log.Println("Was in cashe")
+		h.writeJSON(w, response, http.StatusOK)
+		return
+	}
+
+	material, err := h.repository.GetMaterial(ctx, req.MaterialUuid)
 	if err != nil {
 		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to get material: %v", err))
-		if strings.Contains(err.Error(), "material doesn't exist") {
+		if strings.Contains(err.Error(), "material doesn't exist") || err == sql.ErrNoRows {
 			h.writeError(w, "material does not exist", http.StatusNotFound)
 		} else {
-			h.writeError(w, fmt.Sprintf("failed to get material: %v", err), http.StatusInternalServerError)
+			h.writeError(w, "internal server error", http.StatusInternalServerError)
 		}
 		return
 	}
+
+	go func() {
+		cacheCtx := logger_lib.WithField(context.Background(), "func_name", "GetMaterial.cache")
+		if err := h.redis.SetMaterial(cacheCtx, material, time.Hour); err != nil {
+			logger_lib.Error(logger_lib.WithError(cacheCtx, err), fmt.Sprintf("failed to set material in cache: %v", err))
+		}
+	}()
 
 	response := api.GetMaterialOut{
 		Material: api.Material{

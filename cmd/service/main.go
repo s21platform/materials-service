@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/s21platform/materials-service/internal/repository/redis"
 	"github.com/soheilhy/cmux"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -36,6 +37,9 @@ func main() {
 	dbRepo := postgres.New(cfg)
 	defer dbRepo.Close()
 
+	redisRepo := redis.New(cfg)
+	defer redisRepo.Close()
+
 	metrics, err := pkg.NewMetrics(cfg.Metrics.Host, cfg.Metrics.Port, cfg.Service.Name, cfg.Platform.Env)
 	if err != nil {
 		logger_lib.Error(logger_lib.WithError(ctx, err), fmt.Sprintf("failed to create metrics object: %v", err))
@@ -62,7 +66,7 @@ func main() {
 	likeKafkaProducer := kafkalib.NewProducer(likeProducerConfig)
 	editKafkaProducer := kafkalib.NewProducer(editProducerConfig)
 
-	handler := rest.New(dbRepo, createKafkaProducer, likeKafkaProducer, editKafkaProducer)
+	handler := rest.New(dbRepo, createKafkaProducer, likeKafkaProducer, editKafkaProducer, redisRepo)
 	router := chi.NewRouter()
 
 	router.Use(func(next http.Handler) http.Handler {
