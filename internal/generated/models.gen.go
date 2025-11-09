@@ -30,6 +30,17 @@ type GetAllMaterialsOut struct {
 	MaterialList []Material `json:"material_list"`
 }
 
+// GetMaterialIn defines model for GetMaterialIn.
+type GetMaterialIn struct {
+	// MaterialUuid UUID of the material to retrieve
+	MaterialUuid string `json:"material_uuid"`
+}
+
+// GetMaterialOut defines model for GetMaterialOut.
+type GetMaterialOut struct {
+	Material Material `json:"material"`
+}
+
 // Material defines model for Material.
 type Material struct {
 	Content         string  `json:"content"`
@@ -96,6 +107,9 @@ type ToggleLikeJSONRequestBody = ToggleLikeIn
 
 // EditMaterialJSONRequestBody defines body for EditMaterial for application/json ContentType.
 type EditMaterialJSONRequestBody = EditMaterialIn
+
+// GetMaterialJSONRequestBody defines body for GetMaterial for application/json ContentType.
+type GetMaterialJSONRequestBody = GetMaterialIn
 
 // PublishMaterialJSONRequestBody defines body for PublishMaterial for application/json ContentType.
 type PublishMaterialJSONRequestBody = PublishMaterialIn

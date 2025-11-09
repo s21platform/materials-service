@@ -7,6 +7,7 @@ package rest
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 	model "github.com/s21platform/materials-service/internal/model"
@@ -107,6 +108,21 @@ func (m *MockDBRepo) GetLikesCount(ctx context.Context, materialUUID string) (in
 func (mr *MockDBRepoMockRecorder) GetLikesCount(ctx, materialUUID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLikesCount", reflect.TypeOf((*MockDBRepo)(nil).GetLikesCount), ctx, materialUUID)
+}
+
+// GetMaterial mocks base method.
+func (m *MockDBRepo) GetMaterial(ctx context.Context, materialUUID string) (*model.Material, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMaterial", ctx, materialUUID)
+	ret0, _ := ret[0].(*model.Material)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMaterial indicates an expected call of GetMaterial.
+func (mr *MockDBRepoMockRecorder) GetMaterial(ctx, materialUUID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMaterial", reflect.TypeOf((*MockDBRepo)(nil).GetMaterial), ctx, materialUUID)
 }
 
 // GetMaterialOwnerUUID mocks base method.
@@ -246,4 +262,56 @@ func (m *MockKafkaProducer) ProduceMessage(ctx context.Context, message, key int
 func (mr *MockKafkaProducerMockRecorder) ProduceMessage(ctx, message, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProduceMessage", reflect.TypeOf((*MockKafkaProducer)(nil).ProduceMessage), ctx, message, key)
+}
+
+// MockRedisRepo is a mock of RedisRepo interface.
+type MockRedisRepo struct {
+	ctrl     *gomock.Controller
+	recorder *MockRedisRepoMockRecorder
+}
+
+// MockRedisRepoMockRecorder is the mock recorder for MockRedisRepo.
+type MockRedisRepoMockRecorder struct {
+	mock *MockRedisRepo
+}
+
+// NewMockRedisRepo creates a new mock instance.
+func NewMockRedisRepo(ctrl *gomock.Controller) *MockRedisRepo {
+	mock := &MockRedisRepo{ctrl: ctrl}
+	mock.recorder = &MockRedisRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockRedisRepo) EXPECT() *MockRedisRepoMockRecorder {
+	return m.recorder
+}
+
+// GetMaterial mocks base method.
+func (m *MockRedisRepo) GetMaterial(ctx context.Context, uuid string) (*model.Material, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMaterial", ctx, uuid)
+	ret0, _ := ret[0].(*model.Material)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMaterial indicates an expected call of GetMaterial.
+func (mr *MockRedisRepoMockRecorder) GetMaterial(ctx, uuid interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMaterial", reflect.TypeOf((*MockRedisRepo)(nil).GetMaterial), ctx, uuid)
+}
+
+// SetMaterial mocks base method.
+func (m *MockRedisRepo) SetMaterial(ctx context.Context, material *model.Material, ttl time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetMaterial", ctx, material, ttl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetMaterial indicates an expected call of SetMaterial.
+func (mr *MockRedisRepoMockRecorder) SetMaterial(ctx, material, ttl interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMaterial", reflect.TypeOf((*MockRedisRepo)(nil).SetMaterial), ctx, material, ttl)
 }

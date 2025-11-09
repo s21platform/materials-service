@@ -13,6 +13,7 @@ type Config struct {
 	Postgres Postgres
 	Logger   Logger
 	Kafka    Kafka
+	Redis    Redis
 }
 
 type Service struct {
@@ -54,6 +55,11 @@ type Kafka struct {
 	MaterialCreatedTopic                    string `env:"MATERIALS_CREATED_MATERIAL"`
 	ToggleLikeMaterialTopic                 string `env:"MATERIALS_TOGGLE_MATERIAL_LIKE"`
 	EditMaterialTopic                       string `env:"MATERIALS_SET_MATERIAL_EDITED"`
+}
+
+type Redis struct {
+	Host string `env:"MATERIALS_SERVICE_REDIS_HOST"`
+	Port string `env:"MATERIALS_SERVICE_REDIS_PORT"`
 }
 
 func MustLoad() *Config {

@@ -36,11 +36,26 @@ func AuthInterceptorGRPC(
 
 func AuthInterceptorHTTP(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		method := r.Method
+
+		isWhitelisted := (method == http.MethodGet && path == "/api/materials") ||
+			(method == http.MethodPost && path == "/api/materials/get-material")
+
 		userID := r.Header.Get("X-User-Uuid")
 		userID = strings.TrimSpace(userID)
 
+		if isWhitelisted {
+			if userID != "" {
+				ctx := context.WithValue(r.Context(), config.KeyUUID, userID)
+				r = r.WithContext(ctx)
+			}
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		if userID == "" {
-			writeErrorResponse(w, "missing or empty X-User-ID header", http.StatusUnauthorized)
+			writeErrorResponse(w, "missing or empty X-User-Uuid header", http.StatusUnauthorized)
 			return
 		}
 

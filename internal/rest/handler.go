@@ -19,19 +19,25 @@ import (
 	proto "github.com/s21platform/materials-service/pkg/materials"
 )
 
+const (
+	key = "func_name"
+)
+
 type Handler struct {
 	repository          DBRepo
 	createKafkaProducer KafkaProducer
 	likeKafkaProducer   KafkaProducer
 	editKafkaProducer   KafkaProducer
+	redis               RedisRepo
 }
 
-func New(repo DBRepo, createKafkaProducer, likeKafkaProducer, editKafkaProducer KafkaProducer) *Handler {
+func New(repo DBRepo, createKafkaProducer, likeKafkaProducer, editKafkaProducer KafkaProducer, redis RedisRepo) *Handler {
 	return &Handler{
 		repository:          repo,
 		createKafkaProducer: createKafkaProducer,
 		likeKafkaProducer:   likeKafkaProducer,
 		editKafkaProducer:   editKafkaProducer,
+		redis:               redis,
 	}
 }
 
@@ -385,6 +391,74 @@ func (h *Handler) GetAllMaterials(w http.ResponseWriter, r *http.Request, params
 			}
 			return apiList
 		}(paginatedMaterials),
+	}
+
+	h.writeJSON(w, response, http.StatusOK)
+}
+
+func (h *Handler) GetMaterial(w http.ResponseWriter, r *http.Request) {
+	ctx := logger_lib.WithField(r.Context(), key, "GetMaterial")
+
+	var req api.GetMaterialIn
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to decode request")
+		h.writeError(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.MaterialUuid == "" {
+		logger_lib.Error(ctx, "material uuid is required")
+		h.writeError(w, "material uuid is required", http.StatusBadRequest)
+		return
+	}
+
+	cachedMaterial, err := h.redis.GetMaterial(ctx, req.MaterialUuid)
+	if err == nil {
+		response := api.GetMaterialOut{
+			Material: api.Material{
+				Uuid:            cachedMaterial.UUID,
+				OwnerUuid:       &cachedMaterial.OwnerUUID,
+				Title:           cachedMaterial.Title,
+				Content:         *cachedMaterial.Content,
+				Description:     cachedMaterial.Description,
+				CoverImageUrl:   cachedMaterial.CoverImageURL,
+				ReadTimeMinutes: cachedMaterial.ReadTimeMinutes,
+				Status:          cachedMaterial.Status,
+			},
+		}
+		h.writeJSON(w, response, http.StatusOK)
+		return
+	}
+
+	material, err := h.repository.GetMaterial(ctx, req.MaterialUuid)
+	if err != nil {
+		logger_lib.Error(logger_lib.WithError(ctx, err), "failed to get material from repository")
+
+		if err.Error() == "material doesn't exist" {
+			h.writeError(w, "material does not exist", http.StatusNotFound)
+		} else {
+			h.writeError(w, "", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	go func() {
+		if err := h.redis.SetMaterial(context.Background(), material, time.Hour); err != nil {
+			logger_lib.Error(logger_lib.WithError(ctx, err), "failed to set material in cache")
+		}
+	}()
+
+	response := api.GetMaterialOut{
+		Material: api.Material{
+			Uuid:            material.UUID,
+			OwnerUuid:       &material.OwnerUUID,
+			Title:           material.Title,
+			Content:         *material.Content,
+			Description:     material.Description,
+			CoverImageUrl:   material.CoverImageURL,
+			ReadTimeMinutes: material.ReadTimeMinutes,
+			Status:          material.Status,
+		},
 	}
 
 	h.writeJSON(w, response, http.StatusOK)

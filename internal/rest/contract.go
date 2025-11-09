@@ -3,6 +3,7 @@ package rest
 
 import (
 	"context"
+	"time"
 
 	"github.com/s21platform/materials-service/internal/model"
 )
@@ -20,8 +21,14 @@ type DBRepo interface {
 	WithTx(ctx context.Context, cb func(ctx context.Context) error) (err error)
 	EditMaterial(ctx context.Context, material *model.EditMaterial) (*model.Material, error)
 	GetAllMaterials(ctx context.Context, offset, limit int) (*model.MaterialList, error)
+	GetMaterial(ctx context.Context, materialUUID string) (*model.Material, error)
 }
 
 type KafkaProducer interface {
 	ProduceMessage(ctx context.Context, message interface{}, key interface{}) error
+}
+
+type RedisRepo interface {
+	SetMaterial(ctx context.Context, material *model.Material, ttl time.Duration) error
+	GetMaterial(ctx context.Context, uuid string) (*model.Material, error)
 }

@@ -1772,10 +1772,303 @@ func TestHandler_GetAllMaterials(t *testing.T) {
 	})
 }
 
+func TestHandler_GetMaterial(t *testing.T) {
+	t.Parallel()
+
+	materialUUID := uuid.New().String()
+	ownerUUID := uuid.New().String()
+
+	mockMaterial := &model.Material{
+		UUID:            materialUUID,
+		OwnerUUID:       ownerUUID,
+		Title:           "Test Title",
+		Content:         stringPtr("Test Content"),
+		Description:     "Test Description",
+		CoverImageURL:   "http://example.com/cover.jpg",
+		ReadTimeMinutes: 5,
+		Status:          "published",
+		CreatedAt:       timestamppb.Now().AsTime(),
+	}
+
+	newRequest := func(t *testing.T, body api.GetMaterialIn) *http.Request {
+		bodyBytes, err := json.Marshal(body)
+		require.NoError(t, err)
+
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/get-material", bytes.NewReader(bodyBytes))
+		req.Header.Set("Content-Type", "application/json")
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		return req
+	}
+
+	withLogger := func(req *http.Request, mockLogger logger_lib.LoggerInterface) *http.Request {
+		ctx := context.WithValue(req.Context(), config.KeyLogger, mockLogger)
+		return req.WithContext(ctx)
+	}
+
+	t.Run("cache_hit", func(t *testing.T) {
+		t.Parallel()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockDB := NewMockDBRepo(ctrl)
+		mockRedis := NewMockRedisRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		mockRedis.EXPECT().
+			GetMaterial(gomock.Any(), materialUUID).
+			Return(mockMaterial, nil)
+
+		handler := &Handler{
+			repository: mockDB,
+			redis:      mockRedis,
+		}
+
+		req := newRequest(t, api.GetMaterialIn{MaterialUuid: materialUUID})
+		req = withLogger(req, mockLogger)
+		w := httptest.NewRecorder()
+
+		handler.GetMaterial(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var resp api.GetMaterialOut
+		require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+
+		assert.Equal(t, mockMaterial.UUID, resp.Material.Uuid)
+		assert.Equal(t, mockMaterial.Title, resp.Material.Title)
+		assert.Equal(t, *mockMaterial.Content, resp.Material.Content)
+		assert.Equal(t, mockMaterial.OwnerUUID, *resp.Material.OwnerUuid)
+	})
+
+	t.Run("cache_miss_db_success_async_set", func(t *testing.T) {
+		t.Parallel()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockDB := NewMockDBRepo(ctrl)
+		mockRedis := NewMockRedisRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		mockRedis.EXPECT().
+			GetMaterial(gomock.Any(), materialUUID).
+			Return((*model.Material)(nil), fmt.Errorf("redis: key not found"))
+
+		mockDB.EXPECT().
+			GetMaterial(gomock.Any(), materialUUID).
+			Return(mockMaterial, nil)
+
+		setCalled := make(chan struct{}, 1)
+		mockRedis.EXPECT().
+			SetMaterial(gomock.Any(), gomock.Any(), time.Hour).
+			DoAndReturn(func(ctx context.Context, m *model.Material, ttl time.Duration) error {
+				assert.Equal(t, mockMaterial.UUID, m.UUID)
+				setCalled <- struct{}{}
+				return nil
+			})
+
+		handler := &Handler{
+			repository: mockDB,
+			redis:      mockRedis,
+		}
+
+		req := newRequest(t, api.GetMaterialIn{MaterialUuid: materialUUID})
+		req = withLogger(req, mockLogger)
+		w := httptest.NewRecorder()
+
+		handler.GetMaterial(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		select {
+		case <-setCalled:
+		case <-time.After(100 * time.Millisecond):
+			t.Fatal("SetMaterial was not called in background")
+		}
+
+		var resp api.GetMaterialOut
+		require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+		assert.Equal(t, mockMaterial.Title, resp.Material.Title)
+	})
+
+	t.Run("cache_miss_db_not_found", func(t *testing.T) {
+		t.Parallel()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockDB := NewMockDBRepo(ctrl)
+		mockRedis := NewMockRedisRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		mockRedis.EXPECT().
+			GetMaterial(gomock.Any(), materialUUID).
+			Return((*model.Material)(nil), fmt.Errorf("not found"))
+
+		mockDB.EXPECT().
+			GetMaterial(gomock.Any(), materialUUID).
+			Return((*model.Material)(nil), fmt.Errorf("material doesn't exist"))
+
+		handler := &Handler{
+			repository: mockDB,
+			redis:      mockRedis,
+		}
+
+		req := newRequest(t, api.GetMaterialIn{MaterialUuid: materialUUID})
+		req = withLogger(req, mockLogger)
+		w := httptest.NewRecorder()
+
+		handler.GetMaterial(w, req)
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+
+		var errResp api.Error
+		require.NoError(t, json.Unmarshal(w.Body.Bytes(), &errResp))
+		assert.Contains(t, errResp.Message, "material does not exist")
+	})
+
+	t.Run("cache_miss_db_error", func(t *testing.T) {
+		t.Parallel()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockDB := NewMockDBRepo(ctrl)
+		mockRedis := NewMockRedisRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		mockRedis.EXPECT().
+			GetMaterial(gomock.Any(), materialUUID).
+			Return((*model.Material)(nil), fmt.Errorf("not found"))
+
+		mockDB.EXPECT().
+			GetMaterial(gomock.Any(), materialUUID).
+			Return((*model.Material)(nil), fmt.Errorf("database connection failed"))
+
+		handler := &Handler{
+			repository: mockDB,
+			redis:      mockRedis,
+		}
+
+		req := newRequest(t, api.GetMaterialIn{MaterialUuid: materialUUID})
+		req = withLogger(req, mockLogger)
+		w := httptest.NewRecorder()
+
+		handler.GetMaterial(w, req)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+		var errResp api.Error
+		require.NoError(t, json.Unmarshal(w.Body.Bytes(), &errResp))
+		assert.Contains(t, errResp.Message, "internal server error")
+	})
+
+	t.Run("cache_set_fails_still_returns_ok", func(t *testing.T) {
+		t.Parallel()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockDB := NewMockDBRepo(ctrl)
+		mockRedis := NewMockRedisRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		mockRedis.EXPECT().
+			GetMaterial(gomock.Any(), materialUUID).
+			Return((*model.Material)(nil), fmt.Errorf("not found"))
+
+		mockDB.EXPECT().
+			GetMaterial(gomock.Any(), materialUUID).
+			Return(mockMaterial, nil)
+
+		mockRedis.EXPECT().
+			SetMaterial(gomock.Any(), gomock.Any(), time.Hour).
+			Return(fmt.Errorf("redis unavailable"))
+
+		mockLogger.EXPECT().
+			Error(gomock.Any(), gomock.Any()).
+			AnyTimes()
+
+		handler := &Handler{
+			repository: mockDB,
+			redis:      mockRedis,
+		}
+
+		req := newRequest(t, api.GetMaterialIn{MaterialUuid: materialUUID})
+		req = withLogger(req, mockLogger)
+		w := httptest.NewRecorder()
+
+		handler.GetMaterial(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		time.Sleep(100 * time.Millisecond)
+
+		var resp api.GetMaterialOut
+		require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+		assert.Equal(t, mockMaterial.Title, resp.Material.Title)
+		assert.Equal(t, mockMaterial.UUID, resp.Material.Uuid)
+	})
+
+	t.Run("invalid_json", func(t *testing.T) {
+		t.Parallel()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockDB := NewMockDBRepo(ctrl)
+		mockRedis := NewMockRedisRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockDB,
+			redis:      mockRedis,
+		}
+
+		req := httptest.NewRequest(http.MethodPost, "/api/materials/get-material", bytes.NewReader([]byte("{")))
+		req.Header.Set("Content-Type", "application/json")
+		req = withLogger(req, mockLogger)
+
+		rctx := chi.NewRouteContext()
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+
+		handler.GetMaterial(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var errResp api.Error
+		require.NoError(t, json.Unmarshal(w.Body.Bytes(), &errResp))
+		assert.Contains(t, errResp.Message, "invalid request body")
+	})
+
+	t.Run("missing_material_uuid", func(t *testing.T) {
+		t.Parallel()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockDB := NewMockDBRepo(ctrl)
+		mockRedis := NewMockRedisRepo(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		handler := &Handler{
+			repository: mockDB,
+			redis:      mockRedis,
+		}
+
+		req := newRequest(t, api.GetMaterialIn{MaterialUuid: ""})
+		req = withLogger(req, mockLogger)
+		w := httptest.NewRecorder()
+
+		handler.GetMaterial(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var errResp api.Error
+		require.NoError(t, json.Unmarshal(w.Body.Bytes(), &errResp))
+		assert.Contains(t, errResp.Message, "material uuid is required")
+	})
+}
+
 func stringPtr(s string) *string {
 	return &s
 }
-
-//func int32Ptr(i int32) *int32 {
-//	return &i
-//}

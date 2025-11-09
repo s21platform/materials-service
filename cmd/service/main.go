@@ -22,6 +22,7 @@ import (
 	"github.com/s21platform/materials-service/internal/infra"
 	"github.com/s21platform/materials-service/internal/pkg/tx"
 	"github.com/s21platform/materials-service/internal/repository/postgres"
+	"github.com/s21platform/materials-service/internal/repository/redis"
 	"github.com/s21platform/materials-service/internal/rest"
 	"github.com/s21platform/materials-service/internal/service"
 	"github.com/s21platform/materials-service/pkg/materials"
@@ -35,6 +36,9 @@ func main() {
 
 	dbRepo := postgres.New(cfg)
 	defer dbRepo.Close()
+
+	redisRepo := redis.New(cfg)
+	defer redisRepo.Close()
 
 	metrics, err := pkg.NewMetrics(cfg.Metrics.Host, cfg.Metrics.Port, cfg.Service.Name, cfg.Platform.Env)
 	if err != nil {
@@ -62,7 +66,7 @@ func main() {
 	likeKafkaProducer := kafkalib.NewProducer(likeProducerConfig)
 	editKafkaProducer := kafkalib.NewProducer(editProducerConfig)
 
-	handler := rest.New(dbRepo, createKafkaProducer, likeKafkaProducer, editKafkaProducer)
+	handler := rest.New(dbRepo, createKafkaProducer, likeKafkaProducer, editKafkaProducer, redisRepo)
 	router := chi.NewRouter()
 
 	router.Use(func(next http.Handler) http.Handler {
