@@ -9,7 +9,6 @@ import (
 	"os"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/s21platform/materials-service/internal/repository/redis"
 	"github.com/soheilhy/cmux"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -23,6 +22,7 @@ import (
 	"github.com/s21platform/materials-service/internal/infra"
 	"github.com/s21platform/materials-service/internal/pkg/tx"
 	"github.com/s21platform/materials-service/internal/repository/postgres"
+	"github.com/s21platform/materials-service/internal/repository/redis"
 	"github.com/s21platform/materials-service/internal/rest"
 	"github.com/s21platform/materials-service/internal/service"
 	"github.com/s21platform/materials-service/pkg/materials"

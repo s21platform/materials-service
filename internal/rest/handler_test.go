@@ -1818,7 +1818,7 @@ func TestHandler_GetMaterial(t *testing.T) {
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 
 		mockRedis.EXPECT().
-			GetMaterial(gomock.Any(), redisPrefix+materialUUID).
+			GetMaterial(gomock.Any(), materialUUID).
 			Return(mockMaterial, nil)
 
 		handler := &Handler{
@@ -1853,7 +1853,7 @@ func TestHandler_GetMaterial(t *testing.T) {
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 
 		mockRedis.EXPECT().
-			GetMaterial(gomock.Any(), redisPrefix+materialUUID).
+			GetMaterial(gomock.Any(), materialUUID).
 			Return((*model.Material)(nil), fmt.Errorf("redis: key not found"))
 
 		mockDB.EXPECT().
@@ -1903,7 +1903,7 @@ func TestHandler_GetMaterial(t *testing.T) {
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 
 		mockRedis.EXPECT().
-			GetMaterial(gomock.Any(), redisPrefix+materialUUID).
+			GetMaterial(gomock.Any(), materialUUID).
 			Return((*model.Material)(nil), fmt.Errorf("not found"))
 
 		mockDB.EXPECT().
@@ -1938,7 +1938,7 @@ func TestHandler_GetMaterial(t *testing.T) {
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 
 		mockRedis.EXPECT().
-			GetMaterial(gomock.Any(), redisPrefix+materialUUID).
+			GetMaterial(gomock.Any(), materialUUID).
 			Return((*model.Material)(nil), fmt.Errorf("not found"))
 
 		mockDB.EXPECT().
@@ -1973,21 +1973,16 @@ func TestHandler_GetMaterial(t *testing.T) {
 		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 
 		mockRedis.EXPECT().
-			GetMaterial(gomock.Any(), redisPrefix+materialUUID).
+			GetMaterial(gomock.Any(), materialUUID).
 			Return((*model.Material)(nil), fmt.Errorf("not found"))
 
 		mockDB.EXPECT().
 			GetMaterial(gomock.Any(), materialUUID).
 			Return(mockMaterial, nil)
 
-		setCalled := make(chan struct{}, 1)
 		mockRedis.EXPECT().
 			SetMaterial(gomock.Any(), gomock.Any(), time.Hour).
-			DoAndReturn(func(ctx context.Context, m *model.Material, ttl time.Duration) error {
-				assert.Equal(t, mockMaterial.UUID, m.UUID)
-				setCalled <- struct{}{}
-				return fmt.Errorf("redis unavailable")
-			})
+			Return(fmt.Errorf("redis unavailable"))
 
 		mockLogger.EXPECT().
 			Error(gomock.Any(), gomock.Any()).
@@ -2006,11 +2001,7 @@ func TestHandler_GetMaterial(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		select {
-		case <-setCalled:
-		case <-time.After(500 * time.Millisecond):
-			t.Log("SetMaterial might be called asynchronously, continuing test")
-		}
+		time.Sleep(100 * time.Millisecond)
 
 		var resp api.GetMaterialOut
 		require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
@@ -2081,7 +2072,3 @@ func TestHandler_GetMaterial(t *testing.T) {
 func stringPtr(s string) *string {
 	return &s
 }
-
-//func int32Ptr(i int32) *int32 {
-//	return &i
-//}

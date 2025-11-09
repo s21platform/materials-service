@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+
 	"github.com/s21platform/materials-service/internal/config"
 	"github.com/s21platform/materials-service/internal/model"
 )
